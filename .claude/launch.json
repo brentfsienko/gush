@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gush-dev",
+      "runtimeExecutable": "fnm",
+      "runtimeArgs": ["exec", "--using=22", "npm", "run", "dev"],
+      "port": 4321
+    },
+    {
+      "name": "gush-full",
+      "runtimeExecutable": "fnm",
+      "runtimeArgs": ["exec", "--using=22", "npx", "wrangler", "pages", "dev", "dist", "--port", "8788"],
+      "port": 8788
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+---
+import '@fontsource/special-elite';
+import '../styles/global.css';
+import Drawn from '../components/Drawn.astro';
+import DrawnToggle from '../components/DrawnToggle.astro';
+
+interface Props {
+  title?: string;
+  tab?: 'home' | 'shop' | 'cart';
+  /** Main area doesn't scroll itself (the shop feed manages its own scrolling). */
+  fill?: boolean;
+  description?: string;
+}
+
+const { title, tab, fill = false, description = 'GÜSH clothing' } = Astro.props;
+const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
+const tabs = ['home', 'shop', 'cart'] as const;
+const href = { home: '/', shop: '/shop', cart: '/cart' };
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ddd3c0" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a href="/" aria-label="GÜSH home">
+          <Drawn name="logo" h={46} alt="GÜSH" loading="eager" />
+        </a>
+      </header>
+
+      <main class:list={[{ fill }]}>
+        <slot />
+      </main>
+
+      <nav class="tabbar" aria-label="main">
+        {
+          tabs.map((t) => (
+            <a href={href[t]} class="tab" aria-current={t === tab ? 'page' : undefined} aria-label={t}>
+              <DrawnToggle name={`tab-${t}`} h={34} />
+              {t === 'cart' && <span class="badge" data-cart-count hidden />}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+
+    <script>
+      import { updateBadge } from '../scripts/cart';
+      updateBadge();
+      // Back/forward cache restores old pages; refresh the count when that happens.
+      addEventListener('pageshow', updateBadge);
+    </script>
+  </body>
+</html>

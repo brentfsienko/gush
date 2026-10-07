@@ -1,0 +1,42 @@
+---
+// One of your drawings, shown at a fixed height (width follows the drawing's shape).
+// If the drawing doesn't exist yet and `fallback` is given, shows that text instead.
+import { Image } from 'astro:assets';
+import { drawn } from '../data/assets';
+
+interface Props {
+  name: string;
+  /** Display height in CSS pixels. */
+  h: number;
+  alt?: string;
+  fallback?: string;
+  class?: string;
+  loading?: 'eager' | 'lazy';
+}
+
+const { name, h, alt = '', fallback, class: cls, loading = 'lazy' } = Astro.props;
+const img = drawn(name);
+if (!img && fallback === undefined) {
+  throw new Error(`Missing drawing: put a file named "${name}.png" in src/assets/drawn/`);
+}
+---
+
+{
+  img ? (
+    <Image
+      src={img}
+      alt={alt}
+      height={h}
+      densities={[1, 2, 3]}
+      format="webp"
+      loading={loading}
+      draggable="false"
+      class:list={['drawn', cls]}
+      style={`--h:${h}px`}
+    />
+  ) : (
+    <span class:list={['drawn-fallback', cls]} style={`--h:${h}px`}>
+      {fallback}
+    </span>
+  )
+}

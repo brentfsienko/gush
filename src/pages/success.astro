@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import Paper from '../components/Paper.astro';
+import Drawn from '../components/Drawn.astro';
+---
+
+<Base title="thank you" tab="cart">
+  <div class="stack">
+    <Paper kind="scrap" n={1} tilt={-1.2} tape class="type thanks">
+      <Drawn name="heading-thank-you" h={46} alt="thank you!" />
+      <p>your order is in. a receipt is on its way to your email.</p>
+      <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} /></a>
+    </Paper>
+  </div>
+</Base>
+
+<style>
+  .thanks {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    padding-block: 48px;
+  }
+
+  .thanks p {
+    margin: 0;
+  }
+</style>
+
+<script>
+  import { clearCart } from '../scripts/cart';
+  clearCart();
+</script>

@@ -1,0 +1,18 @@
+---
+// A drawing with an "off" and "on" version (e.g. filter-tees.png + filter-tees-on.png).
+// Both are loaded and stacked; CSS shows the "on" one when the parent button has
+// aria-pressed="true" or the parent link has aria-current="page".
+import Drawn from './Drawn.astro';
+
+interface Props {
+  name: string;
+  h: number;
+}
+
+const { name, h } = Astro.props;
+---
+
+<span class="toggle">
+  <Drawn name={name} h={h} class="toggle-off" loading="eager" />
+  <Drawn name={`${name}-on`} h={h} class="toggle-on" loading="eager" />
+</span>

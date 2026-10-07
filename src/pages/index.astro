@@ -1,0 +1,83 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Paper from '../components/Paper.astro';
+import Drawn from '../components/Drawn.astro';
+import { homePhotos } from '../data/assets';
+import { ABOUT, SECOND_BLURB } from '../data/home';
+
+const [hero, ...rest] = homePhotos();
+---
+
+<Base tab="home">
+  <div class="stack home">
+    {
+      hero && (
+        <Paper n={2} tilt={-1.2} tape class="hero">
+          <Image src={hero} alt="GÜSH model photo" widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo" loading="eager" />
+        </Paper>
+      )
+    }
+
+    <Paper kind="scrap" n={1} tilt={1.4} class="type">
+      <Drawn name="heading-about" h={40} alt="what is GÜSH?" />
+      <p class="blurb">{ABOUT}</p>
+    </Paper>
+
+    {
+      rest.length > 0 && (
+        <div class="polaroids">
+          {rest.map((src, i) => (
+            <Image
+              src={src}
+              alt="GÜSH model photo"
+              widths={[320, 640]}
+              sizes="50vw"
+              class="photo polaroid"
+              style={`--r:${i % 2 ? 4 : -5}deg`}
+            />
+          ))}
+        </div>
+      )
+    }
+
+    <Paper kind="scrap" n={2} tilt={-1} class="type">
+      <p class="blurb">{SECOND_BLURB}</p>
+    </Paper>
+
+    <a href="/shop" class="center cta" aria-label="shop now">
+      <Drawn name="btn-shop-now" h={66} />
+    </a>
+  </div>
+</Base>
+
+<style>
+  .home {
+    padding-top: 22px;
+  }
+
+  .blurb {
+    margin: 12px 0 0;
+  }
+
+  .polaroids {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 6px 4px;
+  }
+
+  .polaroid {
+    padding: 8px 8px 30px;
+    transform: rotate(var(--r));
+  }
+
+  .polaroid:nth-child(even) {
+    margin-top: 34px;
+    margin-left: -14px;
+  }
+
+  .cta {
+    padding: 8px 0 12px;
+  }
+</style>

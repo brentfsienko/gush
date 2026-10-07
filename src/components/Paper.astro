@@ -1,0 +1,39 @@
+---
+// A torn piece of paper that content sits on.
+// kind="paper" uses the tall drawings (paper-1, paper-2, ...), kind="scrap" the wide ones (scrap-1, ...).
+// `n` picks which one; it wraps around, so any number works and new paper drawings join the rotation automatically.
+import { getImage } from 'astro:assets';
+import { papers, drawn } from '../data/assets';
+
+interface Props {
+  kind?: 'paper' | 'scrap';
+  n?: number;
+  /** Rotation in degrees. */
+  tilt?: number;
+  /** Stick a piece of tape on top. */
+  tape?: boolean;
+  as?: 'div' | 'article' | 'section' | 'a';
+  href?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
+}
+
+const { kind = 'paper', n = 1, tilt = 0, tape = false, as: Tag = 'div', class: cls, ...rest } = Astro.props;
+
+const all = papers(kind);
+if (all.length === 0) throw new Error(`No ${kind} drawings found: add src/assets/drawn/${kind}-1.png`);
+const src = all[(n - 1) % all.length];
+const bg = await getImage({ src, width: kind === 'paper' ? 900 : 1000, format: 'webp' });
+
+const tapes = [drawn('tape-1'), drawn('tape-2')].filter(Boolean);
+const tapeImg = tape && tapes.length ? await getImage({ src: tapes[n % tapes.length]!, width: 240, format: 'webp' }) : null;
+---
+
+<Tag
+  class:list={['paper', `paper-${kind}`, cls]}
+  style={`background-image:url(${bg.src});--tilt:${tilt}deg`}
+  {...rest}
+>
+  {tapeImg && <img class="tape" src={tapeImg.src} alt="" aria-hidden="true" style={`--tape-tilt:${((n * 37) % 10) - 5}deg`} />}
+  <slot />
+</Tag>

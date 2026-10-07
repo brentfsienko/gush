@@ -1,0 +1,293 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Paper from '../../components/Paper.astro';
+import Drawn from '../../components/Drawn.astro';
+import DrawnToggle from '../../components/DrawnToggle.astro';
+import { PRODUCTS, SIZES, formatPrice, type Product } from '../../data/products';
+import { productPhotos } from '../../data/assets';
+
+export function getStaticPaths() {
+  return PRODUCTS.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product: p } = Astro.props as { product: Product };
+const photos = productPhotos(p.slug);
+const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
+---
+
+<Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)}`}>
+  <a href="/shop" class="back" aria-label="back to shop" data-back>
+    <Drawn name="btn-back" h={34} />
+  </a>
+
+  <div class="gallery" data-gallery>
+    {
+      photos.map((src, i) => (
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[480, 900, 1200]} sizes="(min-width: 480px) 480px, 100vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
+      ))
+    }
+  </div>
+  {
+    photos.length > 1 && (
+      <div class="dots" aria-hidden="true">
+        {photos.map((_, i) => <span class:list={['dot', { on: i === 0 }]} />)}
+      </div>
+    )
+  }
+
+  <div class="stack">
+    <Paper n={1} tilt={-0.6} tape class="info type">
+      <Drawn name={`title-${p.slug}`} h={58} alt={p.title} fallback={p.title} loading="eager" />
+      <p class="price">{formatPrice(p.price)}</p>
+      <p class="desc">{p.description}</p>
+
+      <Drawn name="heading-size" h={34} alt="pick a size" class="sub" />
+      <div class="sizes" role="group" aria-label="size" data-sizes>
+        {
+          sizes.map((s) => {
+            const soldOut = (p.stock[s] ?? 0) <= 0;
+            return (
+              <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} aria-pressed="false" disabled={soldOut} aria-label={soldOut ? `${s} sold out` : s}>
+                <DrawnToggle name={`size-${s}`} h={40} />
+                {soldOut && <Drawn name="scribble-out" h={40} class="scribble" />}
+              </button>
+            );
+          })
+        }
+      </div>
+      <p class="msg" aria-live="polite" data-msg></p>
+
+      <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart">
+        <Drawn name="btn-add-to-cart" h={66} />
+      </button>
+    </Paper>
+
+    <Paper kind="scrap" n={1} tilt={1} class="type">
+      <Drawn name="heading-details" h={36} alt="the details" />
+      <dl class="details">
+        {
+          p.details.map((d) => (
+            <>
+              <dt>{d.label}</dt>
+              <dd>{d.value}</dd>
+            </>
+          ))
+        }
+      </dl>
+    </Paper>
+
+    {
+      p.sizeChart && (
+        <Paper kind="scrap" n={3} tilt={-1.2} class="type">
+          <Drawn name="heading-size-chart" h={36} alt="size chart" />
+          <table class="chart">
+            <thead>
+              <tr>{p.sizeChart.headers.map((h) => <th>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {p.sizeChart.rows.map((r) => (
+                <tr>{r.map((c) => <td>{c}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </Paper>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .back {
+    display: inline-block;
+    margin: 4px var(--gutter) 10px;
+  }
+
+  /* Full-width photos you swipe sideways through. */
+  .gallery {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .gallery::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    scroll-snap-align: center;
+  }
+
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 0 0;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+  }
+
+  .dot.on {
+    background: var(--ink);
+  }
+
+  .info {
+    margin-top: 6px;
+  }
+
+  .price {
+    margin: 6px 0 10px;
+  }
+
+  .desc {
+    margin: 0 0 18px;
+  }
+
+  .sub {
+    margin-top: 6px;
+  }
+
+  /* Up to 4 sizes per row, shrinking to fit whatever shape the drawings are. */
+  .sizes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 76px));
+    gap: 8px;
+    margin: 10px 0 4px;
+  }
+
+  .size {
+    position: relative;
+  }
+
+  .size :global(img.drawn) {
+    width: 100%;
+    height: auto;
+  }
+
+  .size :global(.scribble) {
+    position: absolute;
+    inset: 0;
+    height: 100% !important;
+    pointer-events: none;
+  }
+
+  .size:disabled .toggle {
+    opacity: 0.45;
+  }
+
+  .msg {
+    min-height: 1.5em;
+    margin: 0 0 6px;
+    color: var(--red);
+  }
+
+  .add {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .shake {
+    animation: shake 0.35s;
+  }
+
+  @keyframes shake {
+    25% { transform: translateX(-6px) rotate(-1deg); }
+    75% { transform: translateX(6px) rotate(1deg); }
+  }
+
+  .details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    margin: 12px 0 0;
+  }
+
+  .details dt {
+    color: var(--ink-soft);
+  }
+
+  .details dd {
+    margin: 0;
+  }
+
+  .chart {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .chart th,
+  .chart td {
+    padding: 4px 6px;
+    text-align: left;
+    border-bottom: 1px dashed rgba(31, 27, 22, 0.35);
+  }
+</style>
+
+<script>
+  import { addToCart } from '../../scripts/cart';
+
+  // If you came from the shop, "back" returns to the same spot in the feed.
+  const back = document.querySelector<HTMLAnchorElement>('[data-back]')!;
+  back.addEventListener('click', (e) => {
+    if (document.referrer && new URL(document.referrer).pathname === '/shop') {
+      e.preventDefault();
+      history.back();
+    }
+  });
+
+  // Photo dots follow the swipe.
+  const gallery = document.querySelector<HTMLElement>('[data-gallery]')!;
+  const dots = [...document.querySelectorAll('.dot')];
+  gallery.addEventListener('scroll', () => {
+    const i = Math.round(gallery.scrollLeft / gallery.clientWidth);
+    dots.forEach((d, j) => d.classList.toggle('on', i === j));
+  }, { passive: true });
+
+  // Size picking + add to cart.
+  const sizeGroup = document.querySelector<HTMLElement>('[data-sizes]')!;
+  const sizeButtons = [...sizeGroup.querySelectorAll<HTMLButtonElement>('[data-size]')];
+  const msg = document.querySelector<HTMLElement>('[data-msg]')!;
+  const add = document.querySelector<HTMLButtonElement>('[data-add]')!;
+  let size: string | null = null;
+
+  sizeButtons.forEach((b) =>
+    b.addEventListener('click', () => {
+      size = b.dataset.size!;
+      sizeButtons.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      msg.textContent = '';
+    }),
+  );
+
+  if (sizeButtons.every((b) => b.disabled)) {
+    add.disabled = true;
+    add.style.opacity = '0.4';
+    msg.textContent = 'sold out.';
+  }
+
+  add.addEventListener('click', () => {
+    if (!size) {
+      msg.textContent = 'pick a size first.';
+      sizeGroup.classList.remove('shake');
+      void sizeGroup.offsetWidth;
+      sizeGroup.classList.add('shake');
+      return;
+    }
+    const stock = Number(sizeButtons.find((b) => b.dataset.size === size)!.dataset.stock);
+    msg.textContent = addToCart(add.dataset.slug!, size, stock)
+      ? `added (${size.toUpperCase()}) to your cart ✓`
+      : `that's all we have in ${size.toUpperCase()}. it's in your cart.`;
+  });
+</script>

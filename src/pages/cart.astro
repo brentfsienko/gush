@@ -1,0 +1,276 @@
+---
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Paper from '../components/Paper.astro';
+import Drawn from '../components/Drawn.astro';
+import { PRODUCTS } from '../data/products';
+import { SHIPPING_CENTS, MAX_QTY } from '../data/store';
+import { productPhotos, drawn, papers } from '../data/assets';
+
+// Everything the cart needs to draw a line, keyed by slug (the cart itself lives in the browser).
+const catalog = Object.fromEntries(
+  await Promise.all(
+    PRODUCTS.map(async (p) => {
+      const [first] = productPhotos(p.slug);
+      const title = drawn(`title-${p.slug}`);
+      return [
+        p.slug,
+        {
+          title: p.title,
+          price: p.price,
+          stock: p.stock,
+          thumb: first ? (await getImage({ src: first, width: 300, format: 'webp' })).src : null,
+          titleImg: title ? (await getImage({ src: title, height: 90, format: 'webp' })).src : null,
+        },
+      ];
+    }),
+  ),
+);
+const scraps = await Promise.all(papers('scrap').map(async (src) => (await getImage({ src, width: 1000, format: 'webp' })).src));
+const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
+---
+
+<Base title="cart" tab="cart">
+  <div class="stack">
+    <div data-full hidden>
+      <div class="center">
+        <Drawn name="heading-cart" h={44} alt="your cart" />
+      </div>
+      <div class="lines" data-lines></div>
+
+      <Paper kind="scrap" n={2} tilt={-0.8} class="type summary">
+        <dl>
+          <dt>subtotal</dt>
+          <dd data-subtotal></dd>
+          <dt>shipping</dt>
+          <dd data-shipping></dd>
+          <dt class="total">total</dt>
+          <dd class="total" data-total></dd>
+        </dl>
+      </Paper>
+
+      <p class="msg" aria-live="polite" data-msg></p>
+      <div class="center">
+        <button class="drawn-btn" data-checkout aria-label="checkout">
+          <Drawn name="btn-checkout" h={66} />
+        </button>
+      </div>
+    </div>
+
+    <div data-empty hidden>
+      <Paper kind="scrap" n={3} tilt={1.2} class="empty">
+        <Drawn name="heading-cart-empty" h={40} alt="your cart is empty" />
+        <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} /></a>
+      </Paper>
+    </div>
+  </div>
+
+  <template data-line-tpl>
+    <Paper kind="scrap" class="line">
+      <img class="photo thumb" data-thumb alt="" />
+      <div class="line-info">
+        <div data-title></div>
+        <p class="line-sub"><span data-size></span> · <span data-price></span></p>
+        <div class="qty">
+          <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={34} loading="eager" /></button>
+          <span class="qty-n" data-qty></span>
+          <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={34} loading="eager" /></button>
+        </div>
+      </div>
+      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={30} loading="eager" /></button>
+    </Paper>
+  </template>
+
+  <script is:inline type="application/json" id="cart-config" set:html={JSON.stringify(config)} />
+</Base>
+
+<style>
+  .lines {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: 16px 0 20px;
+  }
+
+  :global(.line) {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  :global(.thumb) {
+    width: 92px;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    flex-shrink: 0;
+    padding: 4px;
+    transform: rotate(-3deg);
+  }
+
+  :global(.line-info) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  :global(.line-info [data-title] img) {
+    height: 30px;
+    width: auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  :global(.line-sub) {
+    margin: 4px 0 6px;
+  }
+
+  :global(.qty) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  :global(.qty-n) {
+    font-size: 18px;
+    min-width: 1.5ch;
+    text-align: center;
+  }
+
+  :global(.qty .drawn-btn:disabled) {
+    opacity: 0.3;
+  }
+
+  :global(.remove) {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+  }
+
+  .summary dl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    margin: 0;
+  }
+
+  .summary dd {
+    margin: 0;
+    text-align: right;
+  }
+
+  .summary .total {
+    font-size: 19px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(31, 27, 22, 0.4);
+  }
+
+  .msg {
+    min-height: 1.5em;
+    margin: 14px 0 6px;
+    text-align: center;
+    color: var(--red);
+  }
+
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding-block: 44px;
+    margin-top: 30px;
+  }
+</style>
+
+<script>
+  import { readCart, writeCart, setQty, type CartLine } from '../scripts/cart';
+
+  type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null; titleImg: string | null };
+  const config = JSON.parse(document.getElementById('cart-config')!.textContent!) as {
+    catalog: Record<string, Item>;
+    scraps: string[];
+    shipping: number;
+    maxQty: number;
+  };
+
+  const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
+  const money = (c: number) => `$${(c / 100).toFixed(2)}`;
+  const tpl = $<HTMLTemplateElement>('[data-line-tpl]');
+  const linesEl = $('[data-lines]');
+  const msg = $('[data-msg]');
+  const checkout = $<HTMLButtonElement>('[data-checkout]');
+
+  function render() {
+    // Drop anything that's no longer in the catalog.
+    const lines = readCart().filter((l) => config.catalog[l.slug]);
+    $('[data-full]').hidden = lines.length === 0;
+    $('[data-empty]').hidden = lines.length > 0;
+    linesEl.replaceChildren(...lines.map(lineEl));
+
+    const subtotal = lines.reduce((s, l) => s + config.catalog[l.slug].price * l.qty, 0);
+    $('[data-subtotal]').textContent = money(subtotal);
+    $('[data-shipping]').textContent = config.shipping ? money(config.shipping) : 'free';
+    $('[data-total]').textContent = money(subtotal + config.shipping);
+  }
+
+  function lineEl(l: CartLine, i: number) {
+    const item = config.catalog[l.slug];
+    const el = (tpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+    if (config.scraps.length) el.style.backgroundImage = `url(${config.scraps[i % config.scraps.length]})`;
+    el.style.setProperty('--tilt', `${i % 2 ? 0.9 : -0.9}deg`);
+
+    const thumb = $<HTMLImageElement>('[data-thumb]', el);
+    if (item.thumb) thumb.src = item.thumb;
+    else thumb.remove();
+
+    const title = $('[data-title]', el);
+    if (item.titleImg) {
+      const img = new Image();
+      img.src = item.titleImg;
+      img.alt = item.title;
+      title.append(img);
+    } else title.textContent = item.title;
+
+    $('[data-size]', el).textContent = `size ${l.size.toUpperCase()}`;
+    $('[data-price]', el).textContent = money(item.price);
+    $('[data-qty]', el).textContent = String(l.qty);
+
+    const max = Math.min(config.maxQty, item.stock[l.size] ?? 0);
+    $<HTMLButtonElement>('[data-plus]', el).disabled = l.qty >= max;
+    $('[data-plus]', el).addEventListener('click', () => (setQty(l.slug, l.size, l.qty + 1), render()));
+    $('[data-minus]', el).addEventListener('click', () => (setQty(l.slug, l.size, l.qty - 1), render()));
+    $('[data-remove]', el).addEventListener('click', () => (setQty(l.slug, l.size, 0), render()));
+    return el;
+  }
+
+  checkout.addEventListener('click', async () => {
+    checkout.disabled = true;
+    checkout.style.opacity = '0.5';
+    msg.textContent = 'one sec...';
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ items: readCart() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
+        location.href = data.url;
+        return;
+      }
+      msg.textContent = data.error ?? 'checkout isn’t working right now. try again in a bit.';
+    } catch {
+      msg.textContent = 'couldn’t reach checkout. check your connection and try again.';
+    }
+    checkout.disabled = false;
+    checkout.style.opacity = '';
+  });
+
+  // Clean up anything stale before showing the cart: removed products, or more than is in stock.
+  writeCart(
+    readCart()
+      .filter((l) => config.catalog[l.slug])
+      .map((l) => ({ ...l, qty: Math.min(l.qty, config.maxQty, config.catalog[l.slug].stock[l.size] ?? 0) }))
+      .filter((l) => l.qty > 0),
+  );
+  render();
+  addEventListener('pageshow', (e) => e.persisted && render());
+</script>
