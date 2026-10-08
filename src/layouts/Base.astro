@@ -1,12 +1,14 @@
 ---
 import '@fontsource/special-elite';
 import '../styles/global.css';
+import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
+import { mustDrawn } from '../data/assets';
 
 interface Props {
   title?: string;
-  tab?: 'home' | 'shop' | 'cart';
+  tab?: 'shop' | 'about' | 'cart';
   /** Main area doesn't scroll itself (the shop feed manages its own scrolling). */
   fill?: boolean;
   description?: string;
@@ -14,8 +16,7 @@ interface Props {
 
 const { title, tab, fill = false, description = 'GÜSH clothing' } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
-const tabs = ['home', 'shop', 'cart'] as const;
-const href = { home: '/', shop: '/shop', cart: '/cart' };
+const headerPaper = await getImage({ src: mustDrawn('header-paper'), width: 1000, format: 'webp' });
 ---
 
 <!doctype html>
@@ -24,7 +25,7 @@ const href = { home: '/', shop: '/shop', cart: '/cart' };
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#ddd3c0" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -34,26 +35,27 @@ const href = { home: '/', shop: '/shop', cart: '/cart' };
   </head>
   <body>
     <div class="app">
-      <header class="topbar">
-        <a href="/" aria-label="GÜSH home">
-          <Drawn name="logo" h={46} alt="GÜSH" loading="eager" />
+      <header class="topbar" style={`background-image:url(${headerPaper.src})`}>
+        <a href="/" class="brand" aria-label="GÜSH home">
+          <Drawn name="logo" h={80} alt="GÜSH" loading="eager" />
         </a>
+        <nav class="tabs" aria-label="main">
+          <a href="/shop" class="tab" aria-current={tab === 'shop' ? 'page' : undefined} aria-label="shop">
+            <DrawnToggle name="tab-shop" h={22} />
+          </a>
+          <a href="/about" class="tab" aria-current={tab === 'about' ? 'page' : undefined} aria-label="about">
+            <DrawnToggle name="tab-about" h={22} />
+          </a>
+          <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
+            <DrawnToggle name="cart-box" h={30} />
+            <span class="cart-count" data-cart-count>0</span>
+          </a>
+        </nav>
       </header>
 
       <main class:list={[{ fill }]}>
         <slot />
       </main>
-
-      <nav class="tabbar" aria-label="main">
-        {
-          tabs.map((t) => (
-            <a href={href[t]} class="tab" aria-current={t === tab ? 'page' : undefined} aria-label={t}>
-              <DrawnToggle name={`tab-${t}`} h={34} />
-              {t === 'cart' && <span class="badge" data-cart-count hidden />}
-            </a>
-          ))
-        }
-      </nav>
     </div>
 
     <script>

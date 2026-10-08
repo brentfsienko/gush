@@ -53,6 +53,6 @@ export function updateBadge() {
   const n = cartCount();
   document.querySelectorAll<HTMLElement>('[data-cart-count]').forEach((el) => {
     el.textContent = String(n);
-    el.hidden = n === 0;
+    el.closest('a')?.setAttribute('aria-label', `cart, ${n} ${n === 1 ? 'item' : 'items'}`);
   });
 }

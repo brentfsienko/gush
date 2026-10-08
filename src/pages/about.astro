@@ -1,0 +1,42 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Paper from '../components/Paper.astro';
+import Drawn from '../components/Drawn.astro';
+import { homePhotos } from '../data/assets';
+import { ABOUT, SECOND_BLURB } from '../data/home';
+
+const photo = homePhotos()[1] ?? homePhotos()[0];
+---
+
+<Base title="about" tab="about">
+  <div class="stack about">
+    <Paper kind="scrap" n={1} tilt={1.2} class="type">
+      <Drawn name="heading-about" h={40} alt="what is GÜSH?" loading="eager" />
+      <p class="blurb">{ABOUT}</p>
+    </Paper>
+
+    {photo && <Image src={photo} alt="GÜSH model photo" widths={[480, 900]} sizes="(min-width: 480px) 360px, 75vw" class="photo polaroid" />}
+
+    <Paper kind="scrap" n={2} tilt={-1} class="type">
+      <p class="blurb">{SECOND_BLURB}</p>
+    </Paper>
+  </div>
+</Base>
+
+<style>
+  .about {
+    padding-top: 22px;
+  }
+
+  .blurb {
+    margin: 12px 0 0;
+  }
+
+  .polaroid {
+    width: 78%;
+    margin: 0 auto;
+    padding: 8px 8px 30px;
+    transform: rotate(-3deg);
+  }
+</style>

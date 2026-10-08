@@ -2,7 +2,7 @@
   --ink: #1f1b16;
   --ink-soft: #4a443b;
   --red: #c8372d;
-  --page: #ddd3c0; /* the scrapbook page everything is stuck onto */
+  --page: #ffffff; /* the page everything is stuck onto */
   --desk: #3b322a; /* what's around the page on big screens */
   --type: 'Special Elite', 'Courier New', monospace;
   --gutter: 16px;
@@ -43,8 +43,9 @@ body {
   max-width: 480px;
   margin: 0 auto;
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  background: var(--page) var(--grain);
+  /* Torn-paper header takes the top 1/8, content gets the rest. */
+  grid-template-rows: 12.5% 1fr;
+  background: var(--page);
   overflow: hidden;
 }
 
@@ -60,55 +61,77 @@ body {
 
 .topbar {
   display: flex;
-  justify-content: center;
-  padding: max(10px, env(safe-area-inset-top)) var(--gutter) 6px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 0;
+  padding: max(3%, env(safe-area-inset-top)) 5% 3% 5%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 4px 6px rgba(40, 30, 20, 0.18));
+  position: relative;
+  z-index: 2;
   view-transition-name: topbar;
+}
+
+/* Logo fills the left half of the header. */
+.brand {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.brand img.drawn {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+/* Tabs sit in the upper right. */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tab {
+  position: relative;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cart-tab {
+  display: grid;
+}
+
+.cart-tab > * {
+  grid-area: 1 / 1;
+}
+
+.cart-count {
+  place-self: center;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+[aria-current='page'] .cart-count {
+  color: var(--red);
 }
 
 main {
   overflow-y: auto;
   overscroll-behavior: contain;
   min-height: 0;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 main.fill {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.tabbar {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 8px var(--gutter) max(10px, env(safe-area-inset-bottom));
-  border-top: 2px dashed rgba(31, 27, 22, 0.25);
-  view-transition-name: tabbar;
-}
-
-.tab {
-  position: relative;
-  padding: 4px 8px;
-}
-
-.badge {
-  position: absolute;
-  top: -4px;
-  right: -6px;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 5px;
-  border-radius: 11px;
-  background: var(--red);
-  color: #fffaf0;
-  font-size: 13px;
-  line-height: 22px;
-  text-align: center;
-  transform: rotate(8deg);
-}
-
-.badge[hidden] {
-  display: none;
 }
 
 /* ---------- drawings ---------- */
@@ -204,17 +227,7 @@ a:active img.drawn,
   padding: 26px 26px 24px 34px;
 }
 
-.tape {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  width: 110px;
-  transform: translateX(-50%) rotate(var(--tape-tilt, 0deg));
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* Photo taped/stuck onto paper. */
+/* Photo stuck onto paper. */
 .photo {
   display: block;
   width: 100%;

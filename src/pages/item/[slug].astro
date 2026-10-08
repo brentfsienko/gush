@@ -37,7 +37,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
   }
 
   <div class="stack">
-    <Paper n={1} tilt={-0.6} tape class="info type">
+    <Paper n={1} tilt={-0.6} class="info type">
       <Drawn name={`title-${p.slug}`} h={58} alt={p.title} fallback={p.title} loading="eager" />
       <p class="price">{formatPrice(p.price)}</p>
       <p class="desc">{p.description}</p>

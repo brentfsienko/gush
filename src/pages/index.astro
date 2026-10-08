@@ -9,11 +9,11 @@ import { ABOUT, SECOND_BLURB } from '../data/home';
 const [hero, ...rest] = homePhotos();
 ---
 
-<Base tab="home">
+<Base>
   <div class="stack home">
     {
       hero && (
-        <Paper n={2} tilt={-1.2} tape class="hero">
+        <Paper n={2} tilt={-1.2} class="hero">
           <Image src={hero} alt="GÜSH model photo" widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo" loading="eager" />
         </Paper>
       )
