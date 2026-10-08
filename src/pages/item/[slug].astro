@@ -242,7 +242,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
   // If you came from the shop, "back" returns to the same spot in the feed.
   const back = document.querySelector<HTMLAnchorElement>('[data-back]')!;
   back.addEventListener('click', (e) => {
-    if (document.referrer && new URL(document.referrer).pathname === '/shop') {
+    if (document.referrer && new URL(document.referrer).pathname.replace(/\/$/, '') === '/shop') {
       e.preventDefault();
       history.back();
     }

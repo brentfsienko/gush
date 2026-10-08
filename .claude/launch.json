@@ -10,7 +10,7 @@
     {
       "name": "gush-full",
       "runtimeExecutable": "fnm",
-      "runtimeArgs": ["exec", "--using=22", "npx", "wrangler", "pages", "dev", "dist", "--port", "8788"],
+      "runtimeArgs": ["exec", "--using=22", "npx", "wrangler", "dev", "--port", "8788"],
       "port": 8788
     }
   ]

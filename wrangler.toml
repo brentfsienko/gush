@@ -1,3 +1,12 @@
 name = "gush"
-pages_build_output_dir = "./dist"
+main = "worker/index.ts"
 compatibility_date = "2026-10-01"
+# Keep variables set in the Cloudflare dashboard when deploying.
+keep_vars = true
+
+# The built site (dist/) is served as static files. Only /api/* runs the worker code.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/api/*"]

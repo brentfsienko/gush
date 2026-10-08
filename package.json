@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "astro dev --host",
     "build": "astro build",
-    "preview": "astro build && wrangler pages dev dist",
-    "deploy": "astro build && wrangler pages deploy dist",
+    "preview": "astro build && wrangler dev --port 8788",
+    "deploy": "astro build && wrangler deploy",
     "check": "astro check"
   },
   "dependencies": {

@@ -1,17 +1,14 @@
 // POST /api/checkout  { items: [{ slug, size, qty }] }  ->  { url }
 // Creates a Stripe Checkout session and returns the URL to send the shopper to.
 // Prices and stock come from src/data/products.ts, never from the browser.
-import { PRODUCTS, SIZES, type Size } from '../../src/data/products';
-import { SHIPPING_CENTS, SHIPPING_LABEL, SHIP_TO_COUNTRIES, MAX_QTY } from '../../src/data/store';
-
-interface Env {
-  STRIPE_SECRET_KEY?: string;
-}
+import { PRODUCTS, SIZES, type Size } from '../src/data/products';
+import { SHIPPING_CENTS, SHIPPING_LABEL, SHIP_TO_COUNTRIES, MAX_QTY } from '../src/data/store';
+import type { Env } from './index';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export async function checkout(request: Request, env: Env) {
   if (!env.STRIPE_SECRET_KEY) return json({ error: 'checkout isn’t set up yet.' }, 503);
 
   let items: unknown;
@@ -80,4 +77,4 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: 'couldn’t start checkout. try again in a bit.' }, 502);
   }
   return json({ url: data.url });
-};
+}

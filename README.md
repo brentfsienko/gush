@@ -1,7 +1,7 @@
 # GÜSH
 
 The GÜSH store. Every button, tab, title and piece of paper is a hand drawing.
-Built with Astro (static site), hosted on Cloudflare Pages, payments through Stripe Checkout.
+Built with Astro (static site), hosted on Cloudflare Workers, payments through Stripe Checkout.
 Cost: $0/month + your domain + Stripe's per-sale fee.
 
 ## Run it
@@ -66,15 +66,17 @@ Shipping rate and countries: `src/data/store.ts`.
 4. Orders show up in the Stripe dashboard (and the Stripe phone app) with the item, size and shipping address.
 5. When you're ready to go live, finish Stripe's account activation and use your **live** key (`sk_live_`) in Cloudflare (below).
 
-## Going live (Cloudflare Pages)
+## Going live (Cloudflare Workers)
 
-1. Put this folder on GitHub.
-2. Cloudflare dashboard → Workers & Pages → Create → Pages → connect the repo.
-   Build command `npm run build`, output folder `dist`.
-3. Settings → Variables and Secrets → add `STRIPE_SECRET_KEY` (as a secret).
-4. Add your domain under Custom domains.
+The site deploys as a Cloudflare Worker named `gush` (the name in `wrangler.toml` must match the Worker's name in the dashboard).
+Static pages and images are served for free; only checkout runs code.
 
-Every push to GitHub redeploys automatically. (Or deploy straight from your computer with `npm run deploy`.)
+1. Cloudflare dashboard → Workers & Pages → Create → Import a repository → `brentfsienko/gush`.
+   Build command `npm run build`, deploy command `npx wrangler deploy`.
+2. The Worker → Settings → Variables and Secrets → add `STRIPE_SECRET_KEY`, type **Secret**.
+3. Add your domain under Settings → Domains & Routes.
+
+Every push to `main` redeploys automatically. (Or deploy straight from your computer with `npm run deploy`.)
 
 ## Where things are
 
@@ -84,5 +86,5 @@ src/assets/products/   product photos
 src/assets/home/       home page photos
 src/data/              products, home text, shipping
 src/pages/             home, shop, item, cart, success
-functions/api/         checkout (talks to Stripe)
+worker/                checkout (talks to Stripe)
 ```
