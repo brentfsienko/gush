@@ -1,6 +1,6 @@
 # GÜSH
 
-The GÜSH store. Every button, tab, title and piece of paper is a hand drawing.
+The GÜSH store. Every button, tab and title is a hand drawing.
 Built with Astro (static site), hosted on Cloudflare Workers, payments through Stripe Checkout.
 Cost: $0/month + your domain + Stripe's per-sale fee.
 
@@ -33,8 +33,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 
 | What | Files | Notes |
 |---|---|---|
-| Logo | `logo` | fills the left half of the header |
-| Header paper | `header-paper` | torn strip across the top 1/8 of the screen. **Very wide, about 5:1.** |
+| Logo | `logo` ✓ done | fills the left half of the header (also used for the app icon) |
 | Tabs | `tab-shop`, `tab-about` + `-on` versions | small, upper right of the header |
 | Cart box | `cart-box` + `cart-box-on` | an empty square; the item count is typed inside it |
 | Shop filters | `filter-all`, `filter-tees`, `filter-thermals`, `filter-pants` + `-on` versions | ~36px tall |
@@ -44,10 +43,6 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Small buttons | `btn-plus`, `btn-minus`, `btn-remove` | square, used in the cart |
 | Headings | `heading-about`, `heading-cart`, `heading-cart-empty`, `heading-details`, `heading-size`, `heading-size-chart`, `heading-thank-you`, `heading-coming-soon`, `heading-nothing-here` | |
 | Product titles | `title-<product>` e.g. `title-blue-thermal` | optional, falls back to typewriter text |
-| Tall paper | `paper-1`, `paper-2`, ... | shop cards + item page. **Portrait, about 3:5.** Add as many as you want (paper-5, paper-6...) and they join the rotation. |
-| Wide scraps | `scrap-1`, `scrap-2`, ... | notes, cart rows. **Landscape, about 2:1.** Same deal, add more anytime. |
-
-Papers get stretched to fit, so keep the middle plain-ish and the torn edges at the border.
 
 ## Products
 

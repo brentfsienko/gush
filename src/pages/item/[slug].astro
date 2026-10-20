@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
-import Paper from '../../components/Paper.astro';
 import Drawn from '../../components/Drawn.astro';
 import DrawnToggle from '../../components/DrawnToggle.astro';
 import { PRODUCTS, SIZES, formatPrice, type Product } from '../../data/products';
@@ -37,7 +36,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
   }
 
   <div class="stack">
-    <Paper n={1} tilt={-0.6} class="info type">
+    <div class="info type">
       <Drawn name={`title-${p.slug}`} h={58} alt={p.title} fallback={p.title} loading="eager" />
       <p class="price">{formatPrice(p.price)}</p>
       <p class="desc">{p.description}</p>
@@ -61,9 +60,9 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
       <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart">
         <Drawn name="btn-add-to-cart" h={66} />
       </button>
-    </Paper>
+    </div>
 
-    <Paper kind="scrap" n={1} tilt={1} class="type">
+    <div class="type">
       <Drawn name="heading-details" h={36} alt="the details" />
       <dl class="details">
         {
@@ -75,11 +74,11 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
           ))
         }
       </dl>
-    </Paper>
+    </div>
 
     {
       p.sizeChart && (
-        <Paper kind="scrap" n={3} tilt={-1.2} class="type">
+        <div class="type">
           <Drawn name="heading-size-chart" h={36} alt="size chart" />
           <table class="chart">
             <thead>
@@ -91,7 +90,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
               ))}
             </tbody>
           </table>
-        </Paper>
+        </div>
       )
     }
   </div>

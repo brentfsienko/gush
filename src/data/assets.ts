@@ -11,19 +11,6 @@ const drawnByName = new Map(Object.entries(drawnFiles).map(([p, m]) => [baseName
 
 export const drawn = (name: string) => drawnByName.get(name);
 
-export function mustDrawn(name: string) {
-  const img = drawn(name);
-  if (!img) throw new Error(`Missing drawing: put a file named "${name}.png" in src/assets/drawn/`);
-  return img;
-}
-
-/** All papers of a kind ("paper" = tall cards, "scrap" = wide notes), e.g. paper-1, paper-2, ... */
-export const papers = (kind: 'paper' | 'scrap') =>
-  [...drawnByName.keys()]
-    .filter((n) => new RegExp(`^${kind}-\\d+$`).test(n))
-    .sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]))
-    .map((n) => drawnByName.get(n)!);
-
 const byNumber = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
 
 const productFiles = import.meta.glob<Mod>('../assets/products/*/*.{png,jpg,jpeg,webp}', { eager: true });

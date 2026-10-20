@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import Paper from '../components/Paper.astro';
 import Drawn from '../components/Drawn.astro';
 import { homePhotos } from '../data/assets';
 import { ABOUT, SECOND_BLURB } from '../data/home';
@@ -13,16 +12,16 @@ const [hero, ...rest] = homePhotos();
   <div class="stack home">
     {
       hero && (
-        <Paper n={2} tilt={-1.2} class="hero">
+        <div class="hero">
           <Image src={hero} alt="GÜSH model photo" widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo" loading="eager" />
-        </Paper>
+        </div>
       )
     }
 
-    <Paper kind="scrap" n={1} tilt={1.4} class="type">
+    <div class="type">
       <Drawn name="heading-about" h={40} alt="what is GÜSH?" />
       <p class="blurb">{ABOUT}</p>
-    </Paper>
+    </div>
 
     {
       rest.length > 0 && (
@@ -41,9 +40,9 @@ const [hero, ...rest] = homePhotos();
       )
     }
 
-    <Paper kind="scrap" n={2} tilt={-1} class="type">
+    <div class="type">
       <p class="blurb">{SECOND_BLURB}</p>
-    </Paper>
+    </div>
 
     <a href="/shop" class="center cta" aria-label="shop now">
       <Drawn name="btn-shop-now" h={66} />

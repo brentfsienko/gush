@@ -1,10 +1,8 @@
 ---
 import '@fontsource/special-elite';
 import '../styles/global.css';
-import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
-import { mustDrawn } from '../data/assets';
 
 interface Props {
   title?: string;
@@ -16,7 +14,6 @@ interface Props {
 
 const { title, tab, fill = false, description = 'GÜSH clothing' } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
-const headerPaper = await getImage({ src: mustDrawn('header-paper'), width: 1000, format: 'webp' });
 ---
 
 <!doctype html>
@@ -35,7 +32,7 @@ const headerPaper = await getImage({ src: mustDrawn('header-paper'), width: 1000
   </head>
   <body>
     <div class="app">
-      <header class="topbar" style={`background-image:url(${headerPaper.src})`}>
+      <header class="topbar">
         <a href="/" class="brand" aria-label="GÜSH home">
           <Drawn name="logo" h={80} alt="GÜSH" loading="eager" />
         </a>

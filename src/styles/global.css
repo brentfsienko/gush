@@ -43,13 +43,13 @@ body {
   max-width: 480px;
   margin: 0 auto;
   display: grid;
-  /* Torn-paper header takes the top 1/8, content gets the rest. */
+  /* Header takes the top 1/8, content gets the rest. */
   grid-template-rows: 12.5% 1fr;
   background: var(--page);
   overflow: hidden;
 }
 
-/* On a computer, the site is a scrapbook page sitting on a desk. */
+/* On a computer, the site is a page sitting on a desk. */
 @media (min-width: 600px) {
   .app {
     height: min(calc(100dvh - 48px), 940px);
@@ -66,9 +66,6 @@ body {
   gap: 8px;
   min-height: 0;
   padding: max(3%, env(safe-area-inset-top)) 5% 3% 5%;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  filter: drop-shadow(0 4px 6px rgba(40, 30, 20, 0.18));
   position: relative;
   z-index: 2;
   view-transition-name: topbar;
@@ -206,28 +203,7 @@ a:active img.drawn,
   outline-offset: 4px;
 }
 
-/* ---------- paper ---------- */
-
-.paper {
-  position: relative;
-  display: block;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  color: inherit;
-  text-decoration: none;
-  transform: rotate(var(--tilt, 0deg));
-  filter: drop-shadow(0 5px 8px rgba(40, 30, 20, 0.22));
-}
-
-.paper-paper {
-  padding: 13% 8% 9% 11%;
-}
-
-.paper-scrap {
-  padding: 26px 26px 24px 34px;
-}
-
-/* Photo stuck onto paper. */
+/* Photo with a white border, like a print. */
 .photo {
   display: block;
   width: 100%;

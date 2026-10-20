@@ -1,11 +1,10 @@
 ---
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import Paper from '../components/Paper.astro';
 import Drawn from '../components/Drawn.astro';
 import { PRODUCTS } from '../data/products';
 import { SHIPPING_CENTS, MAX_QTY } from '../data/store';
-import { productPhotos, drawn, papers } from '../data/assets';
+import { productPhotos, drawn } from '../data/assets';
 
 // Everything the cart needs to draw a line, keyed by slug (the cart itself lives in the browser).
 const catalog = Object.fromEntries(
@@ -26,8 +25,7 @@ const catalog = Object.fromEntries(
     }),
   ),
 );
-const scraps = await Promise.all(papers('scrap').map(async (src) => (await getImage({ src, width: 1000, format: 'webp' })).src));
-const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
+const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 ---
 
 <Base title="cart" tab="cart">
@@ -38,7 +36,7 @@ const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
       </div>
       <div class="lines" data-lines></div>
 
-      <Paper kind="scrap" n={2} tilt={-0.8} class="type summary">
+      <div class="type summary">
         <dl>
           <dt>subtotal</dt>
           <dd data-subtotal></dd>
@@ -47,7 +45,7 @@ const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
           <dt class="total">total</dt>
           <dd class="total" data-total></dd>
         </dl>
-      </Paper>
+      </div>
 
       <p class="msg" aria-live="polite" data-msg></p>
       <div class="center">
@@ -58,15 +56,15 @@ const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     </div>
 
     <div data-empty hidden>
-      <Paper kind="scrap" n={3} tilt={1.2} class="empty">
+      <div class="empty">
         <Drawn name="heading-cart-empty" h={40} alt="your cart is empty" />
         <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} /></a>
-      </Paper>
+      </div>
     </div>
   </div>
 
   <template data-line-tpl>
-    <Paper kind="scrap" class="line">
+    <div class="line">
       <img class="photo thumb" data-thumb alt="" />
       <div class="line-info">
         <div data-title></div>
@@ -78,7 +76,7 @@ const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
         </div>
       </div>
       <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={30} loading="eager" /></button>
-    </Paper>
+    </div>
   </template>
 
   <script is:inline type="application/json" id="cart-config" set:html={JSON.stringify(config)} />
@@ -186,7 +184,6 @@ const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
   type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null; titleImg: string | null };
   const config = JSON.parse(document.getElementById('cart-config')!.textContent!) as {
     catalog: Record<string, Item>;
-    scraps: string[];
     shipping: number;
     maxQty: number;
   };
@@ -211,11 +208,9 @@ const config = { catalog, scraps, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     $('[data-total]').textContent = money(subtotal + config.shipping);
   }
 
-  function lineEl(l: CartLine, i: number) {
+  function lineEl(l: CartLine) {
     const item = config.catalog[l.slug];
     const el = (tpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
-    if (config.scraps.length) el.style.backgroundImage = `url(${config.scraps[i % config.scraps.length]})`;
-    el.style.setProperty('--tilt', `${i % 2 ? 0.9 : -0.9}deg`);
 
     const thumb = $<HTMLImageElement>('[data-thumb]', el);
     if (item.thumb) thumb.src = item.thumb;

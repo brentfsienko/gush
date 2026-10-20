@@ -1,16 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
-import Paper from '../components/Paper.astro';
 import Drawn from '../components/Drawn.astro';
 ---
 
 <Base title="not found">
   <div class="stack">
-    <Paper kind="scrap" n={2} tilt={1.5} class="type lost">
+    <div class="type lost">
       <Drawn name="heading-nothing-here" h={42} alt="nothing here" />
       <p>this page got torn out.</p>
       <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} /></a>
-    </Paper>
+    </div>
   </div>
 </Base>
 
