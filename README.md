@@ -34,7 +34,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | What | Files | Notes |
 |---|---|---|
 | Logo | `logo` ✓ done | fills the left half of the header (also used for the app icon) |
-| Tabs | `tab-shop` ✓ done, `tab-about` + `-on` versions | upper right of the header |
+| Tabs | `tab-shop` ✓ done, `tab-about` ✓ done | upper right of the header |
 | Cart box | `cart-box` + `cart-box-on` | an empty square; the item count is typed inside it |
 | Shop filters | `filter-all`, `filter-tees`, `filter-thermals`, `filter-pants` + `-on` versions | ~36px tall |
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` + `-on` versions | roughly square |
