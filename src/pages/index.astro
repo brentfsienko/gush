@@ -26,14 +26,13 @@ const [hero, ...rest] = homePhotos();
     {
       rest.length > 0 && (
         <div class="polaroids">
-          {rest.map((src, i) => (
+          {rest.map((src) => (
             <Image
               src={src}
               alt="GÜSH model photo"
               widths={[320, 640]}
               sizes="50vw"
               class="photo polaroid"
-              style={`--r:${i % 2 ? 4 : -5}deg`}
             />
           ))}
         </div>
@@ -68,7 +67,6 @@ const [hero, ...rest] = homePhotos();
 
   .polaroid {
     padding: 8px 8px 30px;
-    transform: rotate(var(--r));
   }
 
   .polaroid:nth-child(even) {

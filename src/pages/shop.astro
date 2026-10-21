@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import Drawn from '../components/Drawn.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
 import { CATEGORIES, PRODUCTS, formatPrice } from '../data/products';
 import { productPhotos } from '../data/assets';
@@ -122,7 +121,6 @@ import { productPhotos } from '../data/assets';
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: rotate(0.6deg);
   }
 
   .second-photo {
@@ -133,7 +131,6 @@ import { productPhotos } from '../data/assets';
     aspect-ratio: 4 / 5;
     object-fit: cover;
     padding: 5px 5px 16px;
-    transform: rotate(5deg);
   }
 
   .card-meta {

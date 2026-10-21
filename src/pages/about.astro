@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import Drawn from '../components/Drawn.astro';
 import { homePhotos } from '../data/assets';
 import { ABOUT, SECOND_BLURB } from '../data/home';
 
@@ -36,6 +35,5 @@ const photo = homePhotos()[1] ?? homePhotos()[0];
     width: 78%;
     margin: 0 auto;
     padding: 8px 8px 30px;
-    transform: rotate(-3deg);
   }
 </style>
