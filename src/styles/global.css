@@ -48,11 +48,13 @@ body {
   overflow: hidden;
 }
 
+/* Phones: logo on the left; shop/about on the top row and cart below it, on the right. */
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 4px;
+  row-gap: 2px;
   min-height: 0;
   padding: max(6px, env(safe-area-inset-top)) 2% 10px;
   position: relative;
@@ -60,9 +62,9 @@ body {
   view-transition-name: topbar;
 }
 
-/* Logo fills the left half of the header. */
 .brand {
-  flex: 1;
+  grid-column: 1;
+  grid-row: 1 / span 2;
   min-width: 0;
   height: 100%;
   display: flex;
@@ -77,15 +79,13 @@ body {
   object-position: left center;
 }
 
-/* Tabs sit in the upper right. */
 .tabs {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.cart-tab {
-  margin-left: 8px;
 }
 
 .tab {
@@ -95,26 +95,24 @@ body {
   text-decoration: none;
 }
 
+/* CART drawing with the item count beside it (the underline goes under CART only). */
 .cart-tab {
-  display: grid;
-}
-
-.cart-tab > * {
-  grid-area: 1 / 1;
-}
-
-.cart-tab {
-  /* Height of the cart drawing; the box is its top 80% (the rest is room for the underline). */
-  --cart-h: 38px;
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  /* Height of the CART drawing; the word is its top 80% (the rest is room for the underline). */
+  --cart-h: 36px;
 }
 
 .cart-count {
-  place-self: start center;
   margin-top: calc(var(--cart-h) * 0.4 - var(--digit-h) / 2);
   font-size: 15px;
   line-height: 1;
   color: var(--ink);
-  --digit-h: 19px;
+  --digit-h: 26px;
 }
 
 /* Numbers written with the hand-drawn digits (see scripts/digits.ts). */
@@ -128,10 +126,6 @@ body {
   display: block;
   height: var(--digit-h, 1.4em);
   width: auto;
-}
-
-[aria-current='page'] .cart-count {
-  color: var(--red);
 }
 
 main {
@@ -298,7 +292,6 @@ a:active img.drawn,
   .brand {
     grid-column: 2;
     grid-row: 1;
-    flex: none;
   }
 
   .brand img.drawn {
@@ -318,11 +311,11 @@ a:active img.drawn,
   }
 
   .cart-count {
-    --digit-h: 32px;
+    --digit-h: 46px;
   }
 
   .cart-tab {
-    --cart-h: 64px;
+    --cart-h: 66px;
   }
 
   .tabs {
