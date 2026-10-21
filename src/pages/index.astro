@@ -61,17 +61,12 @@ const [hero, ...rest] = homePhotos();
   .polaroids {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
-    padding: 6px 4px;
-  }
-
-  .polaroid {
-    padding: 8px 8px 30px;
+    gap: 10px;
+    align-items: start;
   }
 
   .polaroid:nth-child(even) {
     margin-top: 34px;
-    margin-left: -14px;
   }
 
   .cta {

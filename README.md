@@ -1,6 +1,6 @@
 # GÜSH
 
-The GÜSH store. Every button and tab is a hand drawing; headings and body text use a typewriter font.
+The GÜSH store. Every button and tab is a hand drawing; headings and body text use IBM Plex Mono.
 Built with Astro (static site), hosted on Cloudflare Workers, payments through Stripe Checkout.
 Cost: $0/month + your domain + Stripe's per-sale fee.
 

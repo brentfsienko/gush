@@ -3,7 +3,7 @@
   --ink-soft: #4a443b;
   --red: #c8372d;
   --page: #ffffff; /* the page everything is stuck onto */
-  --type: 'Special Elite', 'Courier New', monospace;
+  --type: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --gutter: 16px;
   /* How wide the header and page content get on big screens. */
   --wide: 1080px;
@@ -213,17 +213,14 @@ a:active img.drawn,
   outline-offset: 4px;
 }
 
-/* Photo with a white border, like a print. */
+/* Photo: plain, no frame. */
 .photo {
   display: block;
   width: 100%;
   height: auto;
-  background: #fff;
-  padding: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-/* ---------- typewriter text ---------- */
+/* ---------- body text ---------- */
 
 .heading {
   font-family: var(--type);
