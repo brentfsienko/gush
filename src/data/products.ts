@@ -7,8 +7,10 @@
 //   3. Optional: draw its title and save it as src/assets/drawn/title-<slug>.png
 //      (until then the title shows in the typewriter font).
 
-export const CATEGORIES = ['all', 'tees', 'thermals', 'pants'] as const;
-export type Category = Exclude<(typeof CATEGORIES)[number], 'all'>;
+// Filter buttons on the shop page, in order. To add one (e.g. 'thermals'), list it here and
+// draw src/assets/drawn/filter-thermals.png (+ filter-thermals-on.png); it shows products with that category.
+export const CATEGORIES = ['all'] as const;
+export type Category = 'tees' | 'thermals' | 'pants';
 
 export const SIZES = ['s', 'm', 'l', 'xl'] as const;
 export type Size = (typeof SIZES)[number];

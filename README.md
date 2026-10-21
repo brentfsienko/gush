@@ -36,7 +36,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Logo | `logo` ✓ done | fills the left half of the header (also used for the app icon) |
 | Tabs | `tab-shop` ✓ done, `tab-about` ✓ done | upper right of the header |
 | Cart box | `cart-box` + `cart-box-on` | an empty square; the item count is typed inside it |
-| Shop filters | `filter-all`, `filter-tees`, `filter-thermals`, `filter-pants` + `-on` versions | ~36px tall |
+| Shop filters | `filter-all` ✓ done. To add a category filter, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` + `-on` | |
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` + `-on` versions | roughly square |
 | Sold out | `scribble-out` | drawn over sold-out sizes |
 | Buttons | `btn-add-to-cart`, `btn-checkout`, `btn-shop-now`, `btn-back`, `btn-keep-shopping` | wide |
