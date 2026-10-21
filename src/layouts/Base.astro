@@ -5,6 +5,7 @@ import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
 import { drawn } from '../data/assets';
+import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 
 interface Props {
   title?: string;
@@ -12,9 +13,11 @@ interface Props {
   /** Main area doesn't scroll itself (the shop feed manages its own scrolling). */
   fill?: boolean;
   description?: string;
+  /** Empty the cart before anything is drawn (the order-success page). */
+  clearCart?: boolean;
 }
 
-const { title, tab, fill = false, description = 'GÜSH clothing' } = Astro.props;
+const { title, tab, fill = false, description = 'GÜSH clothing', clearCart = false } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
 // Hand-drawn digits for numbers the browser fills in (cart count, quantities). Index = digit.
 const digitImgs = Array.from({ length: 10 }, (_, d) => drawn(`digit-${d}`));
@@ -36,6 +39,9 @@ const digitUrls = digitImgs.every(Boolean)
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>{fullTitle}</title>
+    <!-- Preloaded so text and the drawn cart count never pop in late. -->
+    <link rel="preload" as="font" type="font/woff2" href={plexFont} crossorigin />
+    {digitUrls?.map((u) => <link rel="preload" as="image" href={u} />)}
   </head>
   <body>
     <div class="app">
@@ -53,7 +59,32 @@ const digitUrls = digitImgs.every(Boolean)
         </nav>
         <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
           <DrawnToggle name="tab-cart" h={36} webH={66} />
-          <span class="cart-count" data-cart-count>0</span>
+          <span class="cart-count" data-cart-count></span>
+          <script is:inline define:vars={{ digitUrls, clearCart }}>
+            // Runs right here, before the first paint, so the count never flashes a wrong number.
+            // (Same storage key and drawing as scripts/cart.ts + scripts/digits.ts, which take over after.)
+            window.GUSH_DIGITS = digitUrls;
+            var n = 0;
+            try {
+              if (clearCart) localStorage.removeItem('gush-cart');
+              (JSON.parse(localStorage.getItem('gush-cart') || '[]') || []).forEach(function (l) {
+                if (l && l.qty > 0) n += l.qty;
+              });
+            } catch (e) {}
+            var el = document.querySelector('[data-cart-count]');
+            el.dataset.n = String(n);
+            if (digitUrls) {
+              el.classList.add('digits');
+              String(n).split('').forEach(function (d) {
+                var img = document.createElement('img');
+                img.src = digitUrls[Number(d)];
+                img.alt = '';
+                img.draggable = false;
+                el.appendChild(img);
+              });
+            } else el.textContent = n;
+            el.closest('a').setAttribute('aria-label', 'cart, ' + n + (n === 1 ? ' item' : ' items'));
+          </script>
         </a>
       </header>
 
@@ -62,7 +93,6 @@ const digitUrls = digitImgs.every(Boolean)
       </main>
     </div>
 
-    <script is:inline type="application/json" id="digit-urls" set:html={JSON.stringify(digitUrls)} />
     <script>
       import { updateBadge } from '../scripts/cart';
       updateBadge();

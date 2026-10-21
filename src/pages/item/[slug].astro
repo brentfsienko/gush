@@ -13,6 +13,7 @@ export function getStaticPaths() {
 const { product: p } = Astro.props as { product: Product };
 const photos = productPhotos(p.slug);
 const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
+const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 ---
 
 <Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)}`}>
@@ -58,9 +59,9 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
           })
         }
       </div>
-      <p class="msg" aria-live="polite" data-msg></p>
+      <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out.' : ''}</p>
 
-      <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart">
+      <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
         <Drawn name="btn-add-to-cart" h={52} webH={66} />
       </button>
     </div>
@@ -224,6 +225,10 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
     margin: 0 auto;
   }
 
+  .add:disabled {
+    opacity: 0.4;
+  }
+
   .shake {
     animation: shake 0.35s;
   }
@@ -297,12 +302,6 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
       msg.textContent = '';
     }),
   );
-
-  if (sizeButtons.every((b) => b.disabled)) {
-    add.disabled = true;
-    add.style.opacity = '0.4';
-    msg.textContent = 'sold out.';
-  }
 
   add.addEventListener('click', () => {
     if (!size) {

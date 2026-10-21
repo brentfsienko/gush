@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
 ---
 
-<Base title="thank you" tab="cart">
+<Base title="thank you" tab="cart" clearCart>
   <div class="stack">
     <div class="type thanks">
       <h2 class="heading">thank you!</h2>
@@ -28,8 +28,3 @@ import Drawn from '../components/Drawn.astro';
     margin: 0;
   }
 </style>
-
-<script>
-  import { clearCart } from '../scripts/cart';
-  clearCart();
-</script>
