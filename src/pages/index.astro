@@ -13,7 +13,7 @@ const [hero, ...rest] = homePhotos();
     {
       hero && (
         <div class="hero">
-          <Image src={hero} alt="GÜSH model photo" widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo" loading="eager" />
+          <Image src={hero} alt="GÜSH blue thermal" widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo" loading="eager" />
         </div>
       )
     }
@@ -29,7 +29,7 @@ const [hero, ...rest] = homePhotos();
           {rest.map((src) => (
             <Image
               src={src}
-              alt="GÜSH model photo"
+              alt="GÜSH blue thermal"
               widths={[320, 640]}
               sizes="50vw"
               class="photo polaroid"

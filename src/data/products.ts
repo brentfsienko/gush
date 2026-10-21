@@ -7,7 +7,7 @@
 
 // Filter buttons on the shop page, in order. To add one (e.g. 'thermals'), list it here and
 // draw src/assets/drawn/filter-thermals.png (+ filter-thermals-on.png); it shows products with that category.
-export const CATEGORIES = ['all'] as const;
+export const CATEGORIES = ['all', 'thermals'] as const;
 export type Category = 'tees' | 'thermals' | 'pants';
 
 export const SIZES = ['s', 'm', 'l', 'xl'] as const;

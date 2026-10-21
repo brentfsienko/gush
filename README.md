@@ -36,7 +36,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Logo | `logo` ✓ done | upper left of the header (also used for the app icon) |
 | Digits | `digit-0` … `digit-9` ✓ done | cart count + quantities |
 | Tabs | `tab-shop`, `tab-about`, `tab-cart` ✓ done | selected one gets the drawn underline (`-on` files are generated) |
-| Shop filters | `filter-all` ✓ done. To add a category filter, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` + `-on` | |
+| Shop filters | `filter-all`, `filter-thermals` ✓ done. To add another, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` | selected one gets the underline |
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` + `-on` versions | roughly square |
 | Sold out | `scribble-out` | drawn over sold-out sizes |
 | Buttons | `btn-checkout`, `btn-add-to-cart` (ADD+TO+CART), `btn-back` (← BACK), `btn-keep-shopping` (SHOP →) ✓ done | wide |
