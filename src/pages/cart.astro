@@ -131,6 +131,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     font-size: 18px;
     min-width: 1.5ch;
     text-align: center;
+    --digit-h: 30px;
   }
 
   :global(.qty .drawn-btn:disabled) {
@@ -180,6 +181,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
 <script>
   import { readCart, writeCart, setQty, type CartLine } from '../scripts/cart';
+  import { drawNumber } from '../scripts/digits';
 
   type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null; titleImg: string | null };
   const config = JSON.parse(document.getElementById('cart-config')!.textContent!) as {
@@ -226,7 +228,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
     $('[data-size]', el).textContent = `size ${l.size.toUpperCase()}`;
     $('[data-price]', el).textContent = money(item.price);
-    $('[data-qty]', el).textContent = String(l.qty);
+    drawNumber($('[data-qty]', el), l.qty);
 
     const max = Math.min(config.maxQty, item.stock[l.size] ?? 0);
     $<HTMLButtonElement>('[data-plus]', el).disabled = l.qty >= max;

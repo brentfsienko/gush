@@ -1,6 +1,7 @@
 // The cart lives in the browser (localStorage). Prices are never stored here;
 // checkout looks them up on the server.
 import { MAX_QTY } from '../data/store';
+import { drawNumber } from './digits';
 
 export type CartLine = { slug: string; size: string; qty: number };
 
@@ -52,7 +53,7 @@ export const cartCount = () => readCart().reduce((n, l) => n + l.qty, 0);
 export function updateBadge() {
   const n = cartCount();
   document.querySelectorAll<HTMLElement>('[data-cart-count]').forEach((el) => {
-    el.textContent = String(n);
+    drawNumber(el, n);
     el.closest('a')?.setAttribute('aria-label', `cart, ${n} ${n === 1 ? 'item' : 'items'}`);
   });
 }

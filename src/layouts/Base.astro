@@ -1,8 +1,10 @@
 ---
 import '@fontsource/special-elite';
 import '../styles/global.css';
+import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
+import { drawn } from '../data/assets';
 
 interface Props {
   title?: string;
@@ -14,6 +16,11 @@ interface Props {
 
 const { title, tab, fill = false, description = 'GÜSH clothing' } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
+// Hand-drawn digits for numbers the browser fills in (cart count, quantities). Index = digit.
+const digitImgs = Array.from({ length: 10 }, (_, d) => drawn(`digit-${d}`));
+const digitUrls = digitImgs.every(Boolean)
+  ? await Promise.all(digitImgs.map(async (src) => (await getImage({ src: src!, height: 120, format: 'webp' })).src))
+  : null;
 ---
 
 <!doctype html>
@@ -58,6 +65,7 @@ const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
       </main>
     </div>
 
+    <script is:inline type="application/json" id="digit-urls" set:html={JSON.stringify(digitUrls)} />
     <script>
       import { updateBadge } from '../scripts/cart';
       updateBadge();

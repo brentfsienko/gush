@@ -125,6 +125,20 @@ body {
   font-size: 15px;
   line-height: 1;
   color: var(--ink);
+  --digit-h: 19px;
+}
+
+/* Numbers written with the hand-drawn digits (see scripts/digits.ts). */
+.digits {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digits img {
+  display: block;
+  height: var(--digit-h, 1.4em);
+  width: auto;
 }
 
 [aria-current='page'] .cart-count {
