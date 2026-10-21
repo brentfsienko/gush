@@ -19,7 +19,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
   <div class="item-layout">
   <div class="item-media">
   <a href="/shop" class="back" aria-label="back to shop" data-back>
-    <Drawn name="btn-back" h={34} />
+    <Drawn name="btn-back" h={34} webH={44} />
   </a>
 
   <div class="gallery" data-gallery>
@@ -61,7 +61,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
       <p class="msg" aria-live="polite" data-msg></p>
 
       <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart">
-        <Drawn name="btn-add-to-cart" h={66} />
+        <Drawn name="btn-add-to-cart" h={52} webH={66} />
       </button>
     </div>
 

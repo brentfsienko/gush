@@ -41,7 +41,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Shop filters | `filter-all` ✓ done. To add a category filter, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` + `-on` | |
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` + `-on` versions | roughly square |
 | Sold out | `scribble-out` | drawn over sold-out sizes |
-| Buttons | `btn-checkout` ✓ done, `btn-add-to-cart`, `btn-back`, `btn-keep-shopping` | wide |
+| Buttons | `btn-checkout`, `btn-add-to-cart` (ADD+TO+CART), `btn-back` (← BACK), `btn-keep-shopping` (SHOP →) ✓ done | wide |
 | Small buttons | `btn-plus`, `btn-minus`, `btn-remove` | square, used in the cart |
 
 ## Products
