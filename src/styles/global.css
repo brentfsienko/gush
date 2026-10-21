@@ -2,6 +2,7 @@
   --ink: #1f1b16;
   --ink-soft: #4a443b;
   --red: #c8372d;
+  --sun: #e8a317; /* mustard, same as brentsienko.com */
   --page: #ffffff; /* the page everything is stuck onto */
   --type: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --gutter: 16px;
@@ -173,7 +174,7 @@ img.drawn {
   visibility: visible;
 }
 
-/* Any drawn button: no browser styling, squish a little when pressed. */
+/* Any drawn button: no browser styling. */
 .drawn-btn {
   appearance: none;
   background: none;
@@ -187,16 +188,26 @@ img.drawn {
   touch-action: manipulation;
 }
 
-.drawn-btn img,
-a img.drawn,
-.tab .toggle {
-  transition: transform 0.12s ease;
+/* Clickable drawings, like the buttons on brentsienko.com: on hover the drawing lifts a hair and
+   casts a hard mustard shadow in its own shape; pressing drops it into the shadow. Applied to
+   everything inside the link/button, so the cart count moves with CART. */
+:is(.drawn-btn, a.tab, a.brand) > *,
+a > img.drawn {
+  transition: transform 0.1s steps(2), filter 0.1s steps(2);
 }
 
-.drawn-btn:active img,
-a:active img.drawn,
-.tab:active .toggle {
-  transform: scale(0.93) rotate(-1.5deg);
+@media (hover: hover) {
+  :is(.drawn-btn:not(:disabled), a.tab, a.brand):hover > *,
+  a:hover > img.drawn {
+    transform: translate(-1px, -1px);
+    filter: drop-shadow(3px 3px 0 var(--sun));
+  }
+}
+
+:is(.drawn-btn:not(:disabled), a.tab, a.brand):active > *,
+a:active > img.drawn {
+  transform: translate(2px, 2px);
+  filter: drop-shadow(0 0 0 var(--sun));
 }
 
 .drawn-btn:disabled {
