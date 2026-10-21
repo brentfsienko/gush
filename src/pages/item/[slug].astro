@@ -37,11 +37,11 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
 
   <div class="stack">
     <div class="info type">
-      <Drawn name={`title-${p.slug}`} h={58} alt={p.title} fallback={p.title} loading="eager" />
+      <h1 class="heading product-title">{p.title}</h1>
       <p class="price">{formatPrice(p.price)}</p>
       <p class="desc">{p.description}</p>
 
-      <Drawn name="heading-size" h={34} alt="pick a size" class="sub" />
+      <h2 class="heading sub">pick a size</h2>
       <div class="sizes" role="group" aria-label="size" data-sizes>
         {
           sizes.map((s) => {
@@ -63,7 +63,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
     </div>
 
     <div class="type">
-      <Drawn name="heading-details" h={36} alt="the details" />
+      <h2 class="heading">the details</h2>
       <dl class="details">
         {
           p.details.map((d) => (
@@ -79,7 +79,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
     {
       p.sizeChart && (
         <div class="type">
-          <Drawn name="heading-size-chart" h={36} alt="size chart" />
+          <h2 class="heading">size chart</h2>
           <table class="chart">
             <thead>
               <tr>{p.sizeChart.headers.map((h) => <th>{h}</th>)}</tr>

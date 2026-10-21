@@ -4,14 +4,13 @@ import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
 import { PRODUCTS } from '../data/products';
 import { SHIPPING_CENTS, MAX_QTY } from '../data/store';
-import { productPhotos, drawn } from '../data/assets';
+import { productPhotos } from '../data/assets';
 
 // Everything the cart needs to draw a line, keyed by slug (the cart itself lives in the browser).
 const catalog = Object.fromEntries(
   await Promise.all(
     PRODUCTS.map(async (p) => {
       const [first] = productPhotos(p.slug);
-      const title = drawn(`title-${p.slug}`);
       return [
         p.slug,
         {
@@ -19,7 +18,6 @@ const catalog = Object.fromEntries(
           price: p.price,
           stock: p.stock,
           thumb: first ? (await getImage({ src: first, width: 300, format: 'webp' })).src : null,
-          titleImg: title ? (await getImage({ src: title, height: 90, format: 'webp' })).src : null,
         },
       ];
     }),
@@ -32,7 +30,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
   <div class="stack">
     <div data-full hidden>
       <div class="center">
-        <Drawn name="heading-cart" h={44} alt="your cart" />
+        <h2 class="heading">your cart</h2>
       </div>
       <div class="lines" data-lines></div>
 
@@ -57,7 +55,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
     <div data-empty hidden>
       <div class="empty">
-        <Drawn name="heading-cart-empty" h={40} alt="your cart is empty" />
+        <h2 class="heading">your cart is empty</h2>
         <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} /></a>
       </div>
     </div>
@@ -67,7 +65,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     <div class="line">
       <img class="photo thumb" data-thumb alt="" />
       <div class="line-info">
-        <div data-title></div>
+        <div class="line-title" data-title></div>
         <p class="line-sub"><span data-size></span> · <span data-price></span></p>
         <div class="qty">
           <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={34} loading="eager" /></button>
@@ -102,7 +100,6 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     object-fit: cover;
     flex-shrink: 0;
     padding: 4px;
-    transform: rotate(-3deg);
   }
 
   :global(.line-info) {
@@ -110,11 +107,8 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     min-width: 0;
   }
 
-  :global(.line-info [data-title] img) {
-    height: 30px;
-    width: auto;
-    max-width: 100%;
-    display: block;
+  :global(.line-title) {
+    font-size: 18px;
   }
 
   :global(.line-sub) {
@@ -183,7 +177,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
   import { readCart, writeCart, setQty, type CartLine } from '../scripts/cart';
   import { drawNumber } from '../scripts/digits';
 
-  type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null; titleImg: string | null };
+  type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null };
   const config = JSON.parse(document.getElementById('cart-config')!.textContent!) as {
     catalog: Record<string, Item>;
     shipping: number;
@@ -218,13 +212,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     if (item.thumb) thumb.src = item.thumb;
     else thumb.remove();
 
-    const title = $('[data-title]', el);
-    if (item.titleImg) {
-      const img = new Image();
-      img.src = item.titleImg;
-      img.alt = item.title;
-      title.append(img);
-    } else title.textContent = item.title;
+    $('[data-title]', el).textContent = item.title;
 
     $('[data-size]', el).textContent = `size ${l.size.toUpperCase()}`;
     $('[data-price]', el).textContent = money(item.price);

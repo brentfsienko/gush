@@ -170,12 +170,6 @@ img.drawn {
   -webkit-user-drag: none;
 }
 
-.drawn-fallback {
-  display: inline-block;
-  font-size: calc(var(--h) * 0.6);
-  line-height: var(--h);
-}
-
 .toggle {
   display: inline-grid;
 }
@@ -241,6 +235,18 @@ a:active img.drawn,
 }
 
 /* ---------- typewriter text ---------- */
+
+.heading {
+  font-family: var(--type);
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.product-title {
+  font-size: 28px;
+}
 
 .type p {
   margin: 0 0 0.8em;

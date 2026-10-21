@@ -33,7 +33,7 @@ import { productPhotos } from '../data/assets';
                 {second && <Image src={second} alt="" widths={[240, 480]} sizes="40vw" class="photo second-photo" />}
               </div>
               <div class="card-meta">
-                <Drawn name={`title-${p.slug}`} h={44} alt={p.title} fallback={p.title} />
+                <h2 class="heading">{p.title}</h2>
                 <p class="price">{formatPrice(p.price)}</p>
               </div>
             </a>
@@ -44,14 +44,14 @@ import { productPhotos } from '../data/assets';
 
     <article class="feed-item" data-empty hidden>
       <div class="note">
-        <Drawn name="heading-nothing-here" h={42} alt="nothing here yet" loading="eager" />
+        <h2 class="heading">nothing here yet</h2>
         <p>check back soon.</p>
       </div>
     </article>
 
     <article class="feed-item" data-end>
       <div class="note">
-        <Drawn name="heading-coming-soon" h={42} alt="more coming soon" loading="eager" />
+        <h2 class="heading">more coming soon</h2>
       </div>
     </article>
   </div>

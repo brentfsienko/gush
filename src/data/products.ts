@@ -4,8 +4,6 @@
 // To add a product:
 //   1. Add an entry below (slug = url-friendly name, e.g. "black-tee").
 //   2. Put its photos in src/assets/products/<slug>/  (named 1.jpg, 2.jpg, ... shown in that order).
-//   3. Optional: draw its title and save it as src/assets/drawn/title-<slug>.png
-//      (until then the title shows in the typewriter font).
 
 // Filter buttons on the shop page, in order. To add one (e.g. 'thermals'), list it here and
 // draw src/assets/drawn/filter-thermals.png (+ filter-thermals-on.png); it shows products with that category.

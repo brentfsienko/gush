@@ -1,6 +1,6 @@
 # GÜSH
 
-The GÜSH store. Every button, tab and title is a hand drawing.
+The GÜSH store. Every button and tab is a hand drawing; headings and body text use a typewriter font.
 Built with Astro (static site), hosted on Cloudflare Workers, payments through Stripe Checkout.
 Cost: $0/month + your domain + Stripe's per-sale fee.
 
@@ -43,8 +43,6 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Sold out | `scribble-out` | drawn over sold-out sizes |
 | Buttons | `btn-add-to-cart`, `btn-checkout`, `btn-back`, `btn-keep-shopping` | wide |
 | Small buttons | `btn-plus`, `btn-minus`, `btn-remove` | square, used in the cart |
-| Headings | `heading-about`, `heading-cart`, `heading-cart-empty`, `heading-details`, `heading-size`, `heading-size-chart`, `heading-thank-you`, `heading-coming-soon`, `heading-nothing-here` | |
-| Product titles | `title-<product>` e.g. `title-blue-thermal` | optional, falls back to typewriter text |
 
 ## Products
 
