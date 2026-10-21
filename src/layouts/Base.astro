@@ -50,11 +50,11 @@ const digitUrls = digitImgs.every(Boolean)
           <a href="/about" class="tab" aria-current={tab === 'about' ? 'page' : undefined} aria-label="about">
             <DrawnToggle name="tab-about" h={32} webH={62} />
           </a>
-          <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
-            <DrawnToggle name="cart-box" h={30} webH={52} />
-            <span class="cart-count" data-cart-count>0</span>
-          </a>
         </nav>
+        <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
+          <DrawnToggle name="cart-box" h={42} webH={73} />
+          <span class="cart-count" data-cart-count>0</span>
+        </a>
       </header>
       <div class="divider" aria-hidden="true">
         <Drawn name="bee-line" h={38} fullWidth loading="eager" />

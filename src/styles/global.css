@@ -90,8 +90,8 @@ body {
   /* No gap: the shop/about drawings already carry padding (room for the red loop). */
 }
 
-.tabs .cart-tab {
-  margin-left: 4px;
+.cart-tab {
+  margin-left: 2px;
 }
 
 .tab {
@@ -281,15 +281,38 @@ a:active img.drawn,
     font-size: 16px;
   }
 
-  /* Logo and tabs pulled in from the screen edges, sized up. */
-  .topbar,
-  .divider {
-    padding-inline: max(32px, calc((100% - var(--wide)) / 2));
+  /* Shop/about in the far top-left, logo dead center, cart in the far top-right. */
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    padding: 18px 32px 0;
   }
 
-  .topbar {
-    padding-top: 18px;
-    align-items: center;
+  .tabs {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .brand {
+    grid-column: 2;
+    grid-row: 1;
+    flex: none;
+  }
+
+  .brand img.drawn {
+    object-position: center;
+  }
+
+  .cart-tab {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .divider {
+    padding-inline: max(32px, calc((100% - var(--wide)) / 2));
   }
 
   /* Drawings switch to their computer size (webH in Drawn.astro). */
@@ -299,10 +322,6 @@ a:active img.drawn,
 
   .cart-count {
     --digit-h: 32px;
-  }
-
-  .tabs .cart-tab {
-    margin-left: 10px;
   }
 
   /* The bee line spans the header width at a sensible height. */
