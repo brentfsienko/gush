@@ -11,31 +11,21 @@ interface Props {
   h: number;
   /** Display height on screens 700px and wider (defaults to h). */
   webH?: number;
-  /** Stretch to the container's width instead of a fixed height (e.g. the bee line). */
-  fullWidth?: boolean;
   alt?: string;
   class?: string;
   loading?: 'eager' | 'lazy';
 }
 
-const { name, h, webH, fullWidth = false, alt = '', class: cls, loading = 'lazy' } = Astro.props;
+const { name, h, webH, alt = '', class: cls, loading = 'lazy' } = Astro.props;
 const img = drawn(name);
 if (!img) throw new Error(`Missing drawing: put a file named "${name}.png" in src/assets/drawn/`);
 
 const aspect = img.width / img.height;
 const cap = (w: number) => Math.min(Math.round(w), img.width);
-let widths: number[];
-let sizes: string;
-if (fullWidth) {
-  widths = [480, 960, 1440, 2160].map(cap);
-  sizes = '(min-width: 700px) min(1080px, 100vw - 64px), 100vw';
-} else {
-  const phoneW = h * aspect;
-  const webW = (webH ?? h) * aspect;
-  widths = [1, 2, 3].flatMap((d) => [cap(phoneW * d), cap(webW * d)]);
-  sizes = webH ? `(min-width: 700px) ${Math.round(webW)}px, ${Math.round(phoneW)}px` : `${Math.round(phoneW)}px`;
-}
-widths = [...new Set(widths)].sort((a, b) => a - b);
+const phoneW = h * aspect;
+const webW = (webH ?? h) * aspect;
+const widths = [...new Set([1, 2, 3].flatMap((d) => [cap(phoneW * d), cap(webW * d)]))].sort((a, b) => a - b);
+const sizes = webH ? `(min-width: 700px) ${Math.round(webW)}px, ${Math.round(phoneW)}px` : `${Math.round(phoneW)}px`;
 ---
 
 <Image

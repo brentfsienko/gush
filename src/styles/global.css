@@ -42,8 +42,8 @@ body {
 .app {
   height: 100dvh;
   display: grid;
-  /* Header, bee-line divider, then content. */
-  grid-template-rows: auto auto 1fr;
+  /* Header, then content. */
+  grid-template-rows: auto 1fr;
   background: var(--page);
   overflow: hidden;
 }
@@ -54,7 +54,7 @@ body {
   align-items: flex-start;
   gap: 4px;
   min-height: 0;
-  padding: max(6px, env(safe-area-inset-top)) 2% 0;
+  padding: max(6px, env(safe-area-inset-top)) 2% 10px;
   position: relative;
   z-index: 2;
   view-transition-name: topbar;
@@ -75,12 +75,6 @@ body {
   max-width: 100%;
   object-fit: contain;
   object-position: left center;
-}
-
-/* Hand-drawn bee line splitting the header from the page. */
-.divider img.drawn {
-  width: 100%;
-  height: auto;
 }
 
 /* Tabs sit in the upper right. */
@@ -110,13 +104,13 @@ body {
 }
 
 .cart-tab {
-  /* Height of the cart drawing; the box is its top 81% (the rest is room for the underline). */
+  /* Height of the cart drawing; the box is its top 80% (the rest is room for the underline). */
   --cart-h: 38px;
 }
 
 .cart-count {
   place-self: start center;
-  margin-top: calc(var(--cart-h) * 0.405 - var(--digit-h) / 2);
+  margin-top: calc(var(--cart-h) * 0.4 - var(--digit-h) / 2);
   font-size: 15px;
   line-height: 1;
   color: var(--ink);
@@ -292,7 +286,7 @@ a:active img.drawn,
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: start;
-    padding: 18px 32px 0;
+    padding: 18px 32px 16px;
   }
 
   .tabs {
@@ -317,9 +311,6 @@ a:active img.drawn,
     justify-self: end;
   }
 
-  .divider {
-    padding-inline: max(32px, calc((100% - var(--wide)) / 2));
-  }
 
   /* Drawings switch to their computer size (webH in Drawn.astro). */
   img.drawn {
@@ -336,12 +327,6 @@ a:active img.drawn,
 
   .tabs {
     gap: 20px;
-  }
-
-  /* The bee line spans the header width at a sensible height. */
-  .divider img.drawn {
-    height: 64px;
-    object-fit: fill;
   }
 
   /* Page content sits in a centered column. */

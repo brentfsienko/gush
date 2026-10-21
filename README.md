@@ -34,7 +34,6 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | What | Files | Notes |
 |---|---|---|
 | Logo | `logo` ✓ done | upper left of the header (also used for the app icon) |
-| Divider | `bee-line` ✓ done | full-width line under the header |
 | Digits | `digit-0` … `digit-9` ✓ done | cart count + quantities |
 | Tabs | `tab-shop` ✓ done, `tab-about` ✓ done | upper right of the header |
 | Cart box | `cart-box` + `cart-box-on` | an empty square; the item count is typed inside it |
