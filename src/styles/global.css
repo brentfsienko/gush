@@ -112,7 +112,8 @@ body {
   font-size: 15px;
   line-height: 1;
   color: var(--ink);
-  --digit-h: 26px;
+  /* Same height as the tab lettering (80% of --cart-h). */
+  --digit-h: calc(var(--cart-h) * 0.8);
 }
 
 /* Numbers written with the hand-drawn digits (see scripts/digits.ts). */
@@ -310,12 +311,8 @@ a:active img.drawn,
     height: var(--h-web, var(--h));
   }
 
-  .cart-count {
-    --digit-h: 46px;
-  }
-
   .cart-tab {
-    --cart-h: 66px;
+    --cart-h: 54px;
   }
 
   .tabs {

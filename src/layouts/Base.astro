@@ -51,14 +51,14 @@ const digitUrls = digitImgs.every(Boolean)
         </a>
         <nav class="tabs" aria-label="main">
           <a href="/shop" class="tab" aria-current={tab === 'shop' ? 'page' : undefined} aria-label="shop">
-            <DrawnToggle name="tab-shop" h={36} webH={66} />
+            <DrawnToggle name="tab-shop" h={36} webH={54} />
           </a>
           <a href="/about" class="tab" aria-current={tab === 'about' ? 'page' : undefined} aria-label="about">
-            <DrawnToggle name="tab-about" h={36} webH={66} />
+            <DrawnToggle name="tab-about" h={36} webH={54} />
           </a>
         </nav>
         <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
-          <DrawnToggle name="tab-cart" h={36} webH={66} />
+          <DrawnToggle name="tab-cart" h={36} webH={54} />
           <span class="cart-count" data-cart-count></span>
           <script is:inline define:vars={{ digitUrls, clearCart }}>
             // Runs right here, before the first paint, so the count never flashes a wrong number.
