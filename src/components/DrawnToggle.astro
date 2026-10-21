@@ -7,12 +7,13 @@ import Drawn from './Drawn.astro';
 interface Props {
   name: string;
   h: number;
+  webH?: number;
 }
 
-const { name, h } = Astro.props;
+const { name, h, webH } = Astro.props;
 ---
 
 <span class="toggle">
-  <Drawn name={name} h={h} class="toggle-off" loading="eager" />
-  <Drawn name={`${name}-on`} h={h} class="toggle-on" loading="eager" />
+  <Drawn name={name} h={h} webH={webH} class="toggle-off" loading="eager" />
+  <Drawn name={`${name}-on`} h={h} webH={webH} class="toggle-on" loading="eager" />
 </span>

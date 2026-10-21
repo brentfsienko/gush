@@ -295,16 +295,9 @@ a:active img.drawn,
     align-items: center;
   }
 
-  .brand img.drawn {
-    height: 140px;
-  }
-
-  .tabs .toggle img.drawn {
-    height: 62px;
-  }
-
-  .tabs .cart-tab .toggle img.drawn {
-    height: 52px;
+  /* Drawings switch to their computer size (webH in Drawn.astro). */
+  img.drawn {
+    height: var(--h-web, var(--h));
   }
 
   .cart-count {

@@ -19,7 +19,7 @@ const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
 // Hand-drawn digits for numbers the browser fills in (cart count, quantities). Index = digit.
 const digitImgs = Array.from({ length: 10 }, (_, d) => drawn(`digit-${d}`));
 const digitUrls = digitImgs.every(Boolean)
-  ? await Promise.all(digitImgs.map(async (src) => (await getImage({ src: src!, height: 120, format: 'webp' })).src))
+  ? await Promise.all(digitImgs.map(async (src) => (await getImage({ src: src!, height: 120, format: 'webp', quality: 'max' })).src))
   : null;
 ---
 
@@ -41,23 +41,23 @@ const digitUrls = digitImgs.every(Boolean)
     <div class="app">
       <header class="topbar">
         <a href="/" class="brand" aria-label="GÜSH home">
-          <Drawn name="logo" h={100} alt="GÜSH" loading="eager" />
+          <Drawn name="logo" h={100} webH={140} alt="GÜSH" loading="eager" />
         </a>
         <nav class="tabs" aria-label="main">
           <a href="/shop" class="tab" aria-current={tab === 'shop' ? 'page' : undefined} aria-label="shop">
-            <DrawnToggle name="tab-shop" h={32} />
+            <DrawnToggle name="tab-shop" h={32} webH={62} />
           </a>
           <a href="/about" class="tab" aria-current={tab === 'about' ? 'page' : undefined} aria-label="about">
-            <DrawnToggle name="tab-about" h={32} />
+            <DrawnToggle name="tab-about" h={32} webH={62} />
           </a>
           <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
-            <DrawnToggle name="cart-box" h={30} />
+            <DrawnToggle name="cart-box" h={30} webH={52} />
             <span class="cart-count" data-cart-count>0</span>
           </a>
         </nav>
       </header>
       <div class="divider" aria-hidden="true">
-        <Drawn name="bee-line" h={38} loading="eager" />
+        <Drawn name="bee-line" h={38} fullWidth loading="eager" />
       </div>
 
       <main class:list={[{ fill }]}>
