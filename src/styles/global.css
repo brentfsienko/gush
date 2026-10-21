@@ -43,8 +43,8 @@ body {
   max-width: 480px;
   margin: 0 auto;
   display: grid;
-  /* Header takes the top 1/8, content gets the rest. */
-  grid-template-rows: 12.5% 1fr;
+  /* Header, bee-line divider, then content. */
+  grid-template-rows: auto auto 1fr;
   background: var(--page);
   overflow: hidden;
 }
@@ -65,7 +65,7 @@ body {
   align-items: flex-start;
   gap: 4px;
   min-height: 0;
-  padding: max(3%, env(safe-area-inset-top)) 4% 3% 4%;
+  padding: max(6px, env(safe-area-inset-top)) 3% 0;
   position: relative;
   z-index: 2;
   view-transition-name: topbar;
@@ -80,13 +80,18 @@ body {
   align-items: center;
 }
 
-/* Logo is drawn 15% taller than the header's content area; on narrow phones it shrinks to keep clear of the tabs. */
+/* Logo height is set in Base.astro; on narrow phones it shrinks to keep clear of the tabs. */
 .brand img.drawn {
-  height: 115%;
   width: auto;
   max-width: 100%;
   object-fit: contain;
   object-position: left center;
+}
+
+/* Hand-drawn bee line splitting the header from the page. */
+.divider img.drawn {
+  width: 100%;
+  height: auto;
 }
 
 /* Tabs sit in the upper right. */
