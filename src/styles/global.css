@@ -87,11 +87,11 @@ body {
 .tabs {
   display: flex;
   align-items: center;
-  /* No gap: the shop/about drawings already carry padding (room for the red loop). */
+  gap: 8px;
 }
 
 .cart-tab {
-  margin-left: 2px;
+  margin-left: 8px;
 }
 
 .tab {
@@ -109,8 +109,14 @@ body {
   grid-area: 1 / 1;
 }
 
+.cart-tab {
+  /* Height of the cart drawing; the box is its top 81% (the rest is room for the underline). */
+  --cart-h: 38px;
+}
+
 .cart-count {
-  place-self: center;
+  place-self: start center;
+  margin-top: calc(var(--cart-h) * 0.405 - var(--digit-h) / 2);
   font-size: 15px;
   line-height: 1;
   color: var(--ink);
@@ -322,6 +328,14 @@ a:active img.drawn,
 
   .cart-count {
     --digit-h: 32px;
+  }
+
+  .cart-tab {
+    --cart-h: 64px;
+  }
+
+  .tabs {
+    gap: 20px;
   }
 
   /* The bee line spans the header width at a sensible height. */

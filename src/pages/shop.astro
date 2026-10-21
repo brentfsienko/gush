@@ -12,7 +12,7 @@ import { productPhotos } from '../data/assets';
     {
       CATEGORIES.map((c) => (
         <button class="drawn-btn filter" data-filter={c} aria-pressed={c === 'all' ? 'true' : 'false'} aria-label={c}>
-          <DrawnToggle name={`filter-${c}`} h={50} />
+          <DrawnToggle name={`filter-${c}`} h={46} webH={52} />
         </button>
       ))
     }
