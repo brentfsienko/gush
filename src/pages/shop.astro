@@ -58,6 +58,9 @@ import { productPhotos } from '../data/assets';
 
 <style>
   .filters {
+    width: 100%;
+    max-width: var(--column);
+    margin-inline: auto;
     display: flex;
     gap: 10px;
     padding: 4px var(--gutter) 10px;
@@ -90,6 +93,8 @@ import { productPhotos } from '../data/assets';
 
   .feed-item {
     height: 100%;
+    max-width: var(--column);
+    margin-inline: auto;
     padding: 14px var(--gutter) 18px;
     scroll-snap-align: start;
     scroll-snap-stop: always;

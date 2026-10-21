@@ -16,6 +16,8 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
 ---
 
 <Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)}`}>
+  <div class="item-layout">
+  <div class="item-media">
   <a href="/shop" class="back" aria-label="back to shop" data-back>
     <Drawn name="btn-back" h={34} />
   </a>
@@ -23,7 +25,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
   <div class="gallery" data-gallery>
     {
       photos.map((src, i) => (
-        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[480, 900, 1200]} sizes="(min-width: 480px) 480px, 100vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[480, 900, 1200]} sizes="(min-width: 700px) 540px, 100vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
       ))
     }
   </div>
@@ -34,6 +36,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
       </div>
     )
   }
+  </div>
 
   <div class="stack">
     <div class="info type">
@@ -94,9 +97,34 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
       )
     }
   </div>
+  </div>
 </Base>
 
 <style>
+  /* Big screens: photos on the left (sticky), details on the right. */
+  @media (min-width: 900px) {
+    .item-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 48px;
+      max-width: var(--wide);
+      margin: 0 auto;
+      padding: 20px 32px 48px;
+      align-items: start;
+    }
+
+    .item-media {
+      position: sticky;
+      top: 20px;
+    }
+
+    .item-layout .stack {
+      max-width: none;
+      margin: 0;
+      padding: 52px 0 0;
+    }
+  }
+
   .back {
     display: inline-block;
     margin: 4px var(--gutter) 10px;

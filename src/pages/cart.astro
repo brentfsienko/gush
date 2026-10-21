@@ -89,6 +89,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
   }
 
   :global(.line) {
+    position: relative;
     display: flex;
     gap: 14px;
     align-items: center;
@@ -134,8 +135,8 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
   :global(.remove) {
     position: absolute;
-    top: 10px;
-    right: 12px;
+    top: 0;
+    right: 0;
   }
 
   .summary dl {

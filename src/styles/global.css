@@ -3,10 +3,11 @@
   --ink-soft: #4a443b;
   --red: #c8372d;
   --page: #ffffff; /* the page everything is stuck onto */
-  --desk: #3b322a; /* what's around the page on big screens */
   --type: 'Special Elite', 'Courier New', monospace;
   --gutter: 16px;
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .2 0 0 0 0 .15 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* How wide the header and page content get on big screens. */
+  --wide: 1080px;
+  --column: 600px;
   color-scheme: light;
 }
 
@@ -27,7 +28,7 @@ body {
 }
 
 body {
-  background: var(--desk) var(--grain);
+  background: var(--page);
   color: var(--ink);
   font-family: var(--type);
   font-size: 15px;
@@ -40,23 +41,11 @@ body {
 
 .app {
   height: 100dvh;
-  max-width: 480px;
-  margin: 0 auto;
   display: grid;
   /* Header, bee-line divider, then content. */
   grid-template-rows: auto auto 1fr;
   background: var(--page);
   overflow: hidden;
-}
-
-/* On a computer, the site is a page sitting on a desk. */
-@media (min-width: 600px) {
-  .app {
-    height: min(calc(100dvh - 48px), 940px);
-    margin: 24px auto;
-    border-radius: 4px;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.2);
-  }
 }
 
 .topbar {
@@ -285,5 +274,57 @@ a:active img.drawn,
   }
   @view-transition {
     navigation: none;
+  }
+}
+
+/* ---------- web (big screens) ---------- */
+
+@media (min-width: 700px) {
+  body {
+    font-size: 16px;
+  }
+
+  /* Logo and tabs pulled in from the screen edges, sized up. */
+  .topbar,
+  .divider {
+    padding-inline: max(32px, calc((100% - var(--wide)) / 2));
+  }
+
+  .topbar {
+    padding-top: 18px;
+    align-items: center;
+  }
+
+  .brand img.drawn {
+    height: 140px;
+  }
+
+  .tabs .toggle img.drawn {
+    height: 62px;
+  }
+
+  .tabs .cart-tab .toggle img.drawn {
+    height: 52px;
+  }
+
+  .cart-count {
+    --digit-h: 32px;
+  }
+
+  .tabs .cart-tab {
+    margin-left: 10px;
+  }
+
+  /* The bee line spans the header width at a sensible height. */
+  .divider img.drawn {
+    height: 64px;
+    object-fit: fill;
+  }
+
+  /* Page content sits in a centered column. */
+  .stack {
+    max-width: var(--column);
+    margin-inline: auto;
+    padding-top: 28px;
   }
 }
