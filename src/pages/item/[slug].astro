@@ -52,8 +52,8 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
             const soldOut = (p.stock[s] ?? 0) <= 0;
             return (
               <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} aria-pressed="false" disabled={soldOut} aria-label={soldOut ? `${s} sold out` : s}>
-                <DrawnToggle name={`size-${s}`} h={40} />
-                {soldOut && <Drawn name="scribble-out" h={40} class="scribble" />}
+                <DrawnToggle name={`size-${s}`} h={46} webH={52} />
+                {soldOut && <Drawn name="scribble-out" h={46} webH={52} class="scribble" />}
               </button>
             );
           })
@@ -186,11 +186,12 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin-top: 6px;
   }
 
-  /* Up to 4 sizes per row, shrinking to fit whatever shape the drawings are. */
+  /* Sizes drawn at the same height so the letters match (XL is just wider). */
   .sizes {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 76px));
-    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 18px;
     margin: 10px 0 4px;
   }
 
@@ -198,15 +199,14 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     position: relative;
   }
 
-  .size :global(img.drawn) {
-    width: 100%;
-    height: auto;
-  }
-
+  /* Covers the letters (top 80% of the drawing; the rest is room for the underline). */
   .size :global(.scribble) {
     position: absolute;
-    inset: 0;
-    height: 100% !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80% !important;
+    object-fit: fill;
     pointer-events: none;
   }
 
@@ -220,9 +220,10 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     color: var(--red);
   }
 
+  /* Lined up on the left with the title, price and sizes above it. */
   .add {
     display: block;
-    margin: 0 auto;
+    margin: 0;
   }
 
   .add:disabled {

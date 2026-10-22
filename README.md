@@ -37,10 +37,10 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Digits | `digit-0` … `digit-9` ✓ done | cart count + quantities |
 | Tabs | `tab-shop`, `tab-about`, `tab-cart` ✓ done | selected one gets the drawn underline (`-on` files are generated) |
 | Shop filters | `filter-all`, `filter-thermals` ✓ done. To add another, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` | selected one gets the underline |
-| Sizes | `size-s`, `size-m`, `size-l`, `size-xl` + `-on` versions | roughly square |
+| Sizes | `size-s`, `size-m`, `size-l`, `size-xl` ✓ done | selected one gets the underline |
 | Sold out | `scribble-out` | drawn over sold-out sizes |
 | Buttons | `btn-checkout`, `btn-add-to-cart` (ADD+TO+CART), `btn-back` (← BACK), `btn-keep-shopping` (SHOP →) ✓ done | wide |
-| Small buttons | `btn-plus`, `btn-minus` ✓ done, `btn-remove` | used in the cart |
+| Small buttons | `btn-plus`, `btn-minus`, `btn-remove` ✓ done | used in the cart |
 
 ## Products
 
