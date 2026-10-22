@@ -305,6 +305,13 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     user-select: none;
   }
 
+  /* Underline the words only, not the +/−. */
+  .sc-label {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+  }
+
   .size-chart[open] .chart {
     margin-top: 14px;
   }
