@@ -258,9 +258,32 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   /* Lined up on the left with the title, price and sizes above it. */
+  /* ADD TO CART sits in a square black box: mustard shadow on hover, presses on click. The box
+     takes the shadow instead of the drawing inside it. */
   .add {
     display: block;
     margin: 0;
+    padding: 10px 18px;
+    border: 1.5px solid var(--ink);
+    background: var(--page);
+    transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
+  }
+
+  .add > :global(*) {
+    filter: none !important;
+    transform: none !important;
+  }
+
+  @media (hover: hover) {
+    .add:not(:disabled):hover {
+      box-shadow: -4px 4px 0 var(--sun);
+      transform: translate(1px, -1px);
+    }
+  }
+
+  .add:not(:disabled):active {
+    box-shadow: none;
+    transform: translate(-2px, 2px);
   }
 
   .add:disabled {
@@ -272,41 +295,14 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 4px 0 10px;
   }
 
-  /* Like the shop item boxes: no box until hovered, then a square black outline with a mustard
-     shadow. It keeps the box and shadow while the chart is open. */
+  /* Plain clickable text: no box, no highlight. */
   .size-chart summary {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 4px 12px;
-    /* Pulled back by the padding + border so the words line up with "size" above. */
-    margin-left: -13.5px;
-    border: 1.5px solid transparent;
-    background: var(--page);
     cursor: pointer;
     list-style: none;
     user-select: none;
-    transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
-  }
-
-  @media (hover: hover) {
-    .size-chart summary:hover {
-      border-color: var(--ink);
-      box-shadow: -3px 3px 0 var(--sun);
-      transform: translate(1px, -1px);
-    }
-  }
-
-  .size-chart[open] summary {
-    border-color: var(--ink);
-    box-shadow: -3px 3px 0 var(--sun);
-    transform: translate(1px, -1px);
-  }
-
-  .size-chart summary:active {
-    border-color: var(--ink);
-    box-shadow: none;
-    transform: translate(-2px, 2px);
   }
 
   .size-chart[open] .chart {

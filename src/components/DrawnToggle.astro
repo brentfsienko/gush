@@ -1,8 +1,12 @@
 ---
-// A drawing with an "off" and "on" version (e.g. filter-tees.png + filter-tees-on.png).
-// Both are loaded and stacked; CSS shows the "on" one when the parent button has
-// aria-pressed="true" or the parent link has aria-current="page".
+// A drawing that can be "selected" (tabs, filters, sizes). Selection is shown by the hand-drawn
+// underline bar (underline-bar.png) under the word. The bar is drawn with border-image so its two
+// rounded ends stay as drawn and only the middle stretches; that lets it grow out to the right as a
+// closed line when something is clicked. CSS shows it when the parent button has aria-pressed="true"
+// or the parent link has aria-current="page".
+import { getImage } from 'astro:assets';
 import Drawn from './Drawn.astro';
+import { drawn } from '../data/assets';
 
 interface Props {
   name: string;
@@ -11,9 +15,25 @@ interface Props {
 }
 
 const { name, h, webH } = Astro.props;
+
+// The word drawings leave their bottom 16% empty for the underline.
+const UL = 0.16;
+const BAR_H = 240;
+const bar = drawn('underline-bar');
+if (!bar) throw new Error('Missing drawing: src/assets/drawn/underline-bar.png');
+const barImg = await getImage({ src: bar, height: BAR_H, format: 'webp', quality: 'max' });
+// Width of each rounded end, as a fraction of the bar's height.
+const CAP = 0.55;
+const style = [
+  `--ulh-phone:${(h * UL).toFixed(2)}px`,
+  `--ulh-web:${((webH ?? h) * UL).toFixed(2)}px`,
+  `--cap:${CAP}`,
+  `border-image-source:url(${barImg.src})`,
+  `border-image-slice:0 ${Math.round(BAR_H * CAP)} fill`,
+].join(';');
 ---
 
 <span class="toggle">
   <Drawn name={name} h={h} webH={webH} class="toggle-off" loading="eager" />
-  <Drawn name={`${name}-on`} h={h} webH={webH} class="toggle-on" loading="eager" />
+  <span class="uline" data-ul={name} aria-hidden="true" style={style}></span>
 </span>

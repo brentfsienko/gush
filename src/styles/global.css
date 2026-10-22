@@ -159,6 +159,7 @@ img.drawn {
 }
 
 .toggle {
+  position: relative;
   display: inline-grid;
 }
 
@@ -166,24 +167,41 @@ img.drawn {
   grid-area: 1 / 1;
 }
 
-/* The "-on" layer is just the hand-drawn underline, laid over the word. When something becomes
-   selected it draws itself in from left to right, like a pen stroke. */
-.toggle-on {
+/* Hand-drawn underline (see DrawnToggle.astro): a closed bar whose rounded ends are border-image
+   slices, so changing its width stretches only the middle. Shown under whatever is selected. */
+.uline {
+  --ulh: var(--ulh-phone);
+  position: absolute;
+  left: 2%;
+  bottom: 0;
+  width: 96%;
+  height: var(--ulh);
+  border-style: solid;
+  border-width: 0 calc(var(--ulh) * var(--cap));
+  border-image-repeat: stretch;
   visibility: hidden;
+  pointer-events: none;
 }
 
-[aria-pressed='true'] .toggle-on,
-[aria-current='page'] .toggle-on {
+[aria-pressed='true'] .uline,
+[aria-current='page'] .uline {
   visibility: visible;
-  animation: underline-grow 0.45s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+/* Only right after a click (see the script in Base.astro): grow out to the right from a small pill. */
+.uline.grow {
+  animation: underline-grow 0.55s cubic-bezier(0.22, 0.8, 0.3, 1);
 }
 
 @keyframes underline-grow {
   from {
-    clip-path: inset(0 100% 0 0);
+    width: calc(var(--ulh) * var(--cap) * 2);
   }
-  to {
-    clip-path: inset(0 0 0 0);
+}
+
+@media (min-width: 700px) {
+  .uline {
+    --ulh: var(--ulh-web);
   }
 }
 
