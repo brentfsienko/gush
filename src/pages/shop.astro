@@ -21,7 +21,7 @@ import { productPhotos } from '../data/assets';
   <div class="feed" data-feed>
     {
       PRODUCTS.map((p, i) => {
-        const [first, second] = productPhotos(p.slug);
+        const [first] = productPhotos(p.slug);
         return (
           <article class="feed-item" data-category={p.category}>
             <a href={`/item/${p.slug}`} class="card">
@@ -29,12 +29,9 @@ import { productPhotos } from '../data/assets';
                 {first && (
                   <Image src={first} alt={p.title} widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo main-photo" loading={i < 2 ? 'eager' : 'lazy'} />
                 )}
-                {second && (
-                  <Image src={second} alt={`${p.title}, back`} widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo main-photo back-photo" loading={i < 2 ? 'eager' : 'lazy'} />
-                )}
               </div>
               <div class="card-meta">
-                <h2 class="heading">{p.title}</h2>
+                <h2 class="heading card-title">{p.title}</h2>
                 <p class="price">{formatPrice(p.price)}</p>
               </div>
             </a>
@@ -145,45 +142,33 @@ import { productPhotos } from '../data/assets';
     gap: 12px;
   }
 
-  /* Front and back photos stacked in the same spot; hovering the item shows the back. Like the drawn
-     buttons, the photo lifts with a mustard shadow (in the shirt's own shape) on hover and presses on click. */
   .card-photos {
     flex: 1;
     min-height: 0;
-    display: grid;
-    grid-template: 100% / 100%;
-    transition: transform 0.1s steps(2), filter 0.1s steps(2);
   }
 
   .main-photo {
-    grid-area: 1 / 1;
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
 
-  .back-photo {
-    visibility: hidden;
+  /* The item's name gets a mustard highlight on hover (pressed, on phones) to show it's clickable,
+     like the hover highlight on brentsienko.com. */
+  .card-title {
+    padding: 0 4px;
+    margin-left: -4px;
+    transition: background-color 0.1s steps(2);
   }
 
   @media (hover: hover) {
-    .card:hover .card-photos {
-      transform: translate(1px, -1px);
-      filter: drop-shadow(-4px 4px 0 var(--sun));
-    }
-
-    .card:hover .back-photo {
-      visibility: visible;
-    }
-
-    .card:hover .main-photo:has(+ .back-photo) {
-      visibility: hidden;
+    .card:hover .card-title {
+      background: var(--sun);
     }
   }
 
-  .card:active .card-photos {
-    transform: translate(-2px, 2px);
-    filter: drop-shadow(0 0 0 var(--sun));
+  .card:active .card-title {
+    background: var(--sun);
   }
 
   .card-meta {
