@@ -218,6 +218,32 @@ a:active > img.drawn {
   filter: drop-shadow(0 0 0 var(--sun));
 }
 
+/* Main action buttons (ADD TO CART, CHECKOUT): the drawing sits in a square black box that takes the
+   mustard shadow on hover and presses on click, instead of the drawing itself. */
+.boxed-btn {
+  padding: 10px 18px;
+  border: 1.5px solid var(--ink);
+  background: var(--page);
+  transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
+}
+
+.boxed-btn > * {
+  filter: none !important;
+  transform: none !important;
+}
+
+@media (hover: hover) {
+  .boxed-btn:not(:disabled):hover {
+    box-shadow: -4px 4px 0 var(--sun);
+    transform: translate(1px, -1px);
+  }
+}
+
+.boxed-btn:not(:disabled):active {
+  box-shadow: none;
+  transform: translate(-2px, 2px);
+}
+
 .drawn-btn:disabled {
   cursor: default;
 }

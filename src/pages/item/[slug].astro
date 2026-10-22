@@ -95,7 +95,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
       }
       <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out.' : ''}</p>
 
-      <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
+      <button class="drawn-btn boxed-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
         <Drawn name="btn-add-to-cart" h={37} webH={42} />
       </button>
     </div>
@@ -258,32 +258,9 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   /* Lined up on the left with the title, price and sizes above it. */
-  /* ADD TO CART sits in a square black box: mustard shadow on hover, presses on click. The box
-     takes the shadow instead of the drawing inside it. */
   .add {
     display: block;
     margin: 0;
-    padding: 10px 18px;
-    border: 1.5px solid var(--ink);
-    background: var(--page);
-    transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
-  }
-
-  .add > :global(*) {
-    filter: none !important;
-    transform: none !important;
-  }
-
-  @media (hover: hover) {
-    .add:not(:disabled):hover {
-      box-shadow: -4px 4px 0 var(--sun);
-      transform: translate(1px, -1px);
-    }
-  }
-
-  .add:not(:disabled):active {
-    box-shadow: none;
-    transform: translate(-2px, 2px);
   }
 
   .add:disabled {
