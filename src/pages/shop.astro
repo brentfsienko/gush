@@ -70,7 +70,6 @@ import { productPhotos } from '../data/assets';
     align-items: baseline;
     gap: 8px;
     padding: 14px var(--gutter) 0;
-    font-size: 14px;
     flex-shrink: 0;
   }
 
@@ -83,20 +82,13 @@ import { productPhotos } from '../data/assets';
     text-decoration: underline;
   }
 
-  .crumbs .sep,
-  .crumbs [data-crumb-cat],
-  .crumbs a[aria-current='page'] {
-    color: var(--ink-soft);
-  }
-
   .crumbs [hidden] {
     display: none;
   }
 
   @media (min-width: 700px) {
     .crumbs {
-      padding: 28px 32px 0;
-      font-size: 15px;
+      padding-top: 28px;
     }
   }
 
@@ -106,7 +98,7 @@ import { productPhotos } from '../data/assets';
     margin-inline: auto;
     display: flex;
     gap: 10px;
-    padding: 16px var(--gutter) 10px;
+    padding: 22px var(--gutter) 10px;
     overflow-x: auto;
     scrollbar-width: none;
     flex-shrink: 0;
@@ -116,11 +108,22 @@ import { productPhotos } from '../data/assets';
     display: none;
   }
 
-  /* Web: categories in a row above the items, lined up with the breadcrumb and the page edge. */
+  /* Web: the breadcrumb, the category row and the item grid share one centered column, so they all
+     line up with the left edge of the first item. Each item column is capped by the screen height so a
+     whole item (photo, name, price) fits on screen without scrolling. */
   @media (min-width: 700px) {
+    .crumbs,
+    .filters,
+    .feed {
+      --gap: 28px;
+      --col: min(calc((100vw - 64px - var(--gap)) / 2), calc(100dvh - 330px));
+      --side: calc((100vw - 2 * var(--col) - var(--gap)) / 2);
+      padding-left: var(--side);
+      padding-right: var(--side);
+    }
+
     .filters {
       max-width: none;
-      padding-left: 32px;
     }
   }
 
@@ -226,10 +229,11 @@ import { productPhotos } from '../data/assets';
   @media (min-width: 700px) {
     .feed {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, var(--col));
       align-content: start;
-      gap: 28px;
-      padding: 24px 32px 48px;
+      gap: var(--gap);
+      padding-top: 18px;
+      padding-bottom: 48px;
       scroll-snap-type: none;
     }
 
