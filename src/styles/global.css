@@ -193,8 +193,7 @@ img.drawn {
 
 /* Clickable drawings, like the buttons on brentsienko.com: on hover the drawing lifts a hair and
    casts a hard mustard shadow in its own shape (down and to the left); pressing drops it into the shadow.
-   Whatever is selected (current tab, chosen filter/size) keeps the shadow; the GÜSH logo only gets it
-   on hover, never stays highlighted. Applied to everything inside the link/button, so the cart count moves with CART. */
+   The shadow only shows on hover; selected items are marked by their underline instead. Applied to everything inside the link/button, so the cart count moves with CART. */
 :is(.drawn-btn, a.tab, a.brand) > *,
 a > img.drawn {
   transition: transform 0.1s steps(2), filter 0.1s steps(2);
@@ -206,11 +205,6 @@ a > img.drawn {
     transform: translate(1px, -1px);
     filter: drop-shadow(-3px 3px 0 var(--sun));
   }
-}
-
-:is(a.tab[aria-current='page'], .drawn-btn[aria-pressed='true']) > * {
-  transform: translate(1px, -1px);
-  filter: drop-shadow(-3px 3px 0 var(--sun));
 }
 
 :is(.drawn-btn:not(:disabled), a.tab, a.brand):active > *,

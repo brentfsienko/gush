@@ -25,15 +25,9 @@ const [hero, ...rest] = homePhotos();
 
     {
       rest.length > 0 && (
-        <div class="polaroids">
+        <div class="photos">
           {rest.map((src) => (
-            <Image
-              src={src}
-              alt="GÜSH blue thermal"
-              widths={[320, 640]}
-              sizes="50vw"
-              class="photo polaroid"
-            />
+            <Image src={src} alt="GÜSH blue thermal" widths={[480, 900, 1200]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />
           ))}
         </div>
       )
@@ -58,15 +52,10 @@ const [hero, ...rest] = homePhotos();
     margin: 12px 0 0;
   }
 
-  .polaroids {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    align-items: start;
-  }
-
-  .polaroid:nth-child(even) {
-    margin-top: 34px;
+  .photos {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
   }
 
   .cta {

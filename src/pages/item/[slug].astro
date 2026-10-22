@@ -26,7 +26,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   <div class="gallery" data-gallery>
     {
       photos.map((src, i) => (
-        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 560px, 100vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 560px, 100vw" class:list={['slide', { fill: src.width / src.height > 1.6 }]} loading={i === 0 ? 'eager' : 'lazy'} />
       ))
     }
   </div>
@@ -50,7 +50,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
       <p class="price">{formatPrice(p.price)}</p>
       <p class="desc">{p.description}</p>
 
-      <h2 class="heading sub">pick a size</h2>
+      <h2 class="heading sub">size</h2>
       <div class="sizes" role="group" aria-label="size" data-sizes>
         {
           sizes.map((s) => {
@@ -64,6 +64,27 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
           })
         }
       </div>
+      {
+        p.sizeChart && (
+          <details class="size-chart">
+            <summary>
+              <span>size chart</span>
+              <span class="sc-plus"><Drawn name="btn-plus" h={18} loading="eager" /></span>
+              <span class="sc-minus"><Drawn name="btn-minus" h={9} loading="eager" /></span>
+            </summary>
+            <table class="chart">
+              <thead>
+                <tr>{p.sizeChart.headers.map((h) => <th>{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {p.sizeChart.rows.map((r) => (
+                  <tr>{r.map((c) => <td>{c}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        )
+      }
       <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out.' : ''}</p>
 
       <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
@@ -85,23 +106,6 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
       </dl>
     </div>
 
-    {
-      p.sizeChart && (
-        <div class="type">
-          <h2 class="heading">size chart</h2>
-          <table class="chart">
-            <thead>
-              <tr>{p.sizeChart.headers.map((h) => <th>{h}</th>)}</tr>
-            </thead>
-            <tbody>
-              {p.sizeChart.rows.map((r) => (
-                <tr>{r.map((c) => <td>{c}</td>)}</tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )
-    }
   </div>
   </div>
 </Base>
@@ -246,6 +250,39 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     opacity: 0.4;
   }
 
+  /* Size chart folds open under the sizes; the drawn + turns into a − while it's open. */
+  .size-chart {
+    margin: 4px 0 10px;
+  }
+
+  .size-chart summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    list-style: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .size-chart summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .size-chart .sc-minus,
+  .size-chart[open] .sc-plus {
+    display: none;
+  }
+
+  .size-chart[open] .sc-minus {
+    display: inline-flex;
+  }
+
+  /* Wide close-up shots (like the knit texture) fill the frame instead of floating as a thin strip. */
+  .slide.fill {
+    object-fit: cover;
+  }
+
   .shake {
     animation: shake 0.35s;
   }
@@ -341,15 +378,17 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 
   add.addEventListener('click', () => {
     if (!size) {
-      msg.textContent = 'pick a size first.';
+      msg.textContent = 'choose a size first.';
       sizeGroup.classList.remove('shake');
       void sizeGroup.offsetWidth;
       sizeGroup.classList.add('shake');
       return;
     }
     const stock = Number(sizeButtons.find((b) => b.dataset.size === size)!.dataset.stock);
-    msg.textContent = addToCart(add.dataset.slug!, size, stock)
-      ? `added (${size.toUpperCase()}) to your cart ✓`
-      : `that's all we have in ${size.toUpperCase()}. it's in your cart.`;
+    if (addToCart(add.dataset.slug!, size, stock)) {
+      location.href = '/cart';
+      return;
+    }
+    msg.textContent = `that's all we have in ${size.toUpperCase()}. it's in your cart.`;
   });
 </script>

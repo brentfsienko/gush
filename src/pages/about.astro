@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 import { homePhotos } from '../data/assets';
 import { ABOUT, SECOND_BLURB } from '../data/home';
 
-// Same photos as the home page (src/assets/home/): the first large, the rest side by side.
+// Same photos as the home page (src/assets/home/), stacked full width.
 const [hero, ...rest] = homePhotos();
 ---
 
@@ -19,9 +19,9 @@ const [hero, ...rest] = homePhotos();
 
     {
       rest.length > 0 && (
-        <div class="pair">
+        <div class="photos">
           {rest.map((src) => (
-            <Image src={src} alt="GÜSH blue thermal" widths={[320, 640]} sizes="(min-width: 700px) 300px, 50vw" class="photo" />
+            <Image src={src} alt="GÜSH blue thermal" widths={[480, 900, 1200]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />
           ))}
         </div>
       )
@@ -42,14 +42,9 @@ const [hero, ...rest] = homePhotos();
     margin: 12px 0 0;
   }
 
-  .pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    align-items: start;
-  }
-
-  .pair :global(.photo:nth-child(even)) {
-    margin-top: 34px;
+  .photos {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
   }
 </style>
