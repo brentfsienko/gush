@@ -88,15 +88,18 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     margin: 16px 0 20px;
   }
 
-  /* The whole item highlights mustard on hover, like the item names on the shop page. A little
-     padding (pulled back with negative margin) gives the highlight room without shifting the layout. */
+  /* On hover the whole item gets the same box as shop items: black outline, white fill and a hard
+     mustard shadow down-left. Padding (pulled back with negative margin) gives the box room, and the
+     border is always there (transparent) so nothing shifts. */
   :global(.line) {
     position: relative;
     display: flex;
     gap: 14px;
     padding: 8px;
     margin: 0 -8px;
-    transition: background-color 0.1s steps(2);
+    border: 1.5px solid transparent;
+    background: var(--page);
+    transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
     align-items: center;
   }
 
@@ -141,7 +144,9 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
   @media (hover: hover) {
     :global(.line:hover) {
-      background: var(--sun);
+      border-color: var(--ink);
+      box-shadow: -4px 4px 0 var(--sun);
+      transform: translate(1px, -1px);
     }
   }
 
