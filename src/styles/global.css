@@ -107,7 +107,7 @@ body {
   align-items: flex-start;
   gap: 4px;
   /* Height of the CART drawing; the word is its top 80% (the rest is room for the underline). */
-  --cart-h: 32px;
+  --cart-h: 27px;
 }
 
 .cart-count {
@@ -332,7 +332,7 @@ a:active > img.drawn {
   }
 
   .cart-tab {
-    --cart-h: 49px;
+    --cart-h: 42px;
   }
 
   .tabs {

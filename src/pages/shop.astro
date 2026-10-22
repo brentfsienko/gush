@@ -12,7 +12,7 @@ import { productPhotos } from '../data/assets';
     {
       CATEGORIES.map((c) => (
         <button class="drawn-btn filter" data-filter={c} aria-pressed={c === 'all' ? 'true' : 'false'} aria-label={c}>
-          <DrawnToggle name={`filter-${c}`} h={41} webH={47} />
+          <DrawnToggle name={`filter-${c}`} h={35} webH={40} />
         </button>
       ))
     }
@@ -140,21 +140,28 @@ import { productPhotos } from '../data/assets';
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* The whole item (photo, name, price) sits in a softly rounded box that fills mustard on hover
-       (pressed, on phones) to show it's clickable. */
+    /* The whole item (photo, name, price) sits in a softly rounded box. On hover (pressed, on phones)
+       it gets a black outline, white fill and a hard mustard shadow down-left, like the buttons on
+       brentsienko.com. The border is always there (transparent) so nothing shifts. */
     padding: 12px;
+    border: 1.5px solid transparent;
     border-radius: 10px;
-    transition: background-color 0.1s steps(2);
+    background: var(--page);
+    transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
   }
 
   @media (hover: hover) {
     .card:hover {
-      background: var(--sun);
+      border-color: var(--ink);
+      box-shadow: -4px 4px 0 var(--sun);
+      transform: translate(1px, -1px);
     }
   }
 
   .card:active {
-    background: var(--sun);
+    border-color: var(--ink);
+    box-shadow: 0 0 0 var(--sun);
+    transform: translate(-2px, 2px);
   }
 
   .card-photos {
