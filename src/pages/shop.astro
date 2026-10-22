@@ -11,9 +11,7 @@ import { productPhotos } from '../data/assets';
   <nav class="crumbs" aria-label="breadcrumb">
     <a href="/">home</a>
     <span class="sep" aria-hidden="true">›</span>
-    <a href="/shop" data-crumb-shop>shop</a>
-    <span class="sep" aria-hidden="true" data-crumb-cat-sep hidden>›</span>
-    <span data-crumb-cat hidden></span>
+    <a href="/shop" aria-current="page">shop</a>
   </nav>
 
   <nav class="filters" aria-label="categories">
@@ -64,7 +62,7 @@ import { productPhotos } from '../data/assets';
 </Base>
 
 <style>
-  /* "home › shop › thermals" trail above the categories. */
+  /* "home › shop" trail above the categories. */
   .crumbs {
     display: flex;
     align-items: baseline;
@@ -80,10 +78,6 @@ import { productPhotos } from '../data/assets';
 
   .crumbs a:hover {
     text-decoration: underline;
-  }
-
-  .crumbs [hidden] {
-    display: none;
   }
 
   @media (min-width: 700px) {
@@ -282,9 +276,6 @@ import { productPhotos } from '../data/assets';
   const items = [...feed.querySelectorAll<HTMLElement>('[data-category]')];
   const empty = feed.querySelector<HTMLElement>('[data-empty]')!;
   const end = feed.querySelector<HTMLElement>('[data-end]')!;
-  const crumbShop = document.querySelector<HTMLAnchorElement>('[data-crumb-shop]')!;
-  const crumbSep = document.querySelector<HTMLElement>('[data-crumb-cat-sep]')!;
-  const crumbCat = document.querySelector<HTMLElement>('[data-crumb-cat]')!;
 
   function apply(filter: string, push: boolean) {
     if (!buttons.some((b) => b.dataset.filter === filter)) filter = 'all';
@@ -294,11 +285,6 @@ import { productPhotos } from '../data/assets';
       item.hidden = filter !== 'all' && item.dataset.category !== filter;
       if (!item.hidden) shown++;
     }
-    // Breadcrumb: "home › shop", plus "› thermals" etc. when a category is picked.
-    crumbSep.hidden = crumbCat.hidden = filter === 'all';
-    crumbCat.textContent = filter === 'all' ? '' : filter;
-    if (filter === 'all') crumbShop.setAttribute('aria-current', 'page');
-    else crumbShop.removeAttribute('aria-current');
     empty.hidden = shown > 0;
     end.hidden = shown === 0;
     feed.scrollTop = 0;
