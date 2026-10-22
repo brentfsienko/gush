@@ -65,7 +65,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     <div class="line">
       <img class="photo thumb" data-thumb alt="" />
       <div class="line-info">
-        <div class="line-title" data-title></div>
+        <a class="line-title" data-title></a>
         <p class="line-sub"><span data-size></span> · <span data-price></span></p>
         <div class="qty">
           <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={16} webH={18} loading="eager" /></button>
@@ -115,7 +115,14 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     min-width: 0;
   }
 
+  :global(.line) {
+    cursor: pointer;
+  }
+
   :global(.line-title) {
+    display: block;
+    color: inherit;
+    text-decoration: none;
     font-size: 18px;
     /* Room for REMOVE in the corner, so long names wrap before reaching it. */
     padding-right: 76px;
@@ -231,7 +238,15 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     if (item.thumb) thumb.src = item.thumb;
     else thumb.remove();
 
-    $('[data-title]', el).textContent = item.title;
+    // Clicking the item (anywhere but its buttons) opens its page with this size already picked.
+    const href = `/item/${l.slug}?size=${encodeURIComponent(l.size)}`;
+    const title = $<HTMLAnchorElement>('[data-title]', el);
+    title.textContent = item.title;
+    title.href = href;
+    el.addEventListener('click', (e) => {
+      if ((e.target as Element).closest('button, a')) return;
+      location.href = href;
+    });
 
     $('[data-size]', el).textContent = `size ${l.size.toUpperCase()}`;
     $('[data-price]', el).textContent = money(item.price);

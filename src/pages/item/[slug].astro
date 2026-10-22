@@ -405,13 +405,17 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   const add = document.querySelector<HTMLButtonElement>('[data-add]')!;
   let size: string | null = null;
 
-  sizeButtons.forEach((b) =>
-    b.addEventListener('click', () => {
-      size = b.dataset.size!;
-      sizeButtons.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-      msg.textContent = '';
-    }),
-  );
+  const pickSize = (b: HTMLButtonElement) => {
+    size = b.dataset.size!;
+    sizeButtons.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+    msg.textContent = '';
+  };
+  sizeButtons.forEach((b) => b.addEventListener('click', () => pickSize(b)));
+
+  // Coming from the cart (?size=m): start with that size picked, if it's still available.
+  const wanted = new URL(location.href).searchParams.get('size');
+  const preset = sizeButtons.find((b) => b.dataset.size === wanted && !b.disabled);
+  if (preset) pickSize(preset);
 
   add.addEventListener('click', () => {
     if (!size) {
