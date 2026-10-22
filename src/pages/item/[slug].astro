@@ -272,35 +272,43 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 4px 0 10px;
   }
 
+  /* Square black-outlined button, like the shop item boxes: mustard shadow on hover, and it keeps the
+     shadow while the chart is open. */
   .size-chart summary {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    padding: 4px 12px;
+    border: 1.5px solid var(--ink);
+    background: var(--page);
     cursor: pointer;
     list-style: none;
-  }
-
-  .sc-label {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* Same hover/press treatment as the drawn buttons: lift with a hard mustard shadow, press into it. */
-  .size-chart summary > * {
-    transition: transform 0.1s steps(2), filter 0.1s steps(2);
+    user-select: none;
+    transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
   }
 
   @media (hover: hover) {
-    .size-chart summary:hover > * {
+    .size-chart summary:hover {
+      box-shadow: -3px 3px 0 var(--sun);
       transform: translate(1px, -1px);
-      filter: drop-shadow(-2px 2px 0 var(--sun));
     }
   }
 
-  .size-chart summary:active > * {
-    transform: translate(-2px, 2px);
-    filter: none;
+  .size-chart[open] summary {
+    box-shadow: -3px 3px 0 var(--sun);
+    transform: translate(1px, -1px);
   }
+
+  .size-chart summary:active {
+    box-shadow: none;
+    transform: translate(-2px, 2px);
+  }
+
+  .size-chart[open] .chart {
+    margin-top: 14px;
+  }
+
+
 
   .size-chart summary::-webkit-details-marker {
     display: none;
