@@ -40,7 +40,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` ✓ done | selected one gets the underline |
 | Sold out | `scribble-out` | drawn over sold-out sizes |
 | Buttons | `btn-checkout`, `btn-add-to-cart` (ADD+TO+CART), `btn-back` (← BACK), `btn-keep-shopping` (SHOP →) ✓ done | wide |
-| Small buttons | `btn-plus`, `btn-minus`, `btn-remove` ✓ done | used in the cart |
+| Small buttons | `btn-plus`, `btn-minus`, `btn-remove` (REMOVE) ✓ done | used in the cart |
 
 ## Products
 
