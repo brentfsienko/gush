@@ -73,6 +73,30 @@ import { productPhotos } from '../data/assets';
     display: none;
   }
 
+  /* Web: categories sit on the left of the page, lined up under the SHOP tab. */
+  @media (min-width: 700px) {
+    .filters {
+      max-width: none;
+      padding-left: 32px;
+    }
+  }
+
+  /* Wide screens: stacked down the left side like a sub-menu of SHOP, out of the product column's way. */
+  @media (min-width: 1000px) {
+    .filters {
+      position: absolute;
+      top: 6px;
+      left: 0;
+      width: auto;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 0 0 0 32px;
+      overflow: visible;
+      z-index: 1;
+    }
+  }
+
   .filter {
     flex-shrink: 0;
   }
