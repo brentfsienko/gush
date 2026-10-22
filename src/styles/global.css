@@ -159,7 +159,6 @@ img.drawn {
 }
 
 .toggle {
-  position: relative;
   display: inline-grid;
 }
 
@@ -167,31 +166,15 @@ img.drawn {
   grid-area: 1 / 1;
 }
 
-/* Hand-drawn underline (see DrawnToggle.astro): a closed bar whose rounded ends are border-image
-   slices, so it stretches to the word's width without distorting them. Shown under whatever is selected. */
-.uline {
-  --ulh: var(--ulh-phone);
-  position: absolute;
-  left: 2%;
-  bottom: 0;
-  width: 96%;
-  height: var(--ulh);
-  border-style: solid;
-  border-width: 0 calc(var(--ulh) * var(--cap));
-  border-image-repeat: stretch;
+.toggle-on,
+[aria-pressed='true'] .toggle-off,
+[aria-current='page'] .toggle-off {
   visibility: hidden;
-  pointer-events: none;
 }
 
-[aria-pressed='true'] .uline,
-[aria-current='page'] .uline {
+[aria-pressed='true'] .toggle-on,
+[aria-current='page'] .toggle-on {
   visibility: visible;
-}
-
-@media (min-width: 700px) {
-  .uline {
-    --ulh: var(--ulh-web);
-  }
 }
 
 /* Any drawn button: no browser styling. */
