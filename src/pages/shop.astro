@@ -8,6 +8,14 @@ import { productPhotos } from '../data/assets';
 ---
 
 <Base title="shop" tab="shop" fill>
+  <nav class="crumbs" aria-label="breadcrumb">
+    <a href="/">home</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="/shop" data-crumb-shop>shop</a>
+    <span class="sep" aria-hidden="true" data-crumb-cat-sep hidden>›</span>
+    <span data-crumb-cat hidden></span>
+  </nav>
+
   <nav class="filters" aria-label="categories">
     {
       CATEGORIES.map((c) => (
@@ -56,6 +64,42 @@ import { productPhotos } from '../data/assets';
 </Base>
 
 <style>
+  /* "home › shop › thermals" trail above the categories. */
+  .crumbs {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 14px var(--gutter) 0;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .crumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .crumbs .sep,
+  .crumbs [data-crumb-cat],
+  .crumbs a[aria-current='page'] {
+    color: var(--ink-soft);
+  }
+
+  .crumbs [hidden] {
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .crumbs {
+      padding: 28px 32px 0;
+      font-size: 15px;
+    }
+  }
+
   .filters {
     width: 100%;
     max-width: var(--column);
@@ -72,7 +116,7 @@ import { productPhotos } from '../data/assets';
     display: none;
   }
 
-  /* Web: categories sit on the left of the page, lined up under the SHOP tab. */
+  /* Web: categories in a row above the items, lined up with the breadcrumb and the page edge. */
   @media (min-width: 700px) {
     .filters {
       max-width: none;
@@ -80,24 +124,6 @@ import { productPhotos } from '../data/assets';
     }
   }
 
-  /* Wide screens: stacked down the left side like a sub-menu of SHOP, out of the product column's way. */
-  @media (min-width: 1000px) {
-    /* Full-height column with a vertical line separating it from the products. */
-    .filters {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: auto;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 28px 28px 0 32px;
-      border-right: 1.5px solid var(--ink);
-      overflow: visible;
-      z-index: 1;
-    }
-  }
 
   .filter {
     flex-shrink: 0;
@@ -244,12 +270,6 @@ import { productPhotos } from '../data/assets';
     }
   }
 
-  /* Wide screens: the grid fills the full width to the right of the filter column. */
-  @media (min-width: 1000px) {
-    .feed {
-      padding-left: 250px;
-    }
-  }
 </style>
 
 <script>
@@ -258,6 +278,9 @@ import { productPhotos } from '../data/assets';
   const items = [...feed.querySelectorAll<HTMLElement>('[data-category]')];
   const empty = feed.querySelector<HTMLElement>('[data-empty]')!;
   const end = feed.querySelector<HTMLElement>('[data-end]')!;
+  const crumbShop = document.querySelector<HTMLAnchorElement>('[data-crumb-shop]')!;
+  const crumbSep = document.querySelector<HTMLElement>('[data-crumb-cat-sep]')!;
+  const crumbCat = document.querySelector<HTMLElement>('[data-crumb-cat]')!;
 
   function apply(filter: string, push: boolean) {
     if (!buttons.some((b) => b.dataset.filter === filter)) filter = 'all';
@@ -267,6 +290,11 @@ import { productPhotos } from '../data/assets';
       item.hidden = filter !== 'all' && item.dataset.category !== filter;
       if (!item.hidden) shown++;
     }
+    // Breadcrumb: "home › shop", plus "› thermals" etc. when a category is picked.
+    crumbSep.hidden = crumbCat.hidden = filter === 'all';
+    crumbCat.textContent = filter === 'all' ? '' : filter;
+    if (filter === 'all') crumbShop.setAttribute('aria-current', 'page');
+    else crumbShop.removeAttribute('aria-current');
     empty.hidden = shown > 0;
     end.hidden = shown === 0;
     feed.scrollTop = 0;
