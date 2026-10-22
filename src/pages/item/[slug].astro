@@ -26,14 +26,22 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   <div class="gallery" data-gallery>
     {
       photos.map((src, i) => (
-        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[480, 900, 1200]} sizes="(min-width: 700px) 540px, 100vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 420px, 82vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
       ))
     }
   </div>
   {
     photos.length > 1 && (
-      <div class="dots" aria-hidden="true">
-        {photos.map((_, i) => <span class:list={['dot', { on: i === 0 }]} />)}
+      <div class="gallery-nav">
+        <button class="drawn-btn" data-prev aria-label="previous photo" disabled>
+          <Drawn name="arrow-left" h={24} webH={28} />
+        </button>
+        <div class="dots" aria-hidden="true">
+          {photos.map((_, i) => <span class:list={['dot', { on: i === 0 }]} />)}
+        </div>
+        <button class="drawn-btn" data-next aria-label="next photo">
+          <Drawn name="arrow-right" h={24} webH={28} />
+        </button>
       </div>
     )
   }
@@ -107,7 +115,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     .item-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 48px;
+      gap: 40px;
       max-width: var(--wide);
       margin: 0 auto;
       padding: 20px 32px 48px;
@@ -119,10 +127,13 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
       top: 20px;
     }
 
+    /* Vertical line between the photos and the details. */
     .item-layout .stack {
       max-width: none;
       margin: 0;
-      padding: 52px 0 0;
+      padding: 52px 0 0 40px;
+      border-left: 1.5px solid var(--ink);
+      align-self: stretch;
     }
   }
 
@@ -131,12 +142,30 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 4px var(--gutter) 10px;
   }
 
-  /* Full-width photos you swipe sideways through. */
+  /* Photos side by side; each takes ~82% of the width so the next one peeks in from the right.
+     Height is capped so the whole photo and the arrows/dots fit on screen without scrolling. */
   .gallery {
+    --photo-max-h: calc(100dvh - 260px);
     display: flex;
+    gap: 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    padding-inline: var(--gutter);
     scrollbar-width: none;
+  }
+
+  @media (min-width: 700px) {
+    .gallery {
+      --photo-max-h: calc(100dvh - 340px);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .gallery {
+      scroll-padding-inline: 0;
+      padding-inline: 0;
+    }
   }
 
   .gallery::-webkit-scrollbar {
@@ -144,19 +173,37 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   .slide {
-    flex: 0 0 100%;
-    width: 100%;
+    flex: 0 0 82%;
+    width: 82%;
     height: auto;
     aspect-ratio: 3 / 4;
+    max-height: var(--photo-max-h);
     object-fit: contain;
-    scroll-snap-align: center;
+    scroll-snap-align: start;
+  }
+
+  /* Only one photo: no need to leave room for a peek. */
+  .slide:only-child {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .gallery-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 12px 0 0;
+  }
+
+  .gallery-nav .drawn-btn:disabled {
+    opacity: 0.25;
   }
 
   .dots {
     display: flex;
     justify-content: center;
     gap: 8px;
-    padding: 10px 0 0;
   }
 
   .dot {
@@ -281,13 +328,35 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     }
   });
 
-  // Photo dots follow the swipe.
+  // Photo strip: dots follow the swipe; arrows step one photo at a time and fade out at the ends.
   const gallery = document.querySelector<HTMLElement>('[data-gallery]')!;
+  const slides = [...gallery.querySelectorAll<HTMLElement>('.slide')];
   const dots = [...document.querySelectorAll('.dot')];
-  gallery.addEventListener('scroll', () => {
-    const i = Math.round(gallery.scrollLeft / gallery.clientWidth);
+  const prev = document.querySelector<HTMLButtonElement>('[data-prev]');
+  const next = document.querySelector<HTMLButtonElement>('[data-next]');
+  // Where each photo starts within the strip, and which one is closest to the current scroll.
+  const startOf = (i: number) => slides[i].offsetLeft - slides[0].offsetLeft;
+  const current = () => {
+    let best = 0;
+    slides.forEach((_, i) => {
+      if (Math.abs(startOf(i) - gallery.scrollLeft) < Math.abs(startOf(best) - gallery.scrollLeft)) best = i;
+    });
+    return best;
+  };
+  const sync = () => {
+    const i = current();
     dots.forEach((d, j) => d.classList.toggle('on', i === j));
-  }, { passive: true });
+    if (prev) prev.disabled = gallery.scrollLeft <= 2;
+    if (next) next.disabled = gallery.scrollLeft >= gallery.scrollWidth - gallery.clientWidth - 2;
+  };
+  const step = (dir: number) => {
+    const i = Math.min(Math.max(current() + dir, 0), slides.length - 1);
+    gallery.scrollTo({ left: startOf(i), behavior: 'smooth' });
+  };
+  gallery.addEventListener('scroll', sync, { passive: true });
+  prev?.addEventListener('click', () => step(-1));
+  next?.addEventListener('click', () => step(1));
+  sync();
 
   // Size picking + add to cart.
   const sizeGroup = document.querySelector<HTMLElement>('[data-sizes]')!;

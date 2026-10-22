@@ -63,7 +63,7 @@ import { productPhotos } from '../data/assets';
     margin-inline: auto;
     display: flex;
     gap: 10px;
-    padding: 4px var(--gutter) 10px;
+    padding: 16px var(--gutter) 10px;
     overflow-x: auto;
     scrollbar-width: none;
     flex-shrink: 0;
@@ -83,15 +83,18 @@ import { productPhotos } from '../data/assets';
 
   /* Wide screens: stacked down the left side like a sub-menu of SHOP, out of the product column's way. */
   @media (min-width: 1000px) {
+    /* Full-height column with a vertical line separating it from the products. */
     .filters {
       position: absolute;
-      top: 6px;
+      top: 0;
+      bottom: 0;
       left: 0;
       width: auto;
       flex-direction: column;
       align-items: flex-start;
       gap: 12px;
-      padding: 0 0 0 32px;
+      padding: 28px 28px 0 32px;
+      border-right: 1.5px solid var(--ink);
       overflow: visible;
       z-index: 1;
     }
