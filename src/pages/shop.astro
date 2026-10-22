@@ -31,7 +31,7 @@ import { productPhotos } from '../data/assets';
                 )}
               </div>
               <div class="card-meta">
-                <h2 class="heading card-title">{p.title}</h2>
+                <h2 class="heading">{p.title}</h2>
                 <p class="price">{formatPrice(p.price)}</p>
               </div>
             </a>
@@ -140,6 +140,21 @@ import { productPhotos } from '../data/assets';
     display: flex;
     flex-direction: column;
     gap: 12px;
+    /* The whole item (photo, name, price) sits in a softly rounded box that fills mustard on hover
+       (pressed, on phones) to show it's clickable. */
+    padding: 12px;
+    border-radius: 10px;
+    transition: background-color 0.1s steps(2);
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      background: var(--sun);
+    }
+  }
+
+  .card:active {
+    background: var(--sun);
   }
 
   .card-photos {
@@ -151,24 +166,6 @@ import { productPhotos } from '../data/assets';
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-
-  /* The item's name gets a mustard highlight on hover (pressed, on phones) to show it's clickable,
-     like the hover highlight on brentsienko.com. */
-  .card-title {
-    padding: 0 4px;
-    margin-left: -4px;
-    transition: background-color 0.1s steps(2);
-  }
-
-  @media (hover: hover) {
-    .card:hover .card-title {
-      background: var(--sun);
-    }
-  }
-
-  .card:active .card-title {
-    background: var(--sun);
   }
 
   .card-meta {
