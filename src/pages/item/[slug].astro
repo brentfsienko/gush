@@ -285,6 +285,23 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     text-underline-offset: 3px;
   }
 
+  /* Same hover/press treatment as the drawn buttons: lift with a hard mustard shadow, press into it. */
+  .size-chart summary > * {
+    transition: transform 0.1s steps(2), filter 0.1s steps(2);
+  }
+
+  @media (hover: hover) {
+    .size-chart summary:hover > * {
+      transform: translate(1px, -1px);
+      filter: drop-shadow(-2px 2px 0 var(--sun));
+    }
+  }
+
+  .size-chart summary:active > * {
+    transform: translate(-2px, 2px);
+    filter: none;
+  }
+
   .size-chart summary::-webkit-details-marker {
     display: none;
   }
