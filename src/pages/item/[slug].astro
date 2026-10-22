@@ -26,7 +26,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   <div class="gallery" data-gallery>
     {
       photos.map((src, i) => (
-        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 420px, 82vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 500px, 86vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
       ))
     }
   </div>
@@ -36,9 +36,6 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
         <button class="drawn-btn" data-prev aria-label="previous photo" disabled>
           <Drawn name="arrow-left" h={24} webH={28} />
         </button>
-        <div class="dots" aria-hidden="true">
-          {photos.map((_, i) => <span class:list={['dot', { on: i === 0 }]} />)}
-        </div>
         <button class="drawn-btn" data-next aria-label="next photo">
           <Drawn name="arrow-right" h={24} webH={28} />
         </button>
@@ -114,7 +111,8 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   @media (min-width: 900px) {
     .item-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      /* Photos get the bigger share of the width. */
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
       gap: 40px;
       max-width: var(--wide);
       margin: 0 auto;
@@ -142,8 +140,8 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 4px var(--gutter) 10px;
   }
 
-  /* Photos side by side; each takes ~82% of the width so the next one peeks in from the right.
-     Height is capped so the whole photo and the arrows/dots fit on screen without scrolling. */
+  /* Photos side by side; each takes ~86% of the width so the next one peeks in from the right.
+     Height is capped so the whole photo and the arrows fit on screen without scrolling. */
   .gallery {
     --photo-max-h: calc(100dvh - 260px);
     display: flex;
@@ -173,10 +171,10 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   .slide {
-    flex: 0 0 82%;
-    width: 82%;
+    flex: 0 0 86%;
+    width: 86%;
     height: auto;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 1 / 1;
     max-height: var(--photo-max-h);
     object-fit: contain;
     scroll-snap-align: start;
@@ -192,7 +190,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 18px;
+    gap: 36px;
     padding: 12px 0 0;
   }
 
@@ -200,22 +198,8 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     opacity: 0.25;
   }
 
-  .dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-  }
 
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 1.5px solid var(--ink);
-  }
 
-  .dot.on {
-    background: var(--ink);
-  }
 
   .info {
     margin-top: 6px;
@@ -328,10 +312,9 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     }
   });
 
-  // Photo strip: dots follow the swipe; arrows step one photo at a time and fade out at the ends.
+  // Photo strip: arrows step one photo at a time and fade out at the ends.
   const gallery = document.querySelector<HTMLElement>('[data-gallery]')!;
   const slides = [...gallery.querySelectorAll<HTMLElement>('.slide')];
-  const dots = [...document.querySelectorAll('.dot')];
   const prev = document.querySelector<HTMLButtonElement>('[data-prev]');
   const next = document.querySelector<HTMLButtonElement>('[data-next]');
   // Where each photo starts within the strip, and which one is closest to the current scroll.
@@ -344,8 +327,6 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     return best;
   };
   const sync = () => {
-    const i = current();
-    dots.forEach((d, j) => d.classList.toggle('on', i === j));
     if (prev) prev.disabled = gallery.scrollLeft <= 2;
     if (next) next.disabled = gallery.scrollLeft >= gallery.scrollWidth - gallery.clientWidth - 2;
   };
