@@ -166,15 +166,25 @@ img.drawn {
   grid-area: 1 / 1;
 }
 
-.toggle-on,
-[aria-pressed='true'] .toggle-off,
-[aria-current='page'] .toggle-off {
+/* The "-on" layer is just the hand-drawn underline, laid over the word. When something becomes
+   selected it draws itself in from left to right, like a pen stroke. */
+.toggle-on {
   visibility: hidden;
 }
 
 [aria-pressed='true'] .toggle-on,
 [aria-current='page'] .toggle-on {
   visibility: visible;
+  animation: underline-grow 0.45s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+@keyframes underline-grow {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 /* Any drawn button: no browser styling. */
@@ -307,6 +317,7 @@ a:active > img.drawn {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+    animation: none !important;
     scroll-behavior: auto !important;
   }
   @view-transition {

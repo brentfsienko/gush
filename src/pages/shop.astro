@@ -18,7 +18,7 @@ import { productPhotos } from '../data/assets';
     {
       CATEGORIES.map((c) => (
         <button class="drawn-btn filter" data-filter={c} aria-pressed={c === 'all' ? 'true' : 'false'} aria-label={c}>
-          <DrawnToggle name={`filter-${c}`} h={35} webH={40} />
+          <DrawnToggle name={`filter-${c}`} h={c === 'thermals' ? 37 : 35} webH={c === 'thermals' ? 43 : 40} />
         </button>
       ))
     }
@@ -68,7 +68,7 @@ import { productPhotos } from '../data/assets';
     margin-inline: auto;
     display: flex;
     gap: 10px;
-    padding: 22px var(--gutter) 10px;
+    padding: 32px var(--gutter) 10px;
     overflow-x: auto;
     scrollbar-width: none;
     flex-shrink: 0;

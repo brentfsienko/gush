@@ -272,34 +272,39 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 4px 0 10px;
   }
 
-  /* Square black-outlined button, like the shop item boxes: mustard shadow on hover, and it keeps the
-     shadow while the chart is open. */
+  /* Like the shop item boxes: no box until hovered, then a square black outline with a mustard
+     shadow. It keeps the box and shadow while the chart is open. */
   .size-chart summary {
     display: inline-flex;
     align-items: center;
     gap: 10px;
     padding: 4px 12px;
-    border: 1.5px solid var(--ink);
+    /* Pulled back by the padding + border so the words line up with "size" above. */
+    margin-left: -13.5px;
+    border: 1.5px solid transparent;
     background: var(--page);
     cursor: pointer;
     list-style: none;
     user-select: none;
-    transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
+    transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
   }
 
   @media (hover: hover) {
     .size-chart summary:hover {
+      border-color: var(--ink);
       box-shadow: -3px 3px 0 var(--sun);
       transform: translate(1px, -1px);
     }
   }
 
   .size-chart[open] summary {
+    border-color: var(--ink);
     box-shadow: -3px 3px 0 var(--sun);
     transform: translate(1px, -1px);
   }
 
   .size-chart summary:active {
+    border-color: var(--ink);
     box-shadow: none;
     transform: translate(-2px, 2px);
   }
