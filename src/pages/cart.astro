@@ -71,9 +71,9 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
           <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={16} webH={18} loading="eager" /></button>
           <span class="qty-n" data-qty></span>
           <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={32} webH={36} loading="eager" /></button>
-          <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={20} webH={24} loading="eager" /></button>
         </div>
       </div>
+      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={20} webH={24} loading="eager" /></button>
     </div>
   </template>
 
@@ -109,6 +109,8 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
   :global(.line-title) {
     font-size: 18px;
+    /* Room for REMOVE in the corner, so long names wrap before reaching it. */
+    padding-right: 76px;
   }
 
   :global(.line-sub) {
@@ -132,9 +134,11 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     opacity: 0.3;
   }
 
-  /* REMOVE sits at the end of the quantity row. */
+  /* REMOVE sits in the item's upper-right corner. */
   :global(.remove) {
-    margin-left: 10px;
+    position: absolute;
+    top: 0;
+    right: 0;
   }
 
   .summary dl {
