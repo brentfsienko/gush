@@ -88,10 +88,16 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     margin: 16px 0 20px;
   }
 
+  /* The whole item highlights mustard on hover, like the item names on the shop page. A little
+     padding (pulled back with negative margin) gives the highlight room without shifting the layout. */
   :global(.line) {
     position: relative;
     display: flex;
     gap: 14px;
+    padding: 8px;
+    margin: 0 -8px;
+    border-radius: 2px;
+    transition: background-color 0.1s steps(2);
     align-items: center;
   }
 
@@ -134,11 +140,17 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     opacity: 0.3;
   }
 
+  @media (hover: hover) {
+    :global(.line:hover) {
+      background: var(--sun);
+    }
+  }
+
   /* REMOVE sits in the item's upper-right corner. */
   :global(.remove) {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 8px;
+    right: 8px;
   }
 
   .summary dl {
