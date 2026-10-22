@@ -195,6 +195,48 @@ import { productPhotos } from '../data/assets';
   .note p {
     margin: 10px 0 0;
   }
+
+  /* Web: products two across in a grid with normal scrolling (phones keep one full-screen item at a
+     time). "More coming soon" fills the next spot as a dashed placeholder box the same size as an item. */
+  @media (min-width: 700px) {
+    .feed {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+      gap: 28px;
+      padding: 24px 32px 48px;
+      scroll-snap-type: none;
+    }
+
+    .feed-item {
+      height: auto;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      scroll-snap-align: none;
+    }
+
+    .card-photos {
+      flex: none;
+      aspect-ratio: 1 / 1;
+    }
+
+    .note {
+      flex: 1;
+      margin: 0;
+      justify-content: center;
+      border: 1.5px dashed var(--ink);
+      border-radius: 10px;
+    }
+  }
+
+  /* Wide screens: keep the grid clear of the filter column on the left, centered in the rest. */
+  @media (min-width: 1000px) {
+    .feed {
+      padding-left: max(250px, calc((100% - 920px) / 2));
+      padding-right: max(32px, calc((100% - 920px) / 2));
+    }
+  }
 </style>
 
 <script>
