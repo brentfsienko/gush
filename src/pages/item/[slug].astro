@@ -88,7 +88,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
       <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out.' : ''}</p>
 
       <button class="drawn-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
-        <Drawn name="btn-add-to-cart" h={52} webH={66} />
+        <Drawn name="btn-add-to-cart" h={37} webH={42} />
       </button>
     </div>
 
