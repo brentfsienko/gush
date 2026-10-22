@@ -26,7 +26,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   <div class="gallery" data-gallery>
     {
       photos.map((src, i) => (
-        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 500px, 86vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 560px, 100vw" class="slide" loading={i === 0 ? 'eager' : 'lazy'} />
       ))
     }
   </div>
@@ -140,16 +140,13 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 4px var(--gutter) 10px;
   }
 
-  /* Photos side by side; each takes ~86% of the width so the next one peeks in from the right.
+  /* One whole photo at a time (no neighbours peeking in); swipe or use the arrows for the next.
      Height is capped so the whole photo and the arrows fit on screen without scrolling. */
   .gallery {
     --photo-max-h: calc(100dvh - 260px);
     display: flex;
-    gap: 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--gutter);
-    padding-inline: var(--gutter);
     scrollbar-width: none;
   }
 
@@ -159,31 +156,19 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     }
   }
 
-  @media (min-width: 900px) {
-    .gallery {
-      scroll-padding-inline: 0;
-      padding-inline: 0;
-    }
-  }
 
   .gallery::-webkit-scrollbar {
     display: none;
   }
 
   .slide {
-    flex: 0 0 86%;
-    width: 86%;
+    flex: 0 0 100%;
+    width: 100%;
     height: auto;
     aspect-ratio: 1 / 1;
     max-height: var(--photo-max-h);
     object-fit: contain;
     scroll-snap-align: start;
-  }
-
-  /* Only one photo: no need to leave room for a peek. */
-  .slide:only-child {
-    flex-basis: 100%;
-    width: 100%;
   }
 
   .gallery-nav {
