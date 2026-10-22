@@ -168,7 +168,7 @@ img.drawn {
 }
 
 /* Hand-drawn underline (see DrawnToggle.astro): a closed bar whose rounded ends are border-image
-   slices, so changing its width stretches only the middle. Shown under whatever is selected. */
+   slices, so it stretches to the word's width without distorting them. Shown under whatever is selected. */
 .uline {
   --ulh: var(--ulh-phone);
   position: absolute;
@@ -186,17 +186,6 @@ img.drawn {
 [aria-pressed='true'] .uline,
 [aria-current='page'] .uline {
   visibility: visible;
-}
-
-/* Only right after a click (see the script in Base.astro): grow out to the right from a small pill. */
-.uline.grow {
-  animation: underline-grow 0.55s cubic-bezier(0.22, 0.8, 0.3, 1);
-}
-
-@keyframes underline-grow {
-  from {
-    width: calc(var(--ulh) * var(--cap) * 2);
-  }
 }
 
 @media (min-width: 700px) {

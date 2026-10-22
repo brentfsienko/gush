@@ -1,9 +1,8 @@
 ---
 // A drawing that can be "selected" (tabs, filters, sizes). Selection is shown by the hand-drawn
 // underline bar (underline-bar.png) under the word. The bar is drawn with border-image so its two
-// rounded ends stay as drawn and only the middle stretches; that lets it grow out to the right as a
-// closed line when something is clicked. CSS shows it when the parent button has aria-pressed="true"
-// or the parent link has aria-current="page".
+// rounded ends stay as drawn and only the middle stretches to the word's width. CSS shows it when the
+// parent button has aria-pressed="true" or the parent link has aria-current="page".
 import { getImage } from 'astro:assets';
 import Drawn from './Drawn.astro';
 import { drawn } from '../data/assets';
@@ -35,5 +34,5 @@ const style = [
 
 <span class="toggle">
   <Drawn name={name} h={h} webH={webH} class="toggle-off" loading="eager" />
-  <span class="uline" data-ul={name} aria-hidden="true" style={style}></span>
+  <span class="uline" aria-hidden="true" style={style}></span>
 </span>

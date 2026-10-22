@@ -84,16 +84,6 @@ const digitUrls = digitImgs.every(Boolean)
               });
             } else el.textContent = n;
             el.closest('a').setAttribute('aria-label', 'cart, ' + n + (n === 1 ? ' item' : ' items'));
-            // A tab was just clicked on the previous page: grow its underline in (before first paint, so
-            // it never flashes at full length). Plain reloads don't set this, so nothing animates.
-            try {
-              var grow = sessionStorage.getItem('gush-grow');
-              if (grow) {
-                sessionStorage.removeItem('gush-grow');
-                var ul = document.querySelector('.tab [data-ul="' + grow + '"]');
-                if (ul) ul.classList.add('grow');
-              }
-            } catch (e) {}
           </script>
         </a>
       </header>
@@ -108,28 +98,6 @@ const digitUrls = digitImgs.every(Boolean)
       updateBadge();
       // Back/forward cache restores old pages; refresh the count when that happens.
       addEventListener('pageshow', updateBadge);
-
-      // Underlines grow in only when something is clicked. Buttons (filters, sizes) grow on the spot;
-      // tabs navigate, so the next page grows it (see the inline script in the header).
-      document.addEventListener('click', (e) => {
-        const host = (e.target as Element | null)?.closest('a.tab, .drawn-btn');
-        const ul = host?.querySelector<HTMLElement>('.uline');
-        if (!host || !ul) return;
-        if (host instanceof HTMLAnchorElement) {
-          if (host.getAttribute('aria-current') !== 'page') {
-            try {
-              sessionStorage.setItem('gush-grow', ul.dataset.ul ?? '');
-            } catch {}
-          }
-          return;
-        }
-        ul.classList.remove('grow');
-        void ul.offsetWidth; // restart the animation
-        ul.classList.add('grow');
-      });
-      document.addEventListener('animationend', (e) => {
-        if ((e.target as Element).classList?.contains('uline')) (e.target as Element).classList.remove('grow');
-      });
     </script>
   </body>
 </html>
