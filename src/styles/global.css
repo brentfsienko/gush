@@ -296,27 +296,24 @@ a:active > img.drawn {
     font-size: 16px;
   }
 
-  /* Shop/about in the far top-left, logo dead center, cart in the far top-right. */
+  /* Logo far left, shop/about dead center, cart far right, all on the same vertical center. */
   .topbar {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    align-items: start;
+    align-items: center;
     padding: 18px 32px 16px;
   }
 
-  .tabs {
+  .brand {
     grid-column: 1;
     grid-row: 1;
     justify-self: start;
   }
 
-  .brand {
+  .tabs {
     grid-column: 2;
     grid-row: 1;
-  }
-
-  .brand img.drawn {
-    object-position: center;
+    justify-self: center;
   }
 
   .cart-tab {
