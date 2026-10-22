@@ -17,6 +17,14 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 ---
 
 <Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)}`}>
+  <nav class="crumbs item-crumbs" aria-label="breadcrumb">
+    <a href="/">home</a>
+    <span aria-hidden="true">›</span>
+    <a href="/shop">shop</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">{p.title}</span>
+  </nav>
+
   <div class="item-layout">
   <div class="item-media">
   <a href="/shop" class="back" aria-label="back to shop" data-back>
@@ -141,13 +149,22 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 
   .back {
     display: inline-block;
-    margin: 4px var(--gutter) 10px;
+    margin: 10px var(--gutter) 10px;
+  }
+
+  /* Web: breadcrumb lines up with the left edge of the photo/details layout below it. */
+  @media (min-width: 900px) {
+    .item-crumbs {
+      max-width: var(--wide);
+      margin: 0 auto;
+      padding-inline: 32px;
+    }
   }
 
   /* One whole photo at a time (no neighbours peeking in); swipe or use the arrows for the next.
      Height is capped so the whole photo and the arrows fit on screen without scrolling. */
   .gallery {
-    --photo-max-h: calc(100dvh - 260px);
+    --photo-max-h: calc(100dvh - 300px);
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -156,7 +173,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 
   @media (min-width: 700px) {
     .gallery {
-      --photo-max-h: calc(100dvh - 340px);
+      --photo-max-h: calc(100dvh - 390px);
     }
   }
 
