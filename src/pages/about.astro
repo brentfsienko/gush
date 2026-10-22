@@ -4,7 +4,8 @@ import Base from '../layouts/Base.astro';
 import { homePhotos } from '../data/assets';
 import { ABOUT, SECOND_BLURB } from '../data/home';
 
-const photo = homePhotos()[1] ?? homePhotos()[0];
+// Same photos as the home page (src/assets/home/): the first large, the rest side by side.
+const [hero, ...rest] = homePhotos();
 ---
 
 <Base title="about" tab="about">
@@ -14,7 +15,17 @@ const photo = homePhotos()[1] ?? homePhotos()[0];
       <p class="blurb">{ABOUT}</p>
     </div>
 
-    {photo && <Image src={photo} alt="GÜSH blue thermal" widths={[480, 900]} sizes="(min-width: 480px) 360px, 75vw" class="photo polaroid" />}
+    {hero && <Image src={hero} alt="GÜSH blue thermal" widths={[480, 900]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />}
+
+    {
+      rest.length > 0 && (
+        <div class="pair">
+          {rest.map((src) => (
+            <Image src={src} alt="GÜSH blue thermal" widths={[320, 640]} sizes="(min-width: 700px) 300px, 50vw" class="photo" />
+          ))}
+        </div>
+      )
+    }
 
     <div class="type">
       <p class="blurb">{SECOND_BLURB}</p>
@@ -31,8 +42,14 @@ const photo = homePhotos()[1] ?? homePhotos()[0];
     margin: 12px 0 0;
   }
 
-  .polaroid {
-    width: 78%;
-    margin: 0 auto;
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .pair :global(.photo:nth-child(even)) {
+    margin-top: 34px;
   }
 </style>
