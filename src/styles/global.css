@@ -58,6 +58,8 @@ body {
   row-gap: 2px;
   min-height: 0;
   padding: max(6px, env(safe-area-inset-top)) 2% 10px;
+  /* Single black line between the header (logo, tabs) and the page. */
+  border-bottom: 1.5px solid var(--ink);
   position: relative;
   z-index: 2;
   view-transition-name: topbar;
