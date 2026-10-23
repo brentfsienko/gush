@@ -33,7 +33,7 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 
 | What | Files | Notes |
 |---|---|---|
-| Logo | `logo` ✓ done | upper left of the header (also used for the app icon) |
+| Logo | `logo` ✓ done | center of the header; its two hearts are the browser-tab and home-screen icon (`public/favicon.ico`, `favicon-96.png`, `icon-*.png`, `apple-touch-icon.png`) |
 | Digits | `digit-0` … `digit-9` ✓ done | cart count + quantities |
 | Tabs | `tab-shop`, `tab-about`, `tab-cart` ✓ done | selected one gets the drawn underline (`-on` files are generated) |
 | Shop filters | `filter-all`, `filter-thermals` ✓ done. To add another, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` | selected one gets the underline |
