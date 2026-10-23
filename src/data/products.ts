@@ -32,7 +32,7 @@ export const PRODUCTS: Product[] = [
   {
     slug: 'blue-thermal',
     title: 'blue thermal',
-    price: 10000,
+    price: 15000,
     category: 'thermals',
     // TODO: write the real description
     description: 'a blue thermal. write a couple lines here about the fit, the feel, why you made it.',
