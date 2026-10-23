@@ -40,7 +40,8 @@ const digitUrls = digitImgs.every(Boolean)
     <!-- Link previews when the site is shared. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GÜSH" />
-    <meta property="og:title" content={fullTitle} />
+    <!-- iMessage shows only the image and title, so the tagline goes in the shared title too. -->
+    <meta property="og:title" content={`${fullTitle} · ${TAGLINE}`} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={pageUrl} />
     <meta property="og:image" content={ogImage} />
