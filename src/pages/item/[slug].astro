@@ -17,7 +17,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
 const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 ---
 
-<Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)} · ${TAGLINE}`}>
+<Base title={p.title} tab="shop" description={`${p.title} · ${TAGLINE}`}>
   <nav class="crumbs item-crumbs" aria-label="breadcrumb">
     <a href="/">home</a>
     <span aria-hidden="true">›</span>
