@@ -10,3 +10,11 @@ directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
 run_worker_first = ["/api/*"]
+
+# Stock tracking (optional, free): a Cloudflare KV namespace that keeps a "sold" count per size.
+# Create it once with:  npx wrangler kv namespace create STOCK
+# then uncomment the lines below and paste the id it prints. Without it, the site still works and
+# uses the stock numbers in src/data/products.ts as-is (no automatic count-down).
+# [[kv_namespaces]]
+# binding = "STOCK"
+# id = "paste-the-id-here"

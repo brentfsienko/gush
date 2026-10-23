@@ -1,3 +1,6 @@
 # Copy to .dev.vars for local testing (never commit .dev.vars).
 # Use your Stripe TEST secret key (starts with sk_test_) from https://dashboard.stripe.com/test/apikeys
 STRIPE_SECRET_KEY=sk_test_replace_me
+# Webhook signing secret (starts with whsec_). For local testing, `stripe listen` prints one; for the
+# live site, it's on the webhook endpoint's page in the Stripe dashboard.
+STRIPE_WEBHOOK_SECRET=whsec_replace_me

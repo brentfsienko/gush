@@ -66,7 +66,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
             return (
               <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} aria-pressed="false" disabled={soldOut} aria-label={soldOut ? `${s} sold out` : s}>
                 <DrawnToggle name={`size-${s}`} h={46} webH={52} />
-                {soldOut && <Drawn name="scribble-out" h={46} webH={52} class="scribble" />}
+                <Drawn name="scribble-out" h={46} webH={52} class="scribble" />
               </button>
             );
           })
@@ -238,6 +238,12 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   /* Covers the letters (top 80% of the drawing; the rest is room for the underline). */
+  /* The scribble shows only on sold-out (disabled) sizes; it's always in the page so live stock can
+     switch it on. */
+  .size:not(:disabled) :global(.scribble) {
+    display: none;
+  }
+
   .size :global(.scribble) {
     position: absolute;
     top: 0;
@@ -417,6 +423,30 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   const wanted = new URL(location.href).searchParams.get('size');
   const preset = sizeButtons.find((b) => b.dataset.size === wanted && !b.disabled);
   if (preset) pickSize(preset);
+
+  // Live stock: the page was built with the starting counts, so ask the site what's left now and
+  // scribble out anything that has sold out since.
+  fetch('/api/stock', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((all: Record<string, Record<string, number>> | null) => {
+      const live = all?.[add.dataset.slug!];
+      if (!live) return;
+      for (const b of sizeButtons) {
+        const left = live[b.dataset.size!];
+        if (left === undefined) continue;
+        b.dataset.stock = String(left);
+        b.disabled = left <= 0;
+        b.setAttribute('aria-label', left <= 0 ? `${b.dataset.size} sold out` : b.dataset.size!);
+        if (b.disabled && size === b.dataset.size) {
+          size = null;
+          b.setAttribute('aria-pressed', 'false');
+        }
+      }
+      const allGone = sizeButtons.every((b) => b.disabled);
+      add.disabled = allGone;
+      if (allGone) msg.textContent = 'sold out.';
+    })
+    .catch(() => {});
 
   add.addEventListener('click', () => {
     if (!size) {
