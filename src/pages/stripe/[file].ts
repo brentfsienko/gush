@@ -20,14 +20,15 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ params, props }) => {
-  const img = sharp(await readFile(props.path as string));
+  // Trimmed to the drawing/garment so it fills as much of Stripe's small, fixed-size boxes as it can.
+  const img = sharp(await readFile(props.path as string)).trim();
   if (params.file === 'logo.png') {
     const png = await img.resize({ width: 640 }).png().toBuffer();
     return new Response(new Uint8Array(png), { headers: { 'content-type': 'image/png' } });
   }
   // Square, on white (the product photos are cut out on transparent backgrounds).
   const jpg = await img
-    .resize({ width: 800, height: 800, fit: 'contain', background: '#ffffff' })
+    .resize({ width: 800, height: 800, fit: 'contain', background: '#ffffffff' })
     .flatten({ background: '#ffffff' })
     .jpeg({ quality: 88 })
     .toBuffer();
