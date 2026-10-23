@@ -35,4 +35,4 @@ export const CHECKOUT_TEXT = {
 };
 // The live site, for images on the checkout page when testing on your own computer (Stripe can't
 // load images from localhost).
-export const SITE_URL = 'https://gush.brentfsienko.workers.dev';
+export const SITE_URL = 'https://gush.supply';

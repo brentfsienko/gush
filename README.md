@@ -100,7 +100,8 @@ Static pages and images are served for free; only checkout runs code.
 1. Cloudflare dashboard → Workers & Pages → Create → Import a repository → `brentfsienko/gush`.
    Build command `npm run build`, deploy command `npx wrangler deploy`.
 2. The Worker → Settings → Variables and Secrets → add `STRIPE_SECRET_KEY`, type **Secret**.
-3. Add your domain under Settings → Domains & Routes.
+3. The domain (gush.supply + www) is attached in `wrangler.toml` (`routes`). To send www to the bare domain:
+   Cloudflare → gush.supply → Rules → Redirect Rules → template "Redirect from WWW to root".
 
 Every push to `main` redeploys automatically. (Or deploy straight from your computer with `npm run deploy`.)
 
