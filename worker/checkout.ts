@@ -10,6 +10,9 @@ import {
   TAX_ENABLED,
   CLOTHING_TAX_CODE,
   SHIPPING_TAX_CODE,
+  CHECKOUT_LOOK,
+  CHECKOUT_TEXT,
+  SITE_URL,
 } from '../src/data/store';
 import { available } from './stock';
 import type { Env } from './index';
@@ -39,6 +42,10 @@ export async function checkout(request: Request, env: Env) {
     wanted.set(key, (wanted.get(key) ?? 0) + qty);
   }
 
+  const origin = new URL(request.url).origin;
+  // Where Stripe loads the logo and product photos from (see src/pages/stripe/[file].ts).
+  const images = /^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin) ? SITE_URL : origin;
+
   const params = new URLSearchParams();
   let i = 0;
   for (const [key, qty] of wanted) {
@@ -57,6 +64,7 @@ export async function checkout(request: Request, env: Env) {
     params.set(`line_items[${i}][price_data][product_data][name]`, `${p.title} (${size.toUpperCase()})`);
     params.set(`line_items[${i}][price_data][product_data][metadata][slug]`, p.slug);
     params.set(`line_items[${i}][price_data][product_data][metadata][size]`, size);
+    params.set(`line_items[${i}][price_data][product_data][images][0]`, `${images}/stripe/${p.slug}.jpg`);
     if (TAX_ENABLED) {
       params.set(`line_items[${i}][price_data][product_data][tax_code]`, CLOTHING_TAX_CODE);
       params.set(`line_items[${i}][price_data][tax_behavior]`, 'exclusive');
@@ -64,7 +72,6 @@ export async function checkout(request: Request, env: Env) {
     i++;
   }
 
-  const origin = new URL(request.url).origin;
   params.set('mode', 'payment');
   // Shows Stripe's "Add promotion code" field. Codes are created in the Stripe dashboard
   // (Product catalog → Coupons), so no code changes are needed to add or retire one.
@@ -82,6 +89,18 @@ export async function checkout(request: Request, env: Env) {
     params.set('shipping_options[0][shipping_rate_data][tax_code]', SHIPPING_TAX_CODE);
     params.set('shipping_options[0][shipping_rate_data][tax_behavior]', 'exclusive');
   }
+  // Make Stripe's page look like GÜSH (settings in src/data/store.ts).
+  params.set('branding_settings[display_name]', CHECKOUT_LOOK.displayName);
+  params.set('branding_settings[font_family]', CHECKOUT_LOOK.font);
+  params.set('branding_settings[border_style]', CHECKOUT_LOOK.borderStyle);
+  params.set('branding_settings[background_color]', CHECKOUT_LOOK.background);
+  params.set('branding_settings[button_color]', CHECKOUT_LOOK.button);
+  params.set('branding_settings[logo][type]', 'url');
+  params.set('branding_settings[logo][url]', `${images}/stripe/logo.png`);
+  params.set('branding_settings[icon][type]', 'url');
+  params.set('branding_settings[icon][url]', `${images}/icon-512.png`);
+  if (CHECKOUT_TEXT.shipping) params.set('custom_text[shipping_address][message]', CHECKOUT_TEXT.shipping);
+  if (CHECKOUT_TEXT.submit) params.set('custom_text[submit][message]', CHECKOUT_TEXT.submit);
   // Checkout links expire after 30 minutes (Stripe's minimum), so a stale tab can't pay for
   // stock that has since sold out.
   params.set('expires_at', String(Math.floor(Date.now() / 1000) + 30 * 60));

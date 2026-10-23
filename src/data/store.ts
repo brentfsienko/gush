@@ -18,3 +18,21 @@ export const TAX_ENABLED = false;
 // Stripe tax categories (https://docs.stripe.com/tax/tax-codes): clothing, and shipping.
 export const CLOTHING_TAX_CODE = 'txcd_30011000';
 export const SHIPPING_TAX_CODE = 'txcd_92010001';
+
+// How Stripe's checkout page looks (https://docs.stripe.com/payments/checkout/customization/appearance).
+// Stripe only offers its own font list; Inconsolata is the closest to IBM Plex Mono.
+export const CHECKOUT_LOOK = {
+  displayName: 'GÜSH',
+  font: 'inconsolata',
+  borderStyle: 'rectangular', // or 'rounded' / 'pill'
+  background: '#ffffff',
+  button: '#1f1b16', // the ink color
+};
+// Small notes on the checkout page, in the site's voice. Set one to '' to leave it out.
+export const CHECKOUT_TEXT = {
+  shipping: 'every GÜSH piece is hand sewn. we pack and ship it ourselves.',
+  submit: 'thank you for supporting handmade ♥',
+};
+// The live site, for images on the checkout page when testing on your own computer (Stripe can't
+// load images from localhost).
+export const SITE_URL = 'https://gush.brentfsienko.workers.dev';
