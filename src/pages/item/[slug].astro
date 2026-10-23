@@ -66,7 +66,6 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
             return (
               <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} aria-pressed="false" disabled={soldOut} aria-label={soldOut ? `${s} sold out` : s}>
                 <DrawnToggle name={`size-${s}`} h={46} webH={52} />
-                <Drawn name="scribble-out" h={46} webH={52} class="scribble" />
               </button>
             );
           })
@@ -237,25 +236,9 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     position: relative;
   }
 
-  /* Covers the letters (top 80% of the drawing; the rest is room for the underline). */
-  /* The scribble shows only on sold-out (disabled) sizes; it's always in the page so live stock can
-     switch it on. */
-  .size:not(:disabled) :global(.scribble) {
-    display: none;
-  }
-
-  .size :global(.scribble) {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 80% !important;
-    object-fit: fill;
-    pointer-events: none;
-  }
-
-  .size:disabled .toggle {
-    opacity: 0.45;
+  /* Sold out: the ink fades to about the price gray (#7a7a7a) on the white page; white fill stays white. */
+  .size:disabled :global(.toggle) {
+    opacity: 0.6;
   }
 
   .msg {
@@ -425,7 +408,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   if (preset) pickSize(preset);
 
   // Live stock: the page was built with the starting counts, so ask the site what's left now and
-  // scribble out anything that has sold out since.
+  // gray out anything that has sold out since.
   fetch('/api/stock', { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null))
     .then((all: Record<string, Record<string, number>> | null) => {

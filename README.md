@@ -38,7 +38,6 @@ Things with an `-on` version need two drawings: normal, and selected (circled, f
 | Tabs | `tab-shop`, `tab-about`, `tab-cart` ✓ done | selected one gets the drawn underline (`-on` files are generated) |
 | Shop filters | `filter-all`, `filter-thermals` ✓ done. To add another, list it in `CATEGORIES` in `src/data/products.ts` and draw `filter-<name>` | selected one gets the underline |
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` ✓ done | selected one gets the underline |
-| Sold out | `scribble-out` | drawn over sold-out sizes |
 | Buttons | `btn-checkout`, `btn-add-to-cart` (ADD+TO+CART), `btn-back` (← BACK), `btn-keep-shopping` (SHOP →) ✓ done | wide |
 | Small buttons | `btn-plus`, `btn-minus`, `btn-remove` (REMOVE) ✓ done | used in the cart |
 
@@ -67,7 +66,7 @@ Checkout uses Stripe's hosted payment page (cards, Apple Pay, Google Pay). Price
 ### 2. Stock that counts down after each sale (free)
 `stock` in `products.ts` is how many of each size you've had in total. After each paid order Stripe
 notifies the site (a "webhook"), which adds to a running "sold" count stored in Cloudflare KV.
-Available = total − sold; sold-out sizes get scribbled out and can't be checked out.
+Available = total − sold; sold-out sizes turn gray and can't be checked out.
 To restock, add the new units to the numbers in `products.ts`.
 
 1. Create the storage: `npx wrangler kv namespace create STOCK`, then paste the id into the

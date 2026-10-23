@@ -23,7 +23,7 @@ export type Product = {
   details: { label: string; value: string }[];
   /** How many of each size you've had in total. Sales are subtracted automatically once stock
    *  tracking is set up (see README), so to restock, ADD the new units to these numbers.
-   *  0 = sold out (shown scribbled out). */
+   *  0 = sold out (shown grayed out). */
   stock: Partial<Record<Size, number>>;
   sizeChart?: { headers: string[]; rows: string[][] };
 };
