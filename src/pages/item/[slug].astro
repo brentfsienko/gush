@@ -5,6 +5,7 @@ import Drawn from '../../components/Drawn.astro';
 import DrawnToggle from '../../components/DrawnToggle.astro';
 import { PRODUCTS, SIZES, formatPrice, type Product } from '../../data/products';
 import { productPhotos } from '../../data/assets';
+import { TAGLINE } from '../../data/store';
 
 export function getStaticPaths() {
   return PRODUCTS.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
@@ -16,7 +17,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
 const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 ---
 
-<Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)}`}>
+<Base title={p.title} tab="shop" description={`${p.title} · ${formatPrice(p.price)} · ${TAGLINE}`}>
   <nav class="crumbs item-crumbs" aria-label="breadcrumb">
     <a href="/">home</a>
     <span aria-hidden="true">›</span>

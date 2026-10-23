@@ -36,3 +36,6 @@ export const CHECKOUT_TEXT = {
 // The live site, for images on the checkout page when testing on your own computer (Stripe can't
 // load images from localhost).
 export const SITE_URL = 'https://gush.supply';
+
+// Shown under the title when a GÜSH link is shared (and to search engines).
+export const TAGLINE = 'small batch clothing designed and made in Seattle';

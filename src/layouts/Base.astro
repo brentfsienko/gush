@@ -5,6 +5,7 @@ import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
 import { drawn } from '../data/assets';
+import { TAGLINE } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 
 interface Props {
@@ -17,7 +18,7 @@ interface Props {
   clearCart?: boolean;
 }
 
-const { title, tab, fill = false, description = 'GÜSH clothing', clearCart = false } = Astro.props;
+const { title, tab, fill = false, description = TAGLINE, clearCart = false } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
 const ogImage = new URL('/og.png', Astro.site ?? Astro.url).href;
 // This page's public address (pages are built as name.html but served without the .html).
