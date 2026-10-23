@@ -44,7 +44,7 @@ export const PRODUCTS: Product[] = [
       { label: 'care', value: 'TBD' },
     ],
     // TODO: real counts per size. Checkout refuses sizes at 0.
-    stock: { s: 1, m: 1, l: 1, xl: 1 },
+    stock: { s: 5, m: 5, l: 5, xl: 5 },
     // TODO: real measurements
     sizeChart: {
       headers: ['size', 'chest', 'length', 'sleeve'],
