@@ -60,6 +60,10 @@ Shipping rate and countries: `src/data/store.ts`.
 4. Orders show up in the Stripe dashboard (and the Stripe phone app) with the item, size and shipping address.
 5. When you're ready to go live, finish Stripe's account activation and use your **live** key (`sk_live_`) in Cloudflare (below).
 
+### Promo codes
+
+Checkout shows Stripe's own "Add promotion code" field. To make a code: Stripe dashboard → Product catalog → Coupons → create a coupon (e.g. 20% off, or $15 off), then add a customer-facing code to it (e.g. `FRIENDS20`). You can set an expiry date, a max number of uses, first-order-only, or a minimum order. Turn a code off in the same place. No site changes needed.
+
 ## Going live (Cloudflare Workers)
 
 The site deploys as a Cloudflare Worker named `gush` (the name in `wrangler.toml` must match the Worker's name in the dashboard).

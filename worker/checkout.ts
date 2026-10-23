@@ -53,6 +53,9 @@ export async function checkout(request: Request, env: Env) {
 
   const origin = new URL(request.url).origin;
   params.set('mode', 'payment');
+  // Shows Stripe's "Add promotion code" field. Codes are created in the Stripe dashboard
+  // (Product catalog → Coupons), so no code changes are needed to add or retire one.
+  params.set('allow_promotion_codes', 'true');
   params.set('success_url', `${origin}/success?session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${origin}/cart`);
   SHIP_TO_COUNTRIES.forEach((c, n) => params.set(`shipping_address_collection[allowed_countries][${n}]`, c));

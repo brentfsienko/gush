@@ -1,6 +1,7 @@
 :root {
   --ink: #1f1b16;
   --ink-soft: #4a443b;
+  --gray: #7a7a7a; /* prices */
   --red: #c8372d;
   --sun: #e8a317; /* mustard, same as brentsienko.com */
   --page: #ffffff; /* the page everything is stuck onto */
@@ -58,7 +59,7 @@ body {
   min-height: 0;
   padding: max(6px, env(safe-area-inset-top)) 2% 10px;
   /* Single black line between the header (logo, tabs) and the page. */
-  border-bottom: 1.5px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
   position: relative;
   z-index: 2;
   view-transition-name: topbar;

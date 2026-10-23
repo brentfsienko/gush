@@ -68,9 +68,9 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
         <a class="line-title" data-title></a>
         <p class="line-sub"><span data-size></span> · <span data-price></span></p>
         <div class="qty">
-          <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={16} webH={18} loading="eager" /></button>
+          <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={10} webH={11} loading="eager" /></button>
           <span class="qty-n" data-qty></span>
-          <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={32} webH={36} loading="eager" /></button>
+          <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={20} webH={22} loading="eager" /></button>
         </div>
       </div>
       <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={20} webH={24} loading="eager" /></button>
@@ -142,7 +142,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     font-size: 18px;
     min-width: 1.5ch;
     text-align: center;
-    --digit-h: 30px;
+    --digit-h: 20px;
   }
 
   :global(.qty .drawn-btn:disabled) {
