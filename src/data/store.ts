@@ -48,4 +48,4 @@ export const CHECKOUT_TEXT = {
 export const SITE_URL = 'https://gush.supply';
 
 // Shown under the title when a GÜSH link is shared (and to search engines).
-export const TAGLINE = 'small batch clothing designed and made in Seattle';
+export const TAGLINE = 'Small Batch Clothing Made in Seattle';

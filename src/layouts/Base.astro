@@ -20,6 +20,8 @@ interface Props {
 
 const { title, tab, fill = false, description = TAGLINE, clearCart = false } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
+// Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
+const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 const ogImage = new URL('/og.png', Astro.site ?? Astro.url).href;
 // This page's public address (pages are built as name.html but served without the .html).
 const pageUrl = new URL(Astro.url.pathname.replace(/(index)?\.html$/, ''), Astro.site ?? Astro.url).href;
@@ -41,7 +43,7 @@ const digitUrls = digitImgs.every(Boolean)
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GÜSH" />
     <!-- iMessage shows only the image and title, so the tagline goes in the shared title too. -->
-    <meta property="og:title" content={title ? `${title} · ${TAGLINE}` : TAGLINE} />
+    <meta property="og:title" content={title ? `${titleCase(title)} · ${TAGLINE}` : TAGLINE} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={pageUrl} />
     <meta property="og:image" content={ogImage} />
