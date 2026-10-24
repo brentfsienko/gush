@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { homePhotos } from '../data/assets';
 import { ABOUT, SECOND_BLURB } from '../data/home';
+import { POLICIES, CONTACT_EMAIL } from '../data/store';
 
 // Same photos as the home page (src/assets/home/), stacked full width.
 const [hero, ...rest] = homePhotos();
@@ -30,6 +31,25 @@ const [hero, ...rest] = homePhotos();
     <div class="type">
       <p class="blurb">{SECOND_BLURB}</p>
     </div>
+
+    <section class="type info" id="info" aria-label="shipping, returns and contact">
+      {
+        POLICIES.map((p) => (
+          <div>
+            <h2 class="heading sub">{p.heading}</h2>
+            <p class="blurb">
+              {p.text}
+              {p.heading === 'contact' && (
+                <>
+                  {' '}
+                  <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+                </>
+              )}
+            </p>
+          </div>
+        ))
+      }
+    </section>
   </div>
 </Base>
 
@@ -40,6 +60,23 @@ const [hero, ...rest] = homePhotos();
 
   .blurb {
     margin: 12px 0 0;
+  }
+
+  /* Shipping, returns & contact, below a thin rule. */
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-top: 22px;
+    border-top: 1px solid var(--ink);
+  }
+
+  .info .blurb {
+    margin-top: 6px;
+  }
+
+  .info a {
+    color: inherit;
   }
 
   .photos {

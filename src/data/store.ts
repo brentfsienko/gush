@@ -40,8 +40,8 @@ export const ORDER_NOTE_LABEL = 'note for us (optional)';
 
 // Small notes on the checkout page, in the site's voice. Set one to '' to leave it out.
 export const CHECKOUT_TEXT = {
-  shipping: 'every GÜSH piece is hand sewn. we pack and ship it ourselves.',
-  submit: 'thank you for supporting handmade ♥',
+  shipping: 'every GÜSH piece is hand sewn. orders ship within 1–2 weeks.',
+  submit: 'all sales final. thank you for supporting handmade ♥',
 };
 // The live site, for images on the checkout page when testing on your own computer (Stripe can't
 // load images from localhost).
@@ -49,3 +49,20 @@ export const SITE_URL = 'https://gush.supply';
 
 // Shown under the title when a GÜSH link is shared (and to search engines).
 export const TAGLINE = 'Small Batch Clothing Made in Seattle';
+
+// Shipping, returns & contact: the section at the bottom of the about page.
+export const CONTACT_EMAIL = 'hi@gush.supply';
+export const POLICIES = [
+  {
+    heading: 'shipping',
+    text: 'every piece is sewn by hand, so orders ship within 1–2 weeks. we ship within the US by USPS Ground Advantage ($8), and delivery is free to Seattle addresses. we’ll send tracking once it’s on its way.',
+  },
+  {
+    heading: 'returns',
+    text: 'all sales final, so please check the size chart before ordering. if your order arrives damaged or isn’t what you ordered, email us within 14 days of delivery and we’ll make it right.',
+  },
+  {
+    heading: 'contact',
+    text: 'questions about sizing, an order, or anything else:',
+  },
+];
