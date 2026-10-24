@@ -3,8 +3,7 @@
 // Prices come from src/data/products.ts and stock from worker/stock.ts, never from the browser.
 import { PRODUCTS, SIZES, type Size } from '../src/data/products';
 import {
-  SHIPPING_CENTS,
-  SHIPPING_LABEL,
+  SHIPPING_OPTIONS,
   SHIP_TO_COUNTRIES,
   MAX_QTY,
   TAX_ENABLED,
@@ -12,6 +11,7 @@ import {
   SHIPPING_TAX_CODE,
   CHECKOUT_LOOK,
   CHECKOUT_TEXT,
+  ORDER_NOTE_LABEL,
   SITE_URL,
 } from '../src/data/store';
 import { available } from './stock';
@@ -79,15 +79,20 @@ export async function checkout(request: Request, env: Env) {
   params.set('success_url', `${origin}/success?session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${origin}/cart`);
   SHIP_TO_COUNTRIES.forEach((c, n) => params.set(`shipping_address_collection[allowed_countries][${n}]`, c));
-  params.set('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
-  params.set('shipping_options[0][shipping_rate_data][display_name]', SHIPPING_LABEL);
-  params.set('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(SHIPPING_CENTS));
-  params.set('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd');
+  SHIPPING_OPTIONS.forEach((o, n) => {
+    const rate = `shipping_options[${n}][shipping_rate_data]`;
+    params.set(`${rate}[type]`, 'fixed_amount');
+    params.set(`${rate}[display_name]`, o.label);
+    params.set(`${rate}[fixed_amount][amount]`, String(o.cents));
+    params.set(`${rate}[fixed_amount][currency]`, 'usd');
+    if (TAX_ENABLED) {
+      params.set(`${rate}[tax_code]`, SHIPPING_TAX_CODE);
+      params.set(`${rate}[tax_behavior]`, 'exclusive');
+    }
+  });
   if (TAX_ENABLED) {
     // Tax is added on top of the prices, from the shipping address.
     params.set('automatic_tax[enabled]', 'true');
-    params.set('shipping_options[0][shipping_rate_data][tax_code]', SHIPPING_TAX_CODE);
-    params.set('shipping_options[0][shipping_rate_data][tax_behavior]', 'exclusive');
   }
   // Make Stripe's page look like GÜSH (settings in src/data/store.ts).
   params.set('branding_settings[display_name]', CHECKOUT_LOOK.displayName);
@@ -101,6 +106,14 @@ export async function checkout(request: Request, env: Env) {
   params.set('branding_settings[icon][url]', `${images}/icon-512.png`);
   if (CHECKOUT_TEXT.shipping) params.set('custom_text[shipping_address][message]', CHECKOUT_TEXT.shipping);
   if (CHECKOUT_TEXT.submit) params.set('custom_text[submit][message]', CHECKOUT_TEXT.submit);
+  if (ORDER_NOTE_LABEL) {
+    params.set('custom_fields[0][key]', 'note');
+    params.set('custom_fields[0][label][type]', 'custom');
+    params.set('custom_fields[0][label][custom]', ORDER_NOTE_LABEL);
+    params.set('custom_fields[0][type]', 'text');
+    params.set('custom_fields[0][optional]', 'true');
+    params.set('custom_fields[0][text][maximum_length]', '255');
+  }
   // Checkout links expire after 30 minutes (Stripe's minimum), so a stale tab can't pay for
   // stock that has since sold out.
   params.set('expires_at', String(Math.floor(Date.now() / 1000) + 30 * 60));

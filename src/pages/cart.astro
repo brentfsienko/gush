@@ -2,8 +2,8 @@
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
-import { PRODUCTS } from '../data/products';
-import { SHIPPING_CENTS, MAX_QTY } from '../data/store';
+import { PRODUCTS, formatPrice } from '../data/products';
+import { SHIPPING_OPTIONS, MAX_QTY } from '../data/store';
 import { productPhotos } from '../data/assets';
 
 // Everything the cart needs to draw a line, keyed by slug (the cart itself lives in the browser).
@@ -23,7 +23,12 @@ const catalog = Object.fromEntries(
     }),
   ),
 );
-const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
+// e.g. "free in Seattle, $8 elsewhere in the US" (picked on the checkout page).
+const shipping = [...SHIPPING_OPTIONS]
+  .sort((a, b) => a.cents - b.cents)
+  .map((o) => `${o.cents ? formatPrice(o.cents) : 'free'} ${o.where}`)
+  .join(', ');
+const config = { catalog, maxQty: MAX_QTY };
 ---
 
 <Base title="cart" tab="cart">
@@ -39,9 +44,7 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
           <dt>subtotal</dt>
           <dd data-subtotal></dd>
           <dt>shipping</dt>
-          <dd data-shipping></dd>
-          <dt class="total">total</dt>
-          <dd class="total" data-total></dd>
+          <dd class="ship">{shipping}</dd>
         </dl>
       </div>
 
@@ -176,10 +179,10 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
     text-align: right;
   }
 
-  .summary .total {
-    font-size: 19px;
-    padding-top: 6px;
-    border-top: 1px dashed rgba(31, 27, 22, 0.4);
+  /* Both shipping choices, in gray; the shopper picks one on the checkout page. */
+  .summary .ship {
+    max-width: 22ch;
+    color: var(--gray);
   }
 
   .msg {
@@ -206,7 +209,6 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
   type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null };
   const config = JSON.parse(document.getElementById('cart-config')!.textContent!) as {
     catalog: Record<string, Item>;
-    shipping: number;
     maxQty: number;
   };
 
@@ -226,8 +228,6 @@ const config = { catalog, shipping: SHIPPING_CENTS, maxQty: MAX_QTY };
 
     const subtotal = lines.reduce((s, l) => s + config.catalog[l.slug].price * l.qty, 0);
     $('[data-subtotal]').textContent = money(subtotal);
-    $('[data-shipping]').textContent = config.shipping ? money(config.shipping) : 'free';
-    $('[data-total]').textContent = money(subtotal + config.shipping);
   }
 
   function lineEl(l: CartLine) {

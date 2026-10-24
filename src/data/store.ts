@@ -1,8 +1,14 @@
 // Store-wide settings used by checkout.
 
-// TODO: set your real flat shipping rate (in cents). 0 = free shipping.
-export const SHIPPING_CENTS = 800;
-export const SHIPPING_LABEL = 'standard shipping';
+// Shipping choices on the checkout page (in cents; 0 = free). The shopper picks one; the first is
+// preselected. `where` is how the cart page describes it ("free in Seattle, $8 elsewhere in the US").
+// Stripe's page can't check the address against a choice, so the Seattle one says so in its name.
+export const SHIPPING_OPTIONS = [
+  // A soft mailer with one thermal is about 1 lb: USPS Ground Advantage runs ~$5–10 depending on
+  // distance (cheapest through Pirate Ship or Stripe's shipping labels).
+  { label: 'USPS Ground Advantage', cents: 800, where: 'elsewhere in the US' },
+  { label: 'free Seattle delivery (Seattle addresses only)', cents: 0, where: 'in Seattle' },
+];
 
 // Countries you'll ship to (two-letter codes).
 export const SHIP_TO_COUNTRIES = ['US'];
@@ -28,6 +34,10 @@ export const CHECKOUT_LOOK = {
   background: '#ffffff',
   button: '#1f1b16', // the ink color
 };
+// An optional "note for us" box on the checkout page (gift message, sizing question...). Notes show on
+// the payment in the Stripe dashboard. Label max 50 characters; '' turns the box off.
+export const ORDER_NOTE_LABEL = 'note for us (optional)';
+
 // Small notes on the checkout page, in the site's voice. Set one to '' to leave it out.
 export const CHECKOUT_TEXT = {
   shipping: 'every GÜSH piece is hand sewn. we pack and ship it ourselves.',
