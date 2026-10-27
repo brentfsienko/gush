@@ -1,7 +1,9 @@
 // POST /api/stripe-webhook: Stripe calls this after a checkout is paid. It checks the request
 // really came from Stripe (signature with STRIPE_WEBHOOK_SECRET) and counts the sold items off
-// the stock (worker/stock.ts). Each order is only counted once, even if Stripe retries.
+// the stock (worker/stock.ts), then emails you the order (worker/notify.ts). Each order is only
+// counted and emailed once, even if Stripe retries.
 import { recordSale } from './stock';
+import { notifyOrder, type PaidSession } from './notify';
 import type { Env } from './index';
 
 const TOLERANCE_SECONDS = 5 * 60;
@@ -31,7 +33,7 @@ export async function verifySignature(payload: string, header: string | null, se
   return v1s.some((v) => safeEqual(v, expected));
 }
 
-type Session = { id: string; payment_status?: string; metadata?: { items?: string } };
+type Session = PaidSession & { payment_status?: string };
 
 export async function stripeWebhook(request: Request, env: Env) {
   if (!env.STRIPE_WEBHOOK_SECRET) return new Response('webhook not set up', { status: 503 });
@@ -49,6 +51,7 @@ export async function stripeWebhook(request: Request, env: Env) {
 
   if (!env.STOCK) {
     console.warn('order paid but stock tracking (STOCK) is not set up', session.id);
+    await notifyOrder(env, session);
     return new Response('ok (no stock tracking)', { status: 200 });
   }
   const doneKey = `order:${session.id}`;
@@ -60,5 +63,6 @@ export async function stripeWebhook(request: Request, env: Env) {
     if (slug && size && Number.isInteger(n) && n > 0) await recordSale(env, slug, size, n);
   }
   await env.STOCK.put(doneKey, new Date().toISOString());
+  await notifyOrder(env, session);
   return new Response('ok', { status: 200 });
 }

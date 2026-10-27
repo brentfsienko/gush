@@ -76,6 +76,13 @@ To restock, add the new units to the numbers in `products.ts`.
    `checkout.session.async_payment_succeeded`. Copy its signing secret (`whsec_...`).
 3. In Cloudflare (Worker → Settings → Variables and Secrets) add `STRIPE_WEBHOOK_SECRET` as a Secret.
 
+### Order emails (free)
+Each paid order emails you the item + size, shipping method and address, the buyer's note, and a link
+to the payment in Stripe (`worker/notify.ts`). Reply to the email to reach the buyer.
+1. Cloudflare → gush.supply → Email → Email Routing: turn it on, and add your inbox under
+   Destination addresses (click the link in the verification email).
+2. `npx wrangler secret put ORDER_EMAIL_TO` and enter that inbox address.
+
 ### 3. Sales tax (optional, Stripe charges ~0.5% per sale)
 1. Stripe dashboard → Settings → Tax: add your business address and the state(s) you're registered in.
 2. Set `TAX_ENABLED = true` in `src/data/store.ts` and redeploy. Tax is then added on top of the price
