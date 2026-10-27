@@ -41,7 +41,7 @@ export const ORDER_NOTE_LABEL = 'note for us (optional)';
 // Small notes on the checkout page, in the site's voice. Set one to '' to leave it out.
 export const CHECKOUT_TEXT = {
   shipping: 'every GÜSH piece is hand sewn. orders ship within 1–2 weeks.',
-  submit: 'all sales final. thank you for supporting handmade ♥',
+  submit: 'returns and exchanges within 14 days of delivery. thank you for supporting handmade ♥',
 };
 // The live site, for images on the checkout page when testing on your own computer (Stripe can't
 // load images from localhost).
@@ -59,7 +59,7 @@ export const POLICIES = [
   },
   {
     heading: 'returns',
-    text: 'all sales final, so please check the size chart before ordering. if your order arrives damaged or isn’t what you ordered, email us within 14 days of delivery and we’ll make it right.',
+    text: 'returns and exchanges are welcome within 14 days of delivery, as long as the piece is unworn and unwashed (trying it on is fine). email us to start one. you cover the return shipping, and once it’s back we’ll refund you or send a different size, your choice. if your order arrives damaged or isn’t what you ordered, we’ll make it right and cover the shipping.',
   },
   {
     heading: 'contact',
