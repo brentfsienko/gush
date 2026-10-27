@@ -39,7 +39,7 @@ export const PRODUCTS: Product[] = [
     details: [
       { label: 'material', value: '100% cotton waffle knit' },
       { label: 'fit', value: 'unisex, relaxed, cropped at the waist' },
-      { label: 'made in', value: 'Seattle, sewn by hand' },
+      { label: 'made in', value: 'Seattle' },
       { label: 'care', value: 'machine wash cold, hang dry' },
     ],
     // TODO: real counts per size. Checkout refuses sizes at 0.
