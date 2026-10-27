@@ -29,6 +29,7 @@ id = "71b455dd29d74023a93e0fb291de2cd2"
 [[send_email]]
 name = "ORDER_EMAIL"
 
-# Workers Logs (saved logs in the Cloudflare dashboard). Matches the dashboard setting.
+# Workers Logs: saves the worker's logs (e.g. why an order email failed) in the Cloudflare dashboard
+# (Workers → gush → Logs). Free up to 200,000 log lines a day.
 [observability]
-enabled = false
+enabled = true
