@@ -34,13 +34,13 @@ export const PRODUCTS: Product[] = [
     title: 'blue thermal',
     price: 15000,
     category: 'thermals',
-    // TODO: write the real description
-    description: 'a blue thermal. write a couple lines here about the fit, the feel, why you made it.',
-    // TODO: fill in real details
+    description:
+      'unisex blue thermal made from 100% cotton waffle knit fabric. designed and hand sewn for a relaxed fit on the body and along the sleeves with a waist cropped trunk. perfect as a daily driver overshirt or as a breathable layer.',
     details: [
-      { label: 'material', value: 'TBD' },
-      { label: 'fit', value: 'TBD' },
-      { label: 'made in', value: 'TBD' },
+      { label: 'material', value: '100% cotton waffle knit' },
+      { label: 'fit', value: 'unisex, relaxed, cropped at the waist' },
+      { label: 'made in', value: 'Seattle, sewn by hand' },
+      // TODO: care instructions
       { label: 'care', value: 'TBD' },
     ],
     // TODO: real counts per size. Checkout refuses sizes at 0.
