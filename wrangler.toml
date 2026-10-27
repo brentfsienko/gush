@@ -28,3 +28,7 @@ id = "71b455dd29d74023a93e0fb291de2cd2"
 # the ORDER_EMAIL_TO secret, which must be a verified Email Routing destination address.
 [[send_email]]
 name = "ORDER_EMAIL"
+
+# Workers Logs (saved logs in the Cloudflare dashboard). Matches the dashboard setting.
+[observability]
+enabled = false
