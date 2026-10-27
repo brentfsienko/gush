@@ -83,6 +83,11 @@ to the payment in Stripe (`worker/notify.ts`). Reply to the email to reach the b
    Destination addresses (click the link in the verification email).
 2. `npx wrangler secret put ORDER_EMAIL_TO` and enter that inbox address.
 
+Buyers get a matching thank-you receipt (wording: `RECEIPT` in `src/data/store.ts`), sent through
+Resend (free up to 3,000/month): add gush.supply as a domain at resend.com (Cloudflare auto-setup),
+create a sending-only API key, then `npx wrangler secret put RESEND_API_KEY`. Then turn off Stripe's
+own receipts (Settings → Customer emails → Successful payments) so buyers don't get two.
+
 ### 3. Sales tax (optional, Stripe charges ~0.5% per sale)
 1. Stripe dashboard → Settings → Tax: add your business address and the state(s) you're registered in.
 2. Set `TAX_ENABLED = true` in `src/data/store.ts` and redeploy. Tax is then added on top of the price

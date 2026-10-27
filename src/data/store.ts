@@ -66,3 +66,10 @@ export const POLICIES = [
     text: 'questions about sizing, an order, or anything else:',
   },
 ];
+
+// The thank-you receipt emailed to buyers (worker/notify.ts). Replies go to CONTACT_EMAIL.
+export const RECEIPT = {
+  subject: 'your GÜSH order ♥',
+  intro: 'we got your order. every piece is sewn by hand, so it ships within 1–2 weeks, and we’ll send tracking once it’s on its way.',
+  outro: 'questions about your order? just reply to this email.',
+};

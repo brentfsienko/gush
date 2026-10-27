@@ -15,6 +15,8 @@ export interface Env {
   ORDER_EMAIL?: SendEmail;
   /** Your inbox for order emails (a verified Email Routing destination). Optional. */
   ORDER_EMAIL_TO?: string;
+  /** Resend API key for the buyer's receipt email (see worker/notify.ts). Optional. */
+  RESEND_API_KEY?: string;
 }
 
 const allow = (method: string) => new Response('method not allowed', { status: 405, headers: { allow: method } });
