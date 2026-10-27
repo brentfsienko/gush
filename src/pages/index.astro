@@ -33,9 +33,13 @@ const [hero, ...rest] = homePhotos();
       )
     }
 
-    <div class="type">
-      <p class="blurb">{SECOND_BLURB}</p>
-    </div>
+    {
+      SECOND_BLURB && (
+        <div class="type">
+          <p class="blurb">{SECOND_BLURB}</p>
+        </div>
+      )
+    }
 
     <a href="/shop" class="center cta" aria-label="shop">
       <Drawn name="tab-shop" h={96} />
