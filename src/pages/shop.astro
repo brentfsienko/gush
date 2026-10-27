@@ -138,27 +138,20 @@ import { productPhotos } from '../data/assets';
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* The whole item (photo, name, price) sits in a square-cornered box. On hover (pressed, on phones)
-       it gets a black outline, white fill and a hard mustard shadow down-left, like the buttons on
-       brentsienko.com. The border is always there (transparent) so nothing shifts. */
+    /* The whole item (photo, name, price) is one block; on hover (pressed, on phones) its white turns
+       light gray. The photos are cut out, so the gray shows behind the garment too. */
     padding: 0 0 12px;
-    border: 1.5px solid transparent;
     background: var(--page);
-    transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
   }
 
   @media (hover: hover) {
     .card:hover {
-      border-color: var(--ink);
-      box-shadow: -4px 4px 0 var(--sun);
-      transform: translate(1px, -1px);
+      background: var(--hover-gray);
     }
   }
 
   .card:active {
-    border-color: var(--ink);
-    box-shadow: 0 0 0 var(--sun);
-    transform: translate(-2px, 2px);
+    background: var(--hover-gray);
   }
 
   .card-photos {
@@ -237,19 +230,15 @@ import { productPhotos } from '../data/assets';
       aspect-ratio: 1 / 1;
     }
 
-    /* "More coming soon": no box until hovered, then the same outline + mustard shadow as an item. */
+    /* "More coming soon" goes light gray on hover too, like an item. */
     .note {
       flex: 1;
       margin: 0;
       justify-content: center;
-      border: 1.5px solid transparent;
-      transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
     }
 
     .note:hover {
-      border-color: var(--ink);
-      box-shadow: -4px 4px 0 var(--sun);
-      transform: translate(1px, -1px);
+      background: var(--hover-gray);
     }
   }
 
