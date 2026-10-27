@@ -35,7 +35,7 @@ export const PRODUCTS: Product[] = [
     price: 15000,
     category: 'thermals',
     description:
-      'unisex blue thermal made from 100% cotton waffle knit fabric. designed and hand sewn for a relaxed fit on the body and along the sleeves with a waist cropped trunk. perfect as a daily driver overshirt or as a breathable layer.',
+      'a unisex thermal in 100% cotton waffle knit, designed and sewn by hand in Seattle. relaxed through the body and sleeves, and cropped at the waist. wear it as an everyday overshirt or a breathable layer.',
     details: [
       { label: 'material', value: '100% cotton waffle knit' },
       { label: 'fit', value: 'unisex, relaxed, cropped at the waist' },
