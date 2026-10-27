@@ -40,8 +40,7 @@ export const PRODUCTS: Product[] = [
       { label: 'material', value: '100% cotton waffle knit' },
       { label: 'fit', value: 'unisex, relaxed, cropped at the waist' },
       { label: 'made in', value: 'Seattle, sewn by hand' },
-      // TODO: care instructions
-      { label: 'care', value: 'TBD' },
+      { label: 'care', value: 'machine wash cold, hang dry' },
     ],
     // TODO: real counts per size. Checkout refuses sizes at 0.
     stock: { s: 5, m: 5, l: 5, xl: 5 },
