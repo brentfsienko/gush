@@ -271,6 +271,7 @@ a:active > img.drawn {
   gap: 8px;
   padding: 14px var(--gutter) 0;
   flex-shrink: 0;
+  color: var(--gray);
 }
 
 .crumbs a {
