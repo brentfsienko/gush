@@ -12,6 +12,8 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
 
 <Base title="shop" tab="shop" fill>
   <nav class="crumbs" aria-label="breadcrumb">
+    <a href="/home">home</a>
+    <span class="sep" aria-hidden="true">›</span>
     <a href="/shop" aria-current="page">shop</a>
   </nav>
 
@@ -167,10 +169,13 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     min-height: 0;
   }
 
+  /* The same margin inside every card, so each garment sits centered with even space around it,
+     however close its photo is cropped. */
   .main-photo {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    padding: 7%;
   }
 
   /* Name with the price right under it, a touch smaller than headings; price in gray. */
