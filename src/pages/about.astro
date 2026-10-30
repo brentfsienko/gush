@@ -16,13 +16,13 @@ const [hero, ...rest] = homePhotos();
       <p class="blurb">{ABOUT}</p>
     </div>
 
-    {hero && <Image src={hero} alt="GÜSH blue thermal" widths={[480, 900]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />}
+    {hero && <Image src={hero} alt="GÜSH clothing" widths={[480, 900]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />}
 
     {
       rest.length > 0 && (
         <div class="photos">
           {rest.map((src) => (
-            <Image src={src} alt="GÜSH blue thermal" widths={[480, 900, 1200]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />
+            <Image src={src} alt="GÜSH clothing" widths={[480, 900, 1200]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />
           ))}
         </div>
       )

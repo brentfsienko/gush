@@ -12,8 +12,6 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
 
 <Base title="shop" tab="shop" fill>
   <nav class="crumbs" aria-label="breadcrumb">
-    <a href="/">home</a>
-    <span class="sep" aria-hidden="true">›</span>
     <a href="/shop" aria-current="page">shop</a>
   </nav>
 
@@ -56,9 +54,16 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
       </div>
     </article>
 
+    <!-- Built like an item card (square photo area + name/price lines) so it's exactly item-sized. -->
     <article class="feed-item" data-end>
-      <div class="note">
-        <h2 class="heading">more coming soon</h2>
+      <div class="card soon">
+        <div class="card-photos soon-box">
+          <h2 class="heading">more coming soon</h2>
+        </div>
+        <div class="card-meta" aria-hidden="true">
+          <span class="heading card-name">&nbsp;</span>
+          <span class="price card-price">&nbsp;</span>
+        </div>
       </div>
     </article>
   </div>
@@ -195,12 +200,19 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     padding-block: 40px;
   }
 
+  .soon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
   .note p {
     margin: 10px 0 0;
   }
 
   /* Web: products two across in a grid with normal scrolling (phones keep one full-screen item at a
-     time). "More coming soon" fills the next spot as a dashed placeholder box the same size as an item. */
+     time). "More coming soon" fills the next spot (under the first item) as a box the same size as an item. */
   @media (min-width: 700px) {
     .feed {
       display: grid;
