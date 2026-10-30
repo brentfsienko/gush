@@ -17,7 +17,7 @@ const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
 const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 ---
 
-<Base title={p.title} tab="shop" description={`${p.title} · ${TAGLINE}`}>
+<Base title={p.title} tab="shop" description={`${p.title} · ${TAGLINE}`} image={productPhotos(p.slug).length ? `/og/${p.slug}.png` : undefined}>
   <nav class="crumbs item-crumbs" aria-label="breadcrumb">
     <a href="/home">home</a>
     <span aria-hidden="true">›</span>

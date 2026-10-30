@@ -16,13 +16,15 @@ interface Props {
   description?: string;
   /** Empty the cart before anything is drawn (the order-success page). */
   clearCart?: boolean;
+  /** Link-preview image (a path on this site); defaults to the logo card, /og.png. */
+  image?: string;
 }
 
-const { title, tab, fill = false, description = TAGLINE, clearCart = false } = Astro.props;
+const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png' } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
 // Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
-const ogImage = new URL('/og.png', Astro.site ?? Astro.url).href;
+const ogImage = new URL(image, Astro.site ?? Astro.url).href;
 // This page's public address (pages are built as name.html but served without the .html).
 const pageUrl = new URL(Astro.url.pathname.replace(/(index)?\.html$/, ''), Astro.site ?? Astro.url).href;
 // Hand-drawn digits for numbers the browser fills in (cart count, quantities). Index = digit.
@@ -49,7 +51,7 @@ const digitUrls = digitImgs.every(Boolean)
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="GÜSH" />
+    <meta property="og:image:alt" content={title ? `${title} · GÜSH` : "GÜSH"} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
