@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import Drawn from '../../components/Drawn.astro';
 import DrawnToggle from '../../components/DrawnToggle.astro';
@@ -13,6 +13,10 @@ export function getStaticPaths() {
 
 const { product: p } = Astro.props as { product: Product };
 const photos = productPhotos(p.slug);
+// Full-size copies for the zoom view (as sharp as the original photo allows).
+const zoomUrls = await Promise.all(
+  photos.map(async (src) => (await getImage({ src, width: Math.min(src.width, 2400), format: 'webp', quality: 'max' })).src),
+);
 const sizes = SIZES.filter((s) => p.stock[s] !== undefined);
 const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 ---
@@ -35,7 +39,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   <div class="gallery" data-gallery>
     {
       photos.map((src, i) => (
-        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 560px, 100vw" class:list={['slide', { fill: src.width / src.height > 1.6 }]} loading={i === 0 ? 'eager' : 'lazy'} />
+        <Image src={src} alt={`${p.title}, photo ${i + 1}`} widths={[400, 800, 1200]} sizes="(min-width: 900px) 560px, 100vw" class:list={['slide', { fill: src.width / src.height > 1.6 }]} loading={i === 0 ? 'eager' : 'lazy'} data-zoom={zoomUrls[i]} />
       ))
     }
   </div>
@@ -52,6 +56,26 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     )
   }
   </div>
+
+  <!-- Zoom view: a tapped photo full screen; tap again to zoom in where you tapped. -->
+  <dialog class="zoom" data-zoom-view aria-label={`${p.title} photos`}>
+    <button class="zoom-close" data-zoom-close aria-label="close">×</button>
+    <div class="zoom-stage" data-zoom-stage>
+      <img class="zoom-img" data-zoom-img alt="" />
+    </div>
+    {
+      photos.length > 1 && (
+        <div class="zoom-nav">
+          <button class="drawn-btn" data-zoom-prev aria-label="previous photo">
+            <Drawn name="arrow-left" h={24} webH={28} />
+          </button>
+          <button class="drawn-btn" data-zoom-next aria-label="next photo">
+            <Drawn name="arrow-right" h={24} webH={28} />
+          </button>
+        </div>
+      )
+    }
+  </dialog>
 
   <div class="stack">
     <div class="info type">
@@ -202,6 +226,82 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 
   .gallery-nav .drawn-btn:disabled {
     opacity: 0.25;
+  }
+
+  .slide {
+    cursor: zoom-in;
+  }
+
+  /* Zoom view: full screen on white. The photo fits the screen; zoomed, it's scaled up around the
+     point under your finger or mouse. */
+  .zoom {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--page);
+    overflow: hidden;
+  }
+
+  .zoom[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .zoom::backdrop {
+    background: var(--page);
+  }
+
+  .zoom-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    padding: 0 0 3px;
+    border: 1.5px solid var(--ink);
+    background: var(--page);
+    color: var(--ink);
+    font: 30px/1 var(--type);
+    cursor: pointer;
+  }
+
+  .zoom-stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 52px 16px 8px;
+    overflow: hidden;
+  }
+
+  .zoom-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    cursor: zoom-in;
+    transition: transform 0.15s ease-out;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .zoom-img.zoomed {
+    cursor: zoom-out;
+    transform: scale(2.5);
+    transition: none;
+    touch-action: none;
+  }
+
+  .zoom-nav {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    padding: 10px 0 calc(18px + env(safe-area-inset-bottom));
   }
 
 
@@ -401,6 +501,81 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   prev?.addEventListener('click', () => step(-1));
   next?.addEventListener('click', () => step(1));
   sync();
+
+  // Zoom view. Tap a photo to open it; tap again to zoom in at that spot, then drag (or move the
+  // mouse) to look around. Arrows/arrow keys switch photos; ×, Esc or a tap outside closes.
+  const zoomView = document.querySelector<HTMLDialogElement>('[data-zoom-view]')!;
+  const zoomImg = zoomView.querySelector<HTMLImageElement>('[data-zoom-img]')!;
+  const zoomStage = zoomView.querySelector<HTMLElement>('[data-zoom-stage]')!;
+  let zoomIndex = 0;
+  // Zoomed in, the photo scales around this point (fractions of its width/height).
+  let origin = { x: 0.5, y: 0.5 };
+  const setOrigin = (x: number, y: number) => {
+    origin = { x: Math.min(Math.max(x, 0), 1), y: Math.min(Math.max(y, 0), 1) };
+    zoomImg.style.transformOrigin = `${origin.x * 100}% ${origin.y * 100}%`;
+  };
+  const unzoom = () => zoomImg.classList.remove('zoomed');
+  const showPhoto = (i: number) => {
+    zoomIndex = (i + slides.length) % slides.length;
+    const slide = slides[zoomIndex] as HTMLImageElement;
+    unzoom();
+    zoomImg.src = slide.dataset.zoom ?? slide.currentSrc;
+    zoomImg.alt = slide.alt;
+  };
+  slides.forEach((slide, i) =>
+    slide.addEventListener('click', () => {
+      showPhoto(i);
+      zoomView.showModal();
+      document.documentElement.style.overflow = 'hidden';
+    }),
+  );
+  zoomView.addEventListener('close', () => {
+    unzoom();
+    document.documentElement.style.overflow = '';
+    gallery.scrollTo({ left: startOf(zoomIndex) });
+  });
+  zoomView.querySelector('[data-zoom-close]')!.addEventListener('click', () => zoomView.close());
+  zoomView.querySelector('[data-zoom-prev]')?.addEventListener('click', () => showPhoto(zoomIndex - 1));
+  zoomView.querySelector('[data-zoom-next]')?.addEventListener('click', () => showPhoto(zoomIndex + 1));
+  zoomView.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') showPhoto(zoomIndex - 1);
+    if (e.key === 'ArrowRight') showPhoto(zoomIndex + 1);
+  });
+  // A tap on the empty space around the photo closes the view.
+  zoomStage.addEventListener('click', (e) => {
+    if (e.target === zoomStage) zoomView.close();
+  });
+
+  // Tap/click the photo: zoom in at that point, or back out. While zoomed, the mouse moves the view
+  // with it; a finger (or mouse) drag pans.
+  let base = zoomImg.getBoundingClientRect(); // the photo's box on screen when not zoomed
+  let drag: { x: number; y: number; ox: number; oy: number; moved: boolean } | null = null;
+  zoomImg.addEventListener('pointerdown', (e) => {
+    drag = { x: e.clientX, y: e.clientY, ox: origin.x, oy: origin.y, moved: false };
+    if (zoomImg.classList.contains('zoomed')) zoomImg.setPointerCapture(e.pointerId);
+  });
+  zoomImg.addEventListener('pointermove', (e) => {
+    if (!zoomImg.classList.contains('zoomed')) return;
+    if (drag && (drag.moved || Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 4)) {
+      drag.moved = true;
+      setOrigin(drag.ox - (e.clientX - drag.x) / (base.width * 1.5), drag.oy - (e.clientY - drag.y) / (base.height * 1.5));
+    } else if (e.pointerType === 'mouse' && !drag) {
+      setOrigin((e.clientX - base.left) / base.width, (e.clientY - base.top) / base.height);
+    }
+  });
+  zoomImg.addEventListener('pointerup', (e) => {
+    const wasDrag = drag?.moved;
+    drag = null;
+    if (wasDrag) return;
+    if (zoomImg.classList.contains('zoomed')) {
+      unzoom();
+    } else {
+      base = zoomImg.getBoundingClientRect();
+      setOrigin((e.clientX - base.left) / base.width, (e.clientY - base.top) / base.height);
+      zoomImg.classList.add('zoomed');
+    }
+  });
+  zoomImg.addEventListener('pointercancel', () => (drag = null));
 
   // Size picking + add to cart.
   const sizeGroup = document.querySelector<HTMLElement>('[data-sizes]')!;
