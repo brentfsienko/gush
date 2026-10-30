@@ -5,10 +5,10 @@
 //   1. Add an entry below (slug = url-friendly name, e.g. "black-tee").
 //   2. Put its photos in src/assets/products/<slug>/  (named 1.jpg, 2.jpg, ... shown in that order).
 
-// Filter buttons on the shop page, in order. To add one (e.g. 'thermals'), list it here and
-// draw src/assets/drawn/filter-thermals.png (+ filter-thermals-on.png); it shows products with that category.
-export const CATEGORIES = ['all', 'thermals'] as const;
-export type Category = 'tees' | 'thermals' | 'pants';
+// Filter buttons on the shop page, in order. Each needs a drawing, src/assets/drawn/filter-<name>.png
+// (e.g. filter-thermals.png); one without a drawing yet is simply left off the shop page.
+export const CATEGORIES = ['all', 'thermals', 'shirts'] as const;
+export type Category = 'tees' | 'thermals' | 'shirts' | 'pants';
 
 export const SIZES = ['s', 'm', 'l', 'xl'] as const;
 export type Size = (typeof SIZES)[number];
@@ -44,6 +44,32 @@ export const PRODUCTS: Product[] = [
     ],
     // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
     stock: { s: 0, m: 0, l: 1, xl: 0 },
+    // TODO: real measurements
+    sizeChart: {
+      headers: ['size', 'chest', 'length', 'sleeve'],
+      rows: [
+        ['S', '-', '-', '-'],
+        ['M', '-', '-', '-'],
+        ['L', '-', '-', '-'],
+        ['XL', '-', '-', '-'],
+      ],
+    },
+  },
+  {
+    slug: 'green-plaid-button-up',
+    title: 'green plaid button up',
+    price: 15000,
+    category: 'shirts',
+    description:
+      'a unisex short sleeve button up in 100% cotton plaid, designed and sewn by hand in Seattle. boxy and relaxed, with a chest pocket and a point collar. wear it buttoned up or open over a tee.',
+    details: [
+      { label: 'material', value: '100% cotton' },
+      { label: 'fit', value: 'unisex, boxy, relaxed' },
+      { label: 'made in', value: 'Seattle' },
+      { label: 'care', value: 'machine wash cold, hang dry' },
+    ],
+    // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
+    stock: { s: 1, m: 1, l: 1, xl: 1 },
     // TODO: real measurements
     sizeChart: {
       headers: ['size', 'chest', 'length', 'sleeve'],

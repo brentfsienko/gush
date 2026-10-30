@@ -3,7 +3,10 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import DrawnToggle from '../components/DrawnToggle.astro';
 import { CATEGORIES, PRODUCTS, formatPrice } from '../data/products';
-import { productPhotos } from '../data/assets';
+import { productPhotos, drawn } from '../data/assets';
+
+// Filters whose drawing exists (a new category shows up once its filter-<name>.png is added).
+const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
 
 ---
 
@@ -16,7 +19,7 @@ import { productPhotos } from '../data/assets';
 
   <nav class="filters" aria-label="categories">
     {
-      CATEGORIES.map((c) => (
+      filters.map((c) => (
         <button class="drawn-btn filter" data-filter={c} aria-pressed={c === 'all' ? 'true' : 'false'} aria-label={c}>
           <DrawnToggle name={`filter-${c}`} h={c === 'thermals' ? 37 : 35} webH={c === 'thermals' ? 43 : 40} />
         </button>
