@@ -42,8 +42,8 @@ export const PRODUCTS: Product[] = [
       { label: 'made in', value: 'Seattle' },
       { label: 'care', value: 'machine wash cold, hang dry' },
     ],
-    // TODO: real counts per size. Checkout refuses sizes at 0.
-    stock: { s: 5, m: 5, l: 5, xl: 5 },
+    // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
+    stock: { s: 0, m: 0, l: 1, xl: 0 },
     // TODO: real measurements
     sizeChart: {
       headers: ['size', 'chest', 'length', 'sleeve'],
