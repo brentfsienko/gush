@@ -51,7 +51,7 @@ const config = { catalog, maxQty: MAX_QTY };
       <p class="msg" aria-live="polite" data-msg></p>
       <div class="center">
         <button class="drawn-btn boxed-btn" data-checkout aria-label="checkout">
-          <Drawn name="btn-checkout" h={24} webH={30} />
+          <Drawn name="btn-checkout" h={66} webH={80} />
         </button>
       </div>
     </div>
@@ -59,7 +59,7 @@ const config = { catalog, maxQty: MAX_QTY };
     <div data-empty hidden>
       <div class="empty">
         <h2 class="heading">your cart is empty</h2>
-        <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={24} webH={30} /></a>
+        <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} webH={60} /></a>
       </div>
     </div>
   </div>
@@ -71,12 +71,12 @@ const config = { catalog, maxQty: MAX_QTY };
         <a class="line-title" data-title></a>
         <p class="line-sub"><span data-size></span> · <span data-price></span></p>
         <div class="qty">
-          <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={8} webH={9} loading="eager" /></button>
+          <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={10} webH={11} loading="eager" /></button>
           <span class="qty-n" data-qty></span>
-          <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={18} webH={20} loading="eager" /></button>
+          <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={20} webH={22} loading="eager" /></button>
         </div>
       </div>
-      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={13} webH={15} loading="eager" /></button>
+      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={20} webH={24} loading="eager" /></button>
     </div>
   </template>
 

@@ -21,7 +21,7 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     {
       filters.map((c) => (
         <button class="drawn-btn filter" data-filter={c} aria-pressed={c === 'all' ? 'true' : 'false'} aria-label={c}>
-          <DrawnToggle name={`filter-${c}`} h={26} webH={32} />
+          <DrawnToggle name={`filter-${c}`} h={c === 'thermals' ? 37 : 35} webH={c === 'thermals' ? 43 : 40} />
         </button>
       ))
     }

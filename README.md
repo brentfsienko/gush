@@ -19,19 +19,6 @@ npm run dev
 Opens at http://localhost:4321. It also prints a "Network" address. Open that on your phone (same wifi) to try it on a real phone.
 `npm run dev` doesn't run checkout. To test the whole thing including checkout, use `npm run preview` (http://localhost:8788).
 
-## The stitched lettering
-
-Every button, tab, filter, size, number and the logo are generated in the style of the GÜSH sewn tag
-(slab-serif capitals traced in dark green thread) by `scripts/stitch_drawings.py`, into
-`src/assets/drawn/`. To regenerate (needs numpy + Pillow), e.g. after changing a word or the thread color:
-
-```bash
-python3 scripts/stitch_drawings.py src/assets/drawn
-```
-
-Add a name after the folder to redo just that drawing (e.g. `filter-shirts`). Your sewn versions can
-still replace any of them: save a photo/scan with the same name (see below).
-
 ## Swapping in your drawings
 
 Every drawing lives in `src/assets/drawn/`. Right now they're placeholders.

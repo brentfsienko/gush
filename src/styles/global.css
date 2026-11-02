@@ -125,13 +125,11 @@ body {
   align-items: flex-start;
   gap: 4px;
   /* Height of the CART drawing; the word is its top 80% (the rest is room for the underline). */
-  --cart-h: 22px;
+  --cart-h: 27px;
 }
 
 .cart-count {
   margin-top: calc(var(--cart-h) * 0.4 - var(--digit-h) / 2);
-  margin-left: 0.3em;
-  margin-left: 0.3em;
   font-size: 15px;
   line-height: 1;
   color: var(--ink);
@@ -246,7 +244,7 @@ a:active > img.drawn {
    mustard shadow on hover and presses on click, instead of the drawing itself. */
 .boxed-btn {
   padding: 10px 18px;
-  border: 1.5px solid var(--thread);
+  border: 1.5px solid var(--ink);
   background: transparent;
   transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
 }
@@ -392,7 +390,7 @@ a:active > img.drawn {
   }
 
   .cart-tab {
-    --cart-h: 30px;
+    --cart-h: 42px;
   }
 
   .tabs {
