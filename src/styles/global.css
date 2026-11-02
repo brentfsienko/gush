@@ -5,9 +5,10 @@
   --hover-gray: rgba(31, 27, 22, 0.06); /* shop items under the pointer: a slightly darker patch of fabric */
   --red: #c8372d;
   --sun: #e8a317; /* mustard, same as brentsienko.com */
-  --page: #f7f5ef; /* the page everything is stuck onto: off-white cotton */
-  /* The page itself: a seamless slub-cotton texture over the off-white (made by scripts/fabric.py). */
-  --fabric: var(--page) url('/fabric.webp') repeat;
+  --page: #f8f7f3; /* the page everything is stuck onto: off-white cotton */
+  /* The page itself: a seamless slub-cotton texture over the off-white (made by scripts/fabric.py).
+     The tile is 1600px shown at 800px, so it stays sharp on high-density screens. */
+  --fabric: var(--page) url('/fabric.webp') 0 0 / 800px 800px repeat;
   --type: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --gutter: 16px;
   /* How wide the header and page content get on big screens. */
