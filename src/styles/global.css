@@ -68,19 +68,18 @@ body {
   view-transition-name: topbar;
 }
 
-/* Between the header and the page: a running stitch in dark green thread. Each stitch is a thin,
-   slightly tapered length of thread (lit from above so it looks round, with a faint twist) and a soft
-   shadow where it sits on the fabric; gaps are where the thread goes under. */
+/* Between the header and the page: a running stitch in dark green thread (src/assets/stitch.svg, made
+   by scripts/stitch.py). Every stitch differs a little in length, tilt, height, thickness and gap, like
+   real stitching; each is lit from above with a faint twist and a soft shadow on the fabric. */
 .topbar::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -2px;
-  height: 5px;
+  bottom: -3px;
+  height: 6px;
   pointer-events: none;
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='5' viewBox='0 0 24 5'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23557558'/><stop offset='.5' stop-color='%232f4a33'/><stop offset='1' stop-color='%231d3021'/></linearGradient></defs><path d='M3.4 2.95 Q10 2.55 16.6 2.95 Q10 3.75 3.4 2.95Z' fill='%23000' fill-opacity='.13'/><path d='M3 2.5 Q3 1.75 4.2 1.75 L15.8 1.75 Q17 1.75 17 2.5 Q17 3.25 15.8 3.25 L4.2 3.25 Q3 3.25 3 2.5Z' fill='url(%23t)'/><path d='M5.5 1.85l.7 1.3M8.3 1.85l.7 1.3M11.1 1.85l.7 1.3M13.9 1.85l.7 1.3' stroke='%23fff' stroke-opacity='.13' stroke-width='.3' fill='none'/></svg>")
-    left center / 24px 5px repeat-x;
+  background: url('../assets/stitch.svg') left center / auto 6px repeat-x;
 }
 
 .brand {
