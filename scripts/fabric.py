@@ -1,5 +1,5 @@
-# Makes src/assets/fabric.webp, the site's off-white slub-cotton background: a seamless tile, made at 2x
-# (1600px, shown at 800px) so it stays sharp on high-density screens.
+# Makes src/assets/fabric.webp, the site's off-white slub-cotton background: a seamless tile, made at 3x
+# (2400px, shown at 800px) so it stays sharp on high-density screens.
 # Usage (needs numpy + Pillow): python3 scripts/fabric.py src/assets/fabric.webp [strength] [seed]
 # The site's --page color (src/styles/global.css) should match the average color it prints.
 #
@@ -14,9 +14,11 @@ out_path = sys.argv[1]
 STRENGTH = float(sys.argv[2]) if len(sys.argv) > 2 else 1.0
 rng = np.random.default_rng(int(sys.argv[3]) if len(sys.argv) > 3 else 11)
 
-N = 1600                               # tile size in pixels (displayed at N/2 CSS px)
+N = 2400                               # tile size in pixels (displayed at 800 CSS px, so 3x)
+S = N / 1600                           # sizes below were tuned at 1600px; scale them with the tile
 BASE = np.array([250, 249, 245.0])     # near-white, a whisper warm
-THREAD = np.array([0.92, 0.9, 0.84])   # darker threads lean warm (multiplier on the darkening)
+THREAD = np.array([1.0, 1.0, 0.97])    # threads are just a shade of the base color (barely tinted)
+DARK, LIGHT = 2.0, 1.1                 # how much darker/lighter a thread can get (keep it subtle)
 
 
 def periodic_noise_1d(rows, n, max_freq, falloff):
@@ -57,10 +59,11 @@ def threads(count, length, along_freq, visible_share, thickness):
 
 # Weft: horizontal threads with wandering rows. A dense, fine layer gives the cloth its weave; a
 # sparser layer of bolder threads adds the uneven, organic lines.
+# Threads are 2-3px at 3x: about 2/3 to 1 CSS pixel, so they read as fine cotton, not stripes.
 fine = threads(-(-N // 2), N, 60, 0.95, 2)[:N] * 1.1
-bold = threads(-(-N // 3), N, 24, 0.4, 3)[:N] * 0.8
+bold = threads(-(-N // 3), N, 24, 0.4, 3)[:N] * 0.7
 weft = fine + bold
-wander = periodic_noise_2d(N, 6, 1.0) * 1.6                        # up to ~2px drift up/down
+wander = periodic_noise_2d(N, 6, 1.0) * 1.6 * S                    # a pixel or two of drift up/down
 ys = (np.arange(N)[:, None] + wander).round().astype(int) % N
 weft = weft[ys, np.arange(N)[None, :]]
 
@@ -71,8 +74,8 @@ warp = threads(-(-N // 2), N, 80, 0.9, 2)[:N].T * 0.35
 slub = np.zeros((N, N))
 for _ in range(70):
     y, x = rng.integers(N), rng.integers(N)
-    L, t = rng.integers(40, 220), rng.integers(3, 7)
-    shade = rng.choice([-1.0, 1.0], p=[0.35, 0.65]) * rng.uniform(1.2, 2.4)
+    L, t = int(rng.integers(40, 220) * S), int(rng.integers(2, 5) * S)
+    shade = rng.choice([-1.0, 1.0], p=[0.35, 0.65]) * rng.uniform(1.0, 1.8)
     taper = np.hanning(L)[None, :] * np.hanning(t + 2)[1:-1, None]
     slub[np.ix_((y + np.arange(t)) % N, (x + np.arange(L)) % N)] += shade * taper
 
@@ -81,8 +84,8 @@ grain = rng.normal(size=(N, N)) * 0.5
 cloud = periodic_noise_2d(N, 5, 1.5) * 0.25
 
 tex = (weft * 1.3 + warp + slub + grain + cloud) * STRENGTH        # >0 = darker thread
-dark = np.clip(tex, 0, None)[..., None] * THREAD * 3.2
-light = np.clip(-tex, 0, None)[..., None] * 1.6
+dark = np.clip(tex, 0, None)[..., None] * THREAD * DARK
+light = np.clip(-tex, 0, None)[..., None] * LIGHT
 rgb = np.clip(BASE - dark + light, 0, 255).astype(np.uint8)
 Image.fromarray(rgb).save(out_path, quality=92, method=6)
 print(out_path, rgb.shape[1], 'x', rgb.shape[0], 'mean', rgb.reshape(-1, 3).mean(0).round(1))
