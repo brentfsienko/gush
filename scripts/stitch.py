@@ -9,15 +9,15 @@ COUNT = 16
 
 stitches, x = [], 3.0
 for _ in range(COUNT):
-    length = random.uniform(12.6, 15.6)
-    gap = random.uniform(8.6, 11.4)
+    length = random.uniform(13.4, 14.8)
+    gap = random.uniform(9.3, 10.7)
     stitches.append(dict(
         x=x, length=length,
-        y=H / 2 + random.uniform(-0.35, 0.35),
-        tilt=random.uniform(-1.8, 1.8),                 # degrees
-        thick=random.uniform(1.3, 1.75),
-        twist=random.uniform(0.08, 0.17),               # how visible the twist highlights are
-        shade=random.uniform(-0.06, 0.06),              # a touch lighter/darker thread
+        y=H / 2 + random.uniform(-0.15, 0.15),
+        tilt=random.uniform(-0.7, 0.7),                 # degrees
+        thick=random.uniform(1.42, 1.62),
+        twist=random.uniform(0.1, 0.15),               # how visible the twist highlights are
+        shade=random.uniform(-0.03, 0.03),              # a touch lighter/darker thread
     ))
     x += length + gap
 W = float(int(x) + 1)    # whole pixels, so the repeat has no seam; the last gap leads into the first stitch
