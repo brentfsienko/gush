@@ -1,6 +1,6 @@
-# Makes public/fabric.webp, the site's off-white slub-cotton background: a seamless tile, made at 2x
+# Makes src/assets/fabric.webp, the site's off-white slub-cotton background: a seamless tile, made at 2x
 # (1600px, shown at 800px) so it stays sharp on high-density screens.
-# Usage (needs numpy + Pillow): python3 scripts/fabric.py public/fabric.webp [strength] [seed]
+# Usage (needs numpy + Pillow): python3 scripts/fabric.py src/assets/fabric.webp [strength] [seed]
 # The site's --page color (src/styles/global.css) should match the average color it prints.
 #
 # Mostly horizontal weft threads that fade in and out along their length, wander slightly and vary in
