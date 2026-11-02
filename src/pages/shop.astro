@@ -88,18 +88,16 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     display: none;
   }
 
-  /* Web: the breadcrumb, the category row and the item grid share one centered column, so they all
-     line up with the left edge of the first item. Each item column is capped by the screen height so a
-     whole item (photo, name, price) fits on screen without scrolling. */
+  /* Web: the category row and the item grid share one centered column (sizes in global.css, shared
+     with the breadcrumbs), so they all line up with the left edge of the first item. Each item column
+     is capped by the screen height so a whole item (photo, name, price) fits on screen. */
   @media (min-width: 700px) {
-    .crumbs,
     .filters,
     .feed {
-      --gap: 28px;
-      --col: min(calc((100vw - 64px - var(--gap)) / 2), calc(100dvh - 370px));
-      --side: calc((100vw - 2 * var(--col) - var(--gap)) / 2);
-      padding-left: var(--side);
-      padding-right: var(--side);
+      --gap: var(--grid-gap);
+      --col: var(--grid-col);
+      padding-left: var(--grid-side);
+      padding-right: var(--grid-side);
     }
 
     .filters {
@@ -113,10 +111,16 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
   }
 
   /* TikTok-style: one card per screen, snaps into place. */
+  /* The feed is the shop's scrolling area, so it carries the fabric (scrolling with the items). Its
+     pattern is shifted up by its distance from the top of the page (--feed-top, set below) so it
+     continues seamlessly from the fabric above it. */
   .feed {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    background: var(--fabric);
+    background-attachment: local;
+    background-position: 0 calc(-1 * var(--feed-top, 0px));
     scroll-snap-type: y mandatory;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -148,20 +152,33 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* The whole item (photo, name, price) is one block; on hover (pressed, on phones) its white turns
-       light gray. The photos are cut out, so the gray shows behind the garment too. */
+    /* The whole item (photo, name, price) is one block. On hover it lifts off the page like a
+       button: it rises a little, casts a soft shadow, and shows its own swatch of the fabric (weave
+       offset, so it doesn't line up with the page). Pressing it settles it back down. */
     padding: 0 0 12px;
     background: transparent;
+    transition: transform 0.14s ease-out, box-shadow 0.14s ease-out;
   }
 
   @media (hover: hover) {
     .card:hover {
-      background: var(--hover-gray);
+      background: var(--fabric);
+      background-position: 311px 173px;
+      transform: translateY(-4px);
+      box-shadow:
+        0 1px 2px rgba(31, 27, 22, 0.08),
+        0 10px 22px -8px rgba(31, 27, 22, 0.28);
     }
   }
 
   .card:active {
-    background: var(--hover-gray);
+    background: var(--fabric);
+    background-position: 311px 173px;
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 2px rgba(31, 27, 22, 0.1),
+      0 3px 8px -4px rgba(31, 27, 22, 0.25);
+    transition-duration: 0.05s;
   }
 
   .card-photos {
@@ -250,21 +267,25 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
       aspect-ratio: 1 / 1;
     }
 
-    /* "More coming soon" goes light gray on hover too, like an item. */
+    /* "More coming soon" (a .card too) lifts like an item; the old note box hover is unused here. */
     .note {
       flex: 1;
       margin: 0;
       justify-content: center;
     }
 
-    .note:hover {
-      background: var(--hover-gray);
-    }
+
   }
 
 </style>
 
 <script>
+  // Line the feed's fabric up with the fabric above it (see .feed in the styles).
+  const feedEl = document.querySelector<HTMLElement>('[data-feed]')!;
+  const alignFabric = () => feedEl.style.setProperty('--feed-top', `${feedEl.offsetTop}px`);
+  alignFabric();
+  addEventListener('resize', alignFabric);
+
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
   const feed = document.querySelector<HTMLElement>('[data-feed]')!;
   const items = [...feed.querySelectorAll<HTMLElement>('[data-category]')];

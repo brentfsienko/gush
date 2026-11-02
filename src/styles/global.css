@@ -2,7 +2,6 @@
   --ink: #1f1b16;
   --ink-soft: #4a443b;
   --gray: #7a7a7a; /* prices */
-  --hover-gray: rgba(31, 27, 22, 0.06); /* shop items under the pointer: a slightly darker patch of fabric */
   --red: #c8372d;
   --sun: #e8a317; /* mustard, same as brentsienko.com */
   --page: #f8f7f3; /* the page everything is stuck onto: off-white cotton */
@@ -138,8 +137,12 @@ body {
   width: auto;
 }
 
+/* The fabric is painted on the scrolling area itself and scrolls with the page (attachment: local),
+   so it feels like everything is sewn onto it rather than sliding over it. */
 main {
   position: relative;
+  background: var(--fabric);
+  background-attachment: local;
   overflow-y: auto;
   overscroll-behavior: contain;
   min-height: 0;
@@ -287,9 +290,17 @@ a:active > img.drawn {
   text-decoration: underline;
 }
 
+/* Web: the shop's two-column item grid (see shop.astro). The breadcrumbs sit on its left edge on
+   every page, so they don't move when you click from the shop into an item. */
 @media (min-width: 700px) {
+  :root {
+    --grid-gap: 28px;
+    --grid-col: min(calc((100vw - 64px - var(--grid-gap)) / 2), calc(100dvh - 370px));
+    --grid-side: calc((100vw - 2 * var(--grid-col) - var(--grid-gap)) / 2);
+  }
+
   .crumbs {
-    padding-top: 28px;
+    padding: 28px var(--grid-side) 0;
   }
 }
 

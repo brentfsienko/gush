@@ -176,15 +176,6 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     margin: 10px var(--gutter) 10px;
   }
 
-  /* Web: breadcrumb lines up with the left edge of the photo/details layout below it. */
-  @media (min-width: 900px) {
-    .item-crumbs {
-      max-width: var(--wide);
-      margin: 0 auto;
-      padding-inline: 32px;
-    }
-  }
-
   /* One whole photo at a time (no neighbours peeking in); swipe or use the arrows for the next.
      Height is capped so the whole photo and the arrows fit on screen without scrolling. */
   .gallery {
