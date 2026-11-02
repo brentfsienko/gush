@@ -1,5 +1,6 @@
 :root {
   --ink: #1f1b16;
+  --thread: #2f4a33; /* dark green sewing thread */
   --ink-soft: #4a443b;
   --gray: #7a7a7a; /* prices */
   --red: #c8372d;
@@ -62,11 +63,23 @@ body {
   column-gap: 8px;
   min-height: 0;
   padding: max(6px, env(safe-area-inset-top)) 2% 10px;
-  /* Single black line between the header (logo, tabs) and the page. */
-  border-bottom: 1px solid var(--ink);
   position: relative;
   z-index: 2;
   view-transition-name: topbar;
+}
+
+/* Between the header and the page: a running stitch in dark green thread. Each stitch is a rounded bit
+   of thread (lit from above, so it looks round) with a faint shadow where it sits on the fabric. */
+.topbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 6px;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='13' height='6' viewBox='0 0 13 6'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23587a5c'/><stop offset='.45' stop-color='%232f4a33'/><stop offset='1' stop-color='%231c2e20'/></linearGradient></defs><rect x='2.1' y='2.2' width='8' height='2.6' rx='1.3' fill='%23000' fill-opacity='.16'/><rect x='1.5' y='1.5' width='8' height='2.6' rx='1.3' fill='url(%23t)'/><path d='M3.6 1.7l.9 2.2M6 1.7l.9 2.2M8.2 1.8l.6 1.6' stroke='%23fff' stroke-opacity='.16' stroke-width='.45' fill='none'/></svg>")
+    left center / 13px 6px repeat-x;
 }
 
 .brand {
