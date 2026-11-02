@@ -33,7 +33,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   <div class="item-layout">
   <div class="item-media">
   <a href="/shop" class="back" aria-label="back to shop" data-back>
-    <Drawn name="btn-back" h={34} webH={44} />
+    <Drawn name="btn-back" h={20} webH={24} />
   </a>
 
   <div class="gallery" data-gallery>
@@ -90,7 +90,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
             const soldOut = (p.stock[s] ?? 0) <= 0;
             return (
               <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} aria-pressed="false" disabled={soldOut} aria-label={soldOut ? `${s} sold out` : s}>
-                <DrawnToggle name={`size-${s}`} h={46} webH={52} />
+                <DrawnToggle name={`size-${s}`} h={34} webH={40} />
               </button>
             );
           })
@@ -120,7 +120,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
       <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out.' : ''}</p>
 
       <button class="drawn-btn boxed-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
-        <Drawn name="btn-add-to-cart" h={37} webH={42} />
+        <Drawn name="btn-add-to-cart" h={20} webH={24} />
       </button>
     </div>
 
@@ -254,9 +254,9 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     width: 40px;
     height: 40px;
     padding: 0 0 3px;
-    border: 1.5px solid var(--ink);
+    border: 1.5px solid var(--thread);
     background: var(--page);
-    color: var(--ink);
+    color: var(--thread);
     font: 30px/1 var(--type);
     cursor: pointer;
   }
