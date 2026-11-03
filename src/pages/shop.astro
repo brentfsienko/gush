@@ -152,33 +152,33 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* The whole item (photo, name, price) is one block. On hover it lifts off the page like a
-       button: it rises a little, casts a soft shadow, and shows its own swatch of the fabric (weave
-       offset, so it doesn't line up with the page). Pressing it settles it back down. */
+    /* The whole item (photo, name, price) is one block. On hover a line of real straight stitch
+       (the same as under the header) outlines it, as if it were sewn onto the page. */
+    position: relative;
     padding: 0 0 12px;
-    background: transparent;
-    transition: transform 0.14s ease-out, box-shadow 0.14s ease-out;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      url('../assets/header-stitch.png') 0 0 / auto 9px repeat-x,
+      url('../assets/stitch-bottom.png') 0 100% / auto 9px repeat-x,
+      url('../assets/stitch-side.png') 0 0 / 9px auto repeat-y,
+      url('../assets/stitch-side.png') 100% 37px / 9px auto repeat-y;
   }
 
   @media (hover: hover) {
-    .card:hover {
-      background: var(--fabric);
-      background-position: 311px 173px;
-      transform: translateY(-4px);
-      box-shadow:
-        0 1px 2px rgba(31, 27, 22, 0.08),
-        0 10px 22px -8px rgba(31, 27, 22, 0.28);
+    a.card:hover::after {
+      opacity: 1;
     }
   }
 
-  .card:active {
-    background: var(--fabric);
-    background-position: 311px 173px;
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 2px rgba(31, 27, 22, 0.1),
-      0 3px 8px -4px rgba(31, 27, 22, 0.25);
-    transition-duration: 0.05s;
+  a.card:active::after {
+    opacity: 1;
   }
 
   .card-photos {
