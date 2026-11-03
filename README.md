@@ -29,7 +29,7 @@ Scanning tips: dark pen on white paper, scan or photograph in even light, remove
 
 ### The checklist
 
-Every clickable word gets a sewn underline from `dash-1`, `dash-2` and `dash-3` (three of your sewn dashes), repeated under it as many times as fit. It shows on hover and on whatever is selected, and sews in one dash at a time when something gets selected. So each word is just one drawing.
+Every clickable word gets a sewn underline: a line of the real straight stitch from your scans (`src/assets/header-stitch.png`, the same line as under the header). It shows on hover and on whatever is selected, and sews in stitch by stitch when something gets selected. So each word is just one drawing.
 
 | What | Files | Notes |
 |---|---|---|
@@ -40,7 +40,6 @@ Every clickable word gets a sewn underline from `dash-1`, `dash-2` and `dash-3` 
 | Sizes | `size-s`, `size-m`, `size-l`, `size-xl` ✓ done | selected one gets the underline |
 | Buttons | `btn-checkout`, `btn-add-to-cart` (ADD+TO+CART), `btn-back` (← BACK), `btn-keep-shopping` (SHOP →) ✓ done | wide |
 | Small buttons | `btn-plus`, `btn-minus`, `btn-remove` (REMOVE) ✓ done | used in the cart |
-| Underline | `dash-1`, `dash-2`, `dash-3` ✓ done | the sewn dashes under clickable words |
 
 ## Products
 
