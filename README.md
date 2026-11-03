@@ -29,7 +29,7 @@ Scanning tips: dark pen on white paper, scan or photograph in even light, remove
 
 ### The checklist
 
-Every clickable word gets a sewn underline: a line of the real straight stitch from your scans (`src/assets/header-stitch.png`, the same line as under the header). It shows on hover and on whatever is selected, and sews in stitch by stitch when something gets selected. So each word is just one drawing.
+Every clickable word (not the logo) gets a sewn underline: one long sewn box as wide as the word (`<name>-line`), built from your sewn dashes. It shows on hover and on whatever is selected.
 
 | What | Files | Notes |
 |---|---|---|

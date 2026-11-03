@@ -3,9 +3,8 @@
 // The browser gets sharp copies for phone size (h) and, if given, computer size (webH),
 // at 1x/2x/3x, so it never has to stretch a small copy. Saved at max quality so pen lines stay crisp.
 //
-// With `underline`, the word gets a line of real straight stitch under it (the same stitching as the line
-// under the header). It shows on hover and on whatever is selected, and sews in stitch by stitch when it
-// becomes selected (see "sewn underline" in global.css).
+// With `underline`, the word gets its sewn underline (<name>-line: one long sewn box, exactly as wide as
+// the word) under it. It shows on hover and on whatever is selected (see "sewn underline" in global.css).
 import { Image } from 'astro:assets';
 import { drawn } from '../data/assets';
 
@@ -33,18 +32,11 @@ const widths = [...new Set([1, 2, 3].flatMap((d) => [cap(phoneW * d), cap(webW *
 const sizes = webH ? `(min-width: 700px) ${Math.round(webW)}px, ${Math.round(phoneW)}px` : `${Math.round(phoneW)}px`;
 const style = `--h:${h}px;--h-web:${webH ?? h}px`;
 
-// Every sewn piece has a margin of 24 scan pixels around the thread (room for its shadow); the
-// underline runs under the thread itself.
-const PAD = 24;
-const STITCH = 7.4; // length of one machine stitch on screen (CSS px), for the sew-in animation
-let lineStyle = '';
-if (underline) {
-  const wordW = ((img.width - 2 * PAD) * (webH ?? h)) / img.height;
-  const inset = `${((PAD / img.width) * 100).toFixed(2)}%`;
-  // each word starts at a different spot along the stitching, so no two underlines look the same
-  const offset = [...name].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 997, 7) % 254;
-  lineStyle = `left:${inset};right:${inset};--stitches:${Math.max(3, Math.round(wordW / STITCH))};--sew-x:-${offset}px`;
-}
+// The underline picture is the same width as the word's and drawn at the same scale, so it just spans
+// the word; it sits so its thread starts a little below the word's thread.
+const line = underline ? drawn(`${name}-line`) : undefined;
+if (underline && !line) throw new Error(`Missing underline: "${name}-line.png" in src/assets/drawn/`);
+const lineTop = line ? `${(((img.height - 26) / img.height) * 100).toFixed(2)}%` : '';
 ---
 
 {
@@ -63,7 +55,19 @@ if (underline) {
         class="drawn"
         style={style}
       />
-      <span class="sew-line" style={lineStyle} aria-hidden="true" />
+      <Image
+        src={line!}
+        alt=""
+        widths={widths.map((w) => Math.min(w, line!.width))}
+        sizes={sizes}
+        format="webp"
+        quality="max"
+        loading={loading}
+        draggable="false"
+        class="sew-line"
+        style={`top:${lineTop}`}
+        aria-hidden="true"
+      />
     </span>
   ) : (
     <Image

@@ -76,7 +76,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -4.5px;
+  bottom: -9px;
   height: 9px;
   pointer-events: none;
   background: url('../assets/header-stitch.png') left center / auto 9px repeat-x;
@@ -180,10 +180,9 @@ img.drawn {
 }
 
 /* ---------- sewn underline ----------
-   A line of real straight stitch under a word (Drawn.astro with `underline`), the same stitching as the
-   line under the header. It shows while you hover the word and stays on whatever is selected (current
-   tab, chosen filter or size); when something becomes selected it sews in from the left, one stitch at a
-   time (--stitches is set per word). */
+   A long sewn box under a word (Drawn.astro with `underline`; the picture is <name>-line, built from the
+   sewn dashes and exactly as wide as the word). It shows while you hover the word and stays on whatever
+   is selected (current tab, chosen filter or size). */
 .sewn {
   position: relative;
   display: inline-block;
@@ -192,10 +191,12 @@ img.drawn {
 
 .sew-line {
   position: absolute;
-  top: calc(100% + 1px);
-  height: 9px;
-  background: url('../assets/header-stitch.png') var(--sew-x, 0) center / auto 9px repeat-x;
+  left: 0;
+  width: 100%;
+  height: auto;
   pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
   opacity: 0;
 }
 
@@ -207,16 +208,6 @@ img.drawn {
 
 :is([aria-current='page'], [aria-pressed='true']) .sew-line {
   opacity: 1;
-  animation: sew calc(var(--stitches) * 30ms) steps(var(--stitches)) backwards;
-}
-
-@keyframes sew {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
 }
 
 /* Any drawn button: no browser styling. */
