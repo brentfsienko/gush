@@ -45,7 +45,7 @@ Every clickable word (not the logo) gets a sewn underline: one long sewn box as 
 
 Edit `src/data/products.ts`: title, price (in cents: 10000 = $100), category, description, details, stock per size, size chart.
 Product photos go in `src/assets/products/<slug>/` named `1.jpg`, `2.jpg`, ... (first one is the main photo).
-Home page photos go in `src/assets/home/` (first one is the big top photo). Home page text is in `src/data/home.ts`.
+Home and about page photos go in `src/assets/home/`, shown full width in filename order (no text on those pages).
 
 Stock: when a size sells out, set it to `0` and redeploy. (Automatic stock counting can come later.)
 

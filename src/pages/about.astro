@@ -2,39 +2,22 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { homePhotos } from '../data/assets';
-import { ABOUT, SECOND_BLURB } from '../data/home';
 import { POLICIES, CONTACT_EMAIL } from '../data/store';
 
-// Same photos as the home page (src/assets/home/), stacked full width.
-const [hero, ...rest] = homePhotos();
+// Same photos as the home page (src/assets/home/), each the full width of the screen.
+const photos = homePhotos();
 ---
 
 <Base title="about" tab="about">
-  <div class="stack about">
-    <div class="type">
-      <p class="blurb">{ABOUT}</p>
-    </div>
-
-    {hero && <Image src={hero} alt="GÜSH clothing" widths={[480, 900]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />}
-
+  <div class="bleed">
     {
-      rest.length > 0 && (
-        <div class="photos">
-          {rest.map((src) => (
-            <Image src={src} alt="GÜSH clothing" widths={[480, 900, 1200]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />
-          ))}
-        </div>
-      )
+      photos.map((src, i) => (
+        <Image src={src} alt="GÜSH clothing" widths={[600, 1000, 1600, 2400]} sizes="100vw" class="photo" loading={i === 0 ? 'eager' : 'lazy'} />
+      ))
     }
+  </div>
 
-    {
-      SECOND_BLURB && (
-        <div class="type">
-          <p class="blurb">{SECOND_BLURB}</p>
-        </div>
-      )
-    }
-
+  <div class="stack">
     <section class="type info" id="info" aria-label="shipping, returns and contact">
       {
         POLICIES.map((p) => (
@@ -57,8 +40,11 @@ const [hero, ...rest] = homePhotos();
 </Base>
 
 <style>
-  .about {
-    padding-top: 22px;
+  /* room above so the stitched line under the header sits on the fabric, not on the photo */
+  .bleed {
+    display: flex;
+    flex-direction: column;
+    padding-top: 16px;
   }
 
   .blurb {
@@ -82,9 +68,4 @@ const [hero, ...rest] = homePhotos();
     color: inherit;
   }
 
-  .photos {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
 </style>

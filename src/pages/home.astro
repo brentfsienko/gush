@@ -3,65 +3,34 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
 import { homePhotos } from '../data/assets';
-import { ABOUT, SECOND_BLURB } from '../data/home';
 
-const [hero, ...rest] = homePhotos();
+// Photos from src/assets/home/, in filename order, each the full width of the screen.
+const photos = homePhotos();
 ---
 
 <Base>
-  <div class="stack home">
+  <div class="bleed">
     {
-      hero && (
-        <div class="hero">
-          <Image src={hero} alt="GÜSH clothing" widths={[480, 900]} sizes="(min-width: 480px) 400px, 85vw" class="photo" loading="eager" />
-        </div>
-      )
+      photos.map((src, i) => (
+        <Image src={src} alt="GÜSH clothing" widths={[600, 1000, 1600, 2400]} sizes="100vw" class="photo" loading={i === 0 ? 'eager' : 'lazy'} />
+      ))
     }
-
-    <div class="type">
-      <p class="blurb">{ABOUT}</p>
-    </div>
-
-    {
-      rest.length > 0 && (
-        <div class="photos">
-          {rest.map((src) => (
-            <Image src={src} alt="GÜSH clothing" widths={[480, 900, 1200]} sizes="(min-width: 700px) 600px, 100vw" class="photo" />
-          ))}
-        </div>
-      )
-    }
-
-    {
-      SECOND_BLURB && (
-        <div class="type">
-          <p class="blurb">{SECOND_BLURB}</p>
-        </div>
-      )
-    }
-
-    <a href="/shop" class="center cta" aria-label="shop">
-      <Drawn name="tab-shop" h={64} underline />
-    </a>
   </div>
+
+  <a href="/shop" class="center cta" aria-label="shop">
+    <Drawn name="tab-shop" h={64} underline />
+  </a>
 </Base>
 
 <style>
-  .home {
-    padding-top: 22px;
-  }
-
-  .blurb {
-    margin: 12px 0 0;
-  }
-
-  .photos {
+  /* room above so the stitched line under the header sits on the fabric, not on the photo */
+  .bleed {
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    padding-top: 16px;
   }
 
   .cta {
-    padding: 8px 0 12px;
+    padding: 28px 0 40px;
   }
 </style>
