@@ -32,7 +32,7 @@ export const PRODUCTS: Product[] = [
   {
     slug: 'blue-thermal',
     title: 'blue thermal',
-    price: 15000,
+    price: 10000,
     category: 'thermals',
     description:
       'a unisex thermal in 100% cotton waffle knit, designed and sewn by hand in Seattle. relaxed through the body and sleeves, and cropped at the waist. wear it as an everyday overshirt or a breathable layer.',
@@ -58,7 +58,7 @@ export const PRODUCTS: Product[] = [
   {
     slug: 'green-plaid-button-up',
     title: 'green plaid button up',
-    price: 15000,
+    price: 12000,
     category: 'shirts',
     description:
       'a unisex short sleeve button up in 100% cotton plaid, designed and sewn by hand in Seattle. boxy and relaxed, with a chest pocket and a point collar. wear it buttoned up or open over a tee.',
