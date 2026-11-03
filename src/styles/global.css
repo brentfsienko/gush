@@ -233,60 +233,14 @@ img.drawn {
   touch-action: manipulation;
 }
 
-/* Clickable drawings, like the buttons on brentsienko.com: on hover the drawing lifts a hair and
-   casts a hard mustard shadow in its own shape (down and to the left); pressing drops it into the shadow.
-   Whatever is selected (current tab, chosen filter/size) keeps the shadow. Applied to everything inside the link/button, so the cart count moves with CART. */
-:is(.drawn-btn, a.tab, a.brand) > *,
-a > img.drawn,
-a > .drawn-stack {
-  transition: transform 0.1s steps(2), filter 0.1s steps(2);
-}
+/* Clickable drawings don't move or change color on hover: the sewn letters fill in with thread
+   (.drawn-fill above), and whatever is selected (current tab, chosen filter/size) shows its sewn underline. */
 
-@media (hover: hover) {
-  :is(.drawn-btn:not(:disabled), a.tab, a.brand):hover > *,
-  a:hover > img.drawn,
-  a:hover > .drawn-stack {
-    transform: translate(1px, -1px);
-    filter: drop-shadow(-3px 3px 0 var(--sun));
-  }
-}
-
-:is(a.tab[aria-current='page'], .drawn-btn[aria-pressed='true']) > * {
-  transform: translate(1px, -1px);
-  filter: drop-shadow(-3px 3px 0 var(--sun));
-}
-
-:is(.drawn-btn:not(:disabled), a.tab, a.brand):active > *,
-a:active > img.drawn,
-a:active > .drawn-stack {
-  transform: translate(-2px, 2px);
-  filter: drop-shadow(0 0 0 var(--sun));
-}
-
-/* Main action buttons (ADD TO CART, CHECKOUT): the drawing sits in a square black box that takes the
-   mustard shadow on hover and presses on click, instead of the drawing itself. */
+/* Main action buttons (ADD TO CART, CHECKOUT): the drawing sits in a square black box. */
 .boxed-btn {
   padding: 10px 18px;
   border: 1.5px solid var(--ink);
   background: transparent;
-  transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
-}
-
-.boxed-btn > * {
-  filter: none !important;
-  transform: none !important;
-}
-
-@media (hover: hover) {
-  .boxed-btn:not(:disabled):hover {
-    box-shadow: -4px 4px 0 var(--sun);
-    transform: translate(1px, -1px);
-  }
-}
-
-.boxed-btn:not(:disabled):active {
-  box-shadow: none;
-  transform: translate(-2px, 2px);
 }
 
 .drawn-btn:disabled {
