@@ -184,6 +184,26 @@ img.drawn {
   display: inline-grid;
 }
 
+/* A sewn word and its filled-in version, stacked; the fill shows on hover (see below). */
+.drawn-stack {
+  display: inline-grid;
+}
+
+.drawn-stack > * {
+  grid-area: 1 / 1;
+}
+
+.drawn-fill {
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+@media (hover: hover) {
+  :is(.drawn-btn:not(:disabled), a):hover .drawn-fill {
+    opacity: 1;
+  }
+}
+
 .toggle > * {
   grid-area: 1 / 1;
 }
@@ -217,13 +237,15 @@ img.drawn {
    casts a hard mustard shadow in its own shape (down and to the left); pressing drops it into the shadow.
    Whatever is selected (current tab, chosen filter/size) keeps the shadow. Applied to everything inside the link/button, so the cart count moves with CART. */
 :is(.drawn-btn, a.tab, a.brand) > *,
-a > img.drawn {
+a > img.drawn,
+a > .drawn-stack {
   transition: transform 0.1s steps(2), filter 0.1s steps(2);
 }
 
 @media (hover: hover) {
   :is(.drawn-btn:not(:disabled), a.tab, a.brand):hover > *,
-  a:hover > img.drawn {
+  a:hover > img.drawn,
+  a:hover > .drawn-stack {
     transform: translate(1px, -1px);
     filter: drop-shadow(-3px 3px 0 var(--sun));
   }
@@ -235,7 +257,8 @@ a > img.drawn {
 }
 
 :is(.drawn-btn:not(:disabled), a.tab, a.brand):active > *,
-a:active > img.drawn {
+a:active > img.drawn,
+a:active > .drawn-stack {
   transform: translate(-2px, 2px);
   filter: drop-shadow(0 0 0 var(--sun));
 }
