@@ -4,7 +4,7 @@ import '../styles/global.css';
 import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import { drawn } from '../data/assets';
-import { TAGLINE } from '../data/store';
+import { TAGLINE, IMAGE_VERSION } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 
 interface Props {
@@ -23,7 +23,9 @@ const { title, tab, fill = false, description = TAGLINE, clearCart = false, imag
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
 // Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
-const ogImage = new URL(image, Astro.site ?? Astro.url).href;
+const ogImageUrl = new URL(image, Astro.site ?? Astro.url);
+ogImageUrl.searchParams.set('v', IMAGE_VERSION); // so apps fetch the new image when it changes
+const ogImage = ogImageUrl.href;
 // This page's public address (pages are built as name.html but served without the .html).
 const pageUrl = new URL(Astro.url.pathname.replace(/(index)?\.html$/, ''), Astro.site ?? Astro.url).href;
 // Hand-drawn digits for numbers the browser fills in (cart count, quantities). Index = digit.

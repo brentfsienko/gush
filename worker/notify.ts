@@ -7,7 +7,7 @@
 //  - to the buyer: a thank-you receipt (wording in src/data/store.ts, RECEIPT). Sent through Resend
 //    (free up to 3,000/month) with the RESEND_API_KEY secret. Real orders only, not sandbox tests.
 import { PRODUCTS, formatPrice } from '../src/data/products';
-import { SHIPPING_OPTIONS, SITE_URL, CONTACT_EMAIL, RECEIPT } from '../src/data/store';
+import { SHIPPING_OPTIONS, SITE_URL, CONTACT_EMAIL, RECEIPT, IMAGE_VERSION } from '../src/data/store';
 import type { Env } from './index';
 
 const FROM = { name: 'GÜSH', email: 'orders@gush.supply' };
@@ -180,7 +180,7 @@ function renderHtml(
   const items = o.items
     .map(
       (i) => `<tr>
-        <td width="84" valign="top" style="padding:0 14px 14px 0;"><img src="${SITE_URL}/stripe/${encodeURIComponent(i.slug)}.jpg" width="84" height="84" alt="${esc(i.title)}" style="display:block;border:0;width:84px;height:84px;"></td>
+        <td width="84" valign="top" style="padding:0 14px 14px 0;"><img src="${SITE_URL}/stripe/${encodeURIComponent(i.slug)}.jpg?v=${IMAGE_VERSION}" width="84" height="84" alt="${esc(i.title)}" style="display:block;border:0;width:84px;height:84px;"></td>
         <td valign="top" ${td('padding:0 0 14px;')}>${esc(i.title)}<br><span style="color:${GRAY};">size ${esc(i.size)}${i.qty > 1 ? ` · ${i.qty} pieces` : ''}</span></td>
         <td valign="top" align="right" ${td(`padding:0 0 14px;color:${GRAY};white-space:nowrap;`)}>${esc(formatPrice(i.cents))}</td>
       </tr>`,
@@ -217,7 +217,7 @@ function renderHtml(
 <body style="margin:0;padding:0;background:#ffffff;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;"><tr><td align="center" style="padding:24px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
-  <tr><td align="center" style="padding:0 0 18px;"><a href="${SITE_URL}"><img src="${SITE_URL}/stripe/logo.png" width="160" alt="GÜSH" style="display:block;border:0;width:160px;height:auto;"></a></td></tr>
+  <tr><td align="center" style="padding:0 0 18px;"><a href="${SITE_URL}"><img src="${SITE_URL}/stripe/logo.png?v=${IMAGE_VERSION}" width="160" alt="GÜSH" style="display:block;border:0;width:160px;height:auto;"></a></td></tr>
   ${rule}
   ${gap(20)}
   <tr><td ${td('font-size:22px;')}>${esc(v.title)}${v.titleNote ? ` <span style="color:${GRAY};font-size:14px;">${esc(v.titleNote)}</span>` : ''}</td></tr>

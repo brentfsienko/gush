@@ -13,6 +13,7 @@ import {
   CHECKOUT_TEXT,
   ORDER_NOTE_LABEL,
   SITE_URL,
+  IMAGE_VERSION,
 } from '../src/data/store';
 import { available } from './stock';
 import type { Env } from './index';
@@ -64,7 +65,7 @@ export async function checkout(request: Request, env: Env) {
     params.set(`line_items[${i}][price_data][product_data][name]`, `${p.title} (${size.toUpperCase()})`);
     params.set(`line_items[${i}][price_data][product_data][metadata][slug]`, p.slug);
     params.set(`line_items[${i}][price_data][product_data][metadata][size]`, size);
-    params.set(`line_items[${i}][price_data][product_data][images][0]`, `${images}/stripe/${p.slug}.jpg`);
+    params.set(`line_items[${i}][price_data][product_data][images][0]`, `${images}/stripe/${p.slug}.jpg?v=${IMAGE_VERSION}`);
     if (TAX_ENABLED) {
       params.set(`line_items[${i}][price_data][product_data][tax_code]`, CLOTHING_TAX_CODE);
       params.set(`line_items[${i}][price_data][tax_behavior]`, 'exclusive');
@@ -101,7 +102,7 @@ export async function checkout(request: Request, env: Env) {
   params.set('branding_settings[background_color]', CHECKOUT_LOOK.background);
   params.set('branding_settings[button_color]', CHECKOUT_LOOK.button);
   params.set('branding_settings[logo][type]', 'url');
-  params.set('branding_settings[logo][url]', `${images}/stripe/logo.png`);
+  params.set('branding_settings[logo][url]', `${images}/stripe/logo.png?v=${IMAGE_VERSION}`);
   params.set('branding_settings[icon][type]', 'url');
   params.set('branding_settings[icon][url]', `${images}/icon-512.png`);
   if (CHECKOUT_TEXT.shipping) params.set('custom_text[shipping_address][message]', CHECKOUT_TEXT.shipping);

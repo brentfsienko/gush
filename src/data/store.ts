@@ -47,6 +47,11 @@ export const CHECKOUT_TEXT = {
 // load images from localhost).
 export const SITE_URL = 'https://gush.supply';
 
+// Added to the share-preview images and the checkout/email logo and photos as ?v=... Apps (iMessage,
+// Instagram, Gmail, Stripe) keep their own copy of an image by its address, so change this whenever the
+// logo or a product's main photo changes and they'll fetch the new one.
+export const IMAGE_VERSION = 'sewn-1';
+
 // Shown under the title when a GÜSH link is shared (and to search engines).
 export const TAGLINE = 'Small Batch Clothing Made in Seattle';
 
