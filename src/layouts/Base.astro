@@ -3,7 +3,6 @@ import '@fontsource/ibm-plex-mono/400.css';
 import '../styles/global.css';
 import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
-import DrawnToggle from '../components/DrawnToggle.astro';
 import { drawn } from '../data/assets';
 import { TAGLINE } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
@@ -68,18 +67,18 @@ const digitUrls = digitImgs.every(Boolean)
     <div class="app">
       <header class="topbar">
         <a href="/about" class="brand" aria-label="about GÜSH">
-          <Drawn name="logo" h={34} webH={58} alt="GÜSH" loading="eager" />
+          <Drawn name="logo" h={34} webH={58} alt="GÜSH" loading="eager" underline />
         </a>
         <nav class="tabs" aria-label="main">
           <a href="/shop" class="tab" aria-current={tab === 'shop' ? 'page' : undefined} aria-label="shop">
-            <DrawnToggle name="tab-shop" h={27} webH={42} />
+            <Drawn name="tab-shop" h={18} webH={28} loading="eager" underline />
           </a>
           <a href="/about" class="tab" aria-current={tab === 'about' ? 'page' : undefined} aria-label="about">
-            <DrawnToggle name="tab-about" h={27} webH={42} />
+            <Drawn name="tab-about" h={18} webH={28} loading="eager" underline />
           </a>
         </nav>
         <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
-          <DrawnToggle name="tab-cart" h={27} webH={42} />
+          <Drawn name="tab-cart" h={18} webH={28} loading="eager" underline />
           <span class="cart-count" data-cart-count></span>
           <script is:inline define:vars={{ digitUrls, clearCart }}>
             // Runs right here, before the first paint, so the count never flashes a wrong number.

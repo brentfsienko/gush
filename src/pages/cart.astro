@@ -51,7 +51,7 @@ const config = { catalog, maxQty: MAX_QTY };
       <p class="msg" aria-live="polite" data-msg></p>
       <div class="center">
         <button class="drawn-btn boxed-btn" data-checkout aria-label="checkout">
-          <Drawn name="btn-checkout" h={50} webH={60} />
+          <Drawn name="btn-checkout" h={50} webH={60} underline />
         </button>
       </div>
     </div>
@@ -59,7 +59,7 @@ const config = { catalog, maxQty: MAX_QTY };
     <div data-empty hidden>
       <div class="empty">
         <h2 class="heading">your cart is empty</h2>
-        <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} webH={60} /></a>
+        <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={48} webH={60} underline /></a>
       </div>
     </div>
   </div>
@@ -76,7 +76,7 @@ const config = { catalog, maxQty: MAX_QTY };
           <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={20} webH={22} loading="eager" /></button>
         </div>
       </div>
-      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={20} webH={24} loading="eager" /></button>
+      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={20} webH={24} loading="eager" underline /></button>
     </div>
   </template>
 

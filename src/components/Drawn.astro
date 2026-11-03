@@ -2,6 +2,10 @@
 // One of your drawings, shown at a fixed height (width follows the drawing's shape).
 // The browser gets sharp copies for phone size (h) and, if given, computer size (webH),
 // at 1x/2x/3x, so it never has to stretch a small copy. Saved at max quality so pen lines stay crisp.
+//
+// With `underline`, the word gets a row of your sewn dashes (dash-1/2/3) under it, as many whole dashes
+// as fit its width. They show on hover and on whatever is selected, and sew in one at a time when it
+// becomes selected (see "sewn underline" in global.css).
 import { Image } from 'astro:assets';
 import { drawn } from '../data/assets';
 
@@ -14,13 +18,12 @@ interface Props {
   alt?: string;
   class?: string;
   loading?: 'eager' | 'lazy';
+  underline?: boolean;
 }
 
-const { name, h, webH, alt = '', class: cls, loading = 'lazy' } = Astro.props;
+const { name, h, webH, alt = '', class: cls, loading = 'lazy', underline = false } = Astro.props;
 const img = drawn(name);
 if (!img) throw new Error(`Missing drawing: put a file named "${name}.png" in src/assets/drawn/`);
-// Sewn words have a "<name>-fill" version with the letters filled in with thread, shown on hover.
-const fillImg = drawn(`${name}-fill`);
 
 const aspect = img.width / img.height;
 const cap = (w: number) => Math.min(Math.round(w), img.width);
@@ -28,11 +31,28 @@ const phoneW = h * aspect;
 const webW = (webH ?? h) * aspect;
 const widths = [...new Set([1, 2, 3].flatMap((d) => [cap(phoneW * d), cap(webW * d)]))].sort((a, b) => a - b);
 const sizes = webH ? `(min-width: 700px) ${Math.round(webW)}px, ${Math.round(phoneW)}px` : `${Math.round(phoneW)}px`;
+const style = `--h:${h}px;--h-web:${webH ?? h}px`;
+
+// Every sewn piece has a margin of 24 scan pixels around the thread (room for its shadow).
+const PAD = 24;
+// Dash height on computers (CSS px); keep in sync with --dash-h in global.css. Phones use a smaller
+// dash, and any dashes that don't fit their narrower word just wrap out of sight.
+const DASH_H = 10;
+const MIN_GAP = 3;
+const dashes = underline ? [1, 2, 3].map((i) => drawn(`dash-${i}`)!) : [];
+let count = 0;
+let inset = '0';
+if (underline) {
+  const wordW = ((img.width - 2 * PAD) * (webH ?? h)) / img.height;
+  const dashW = dashes.reduce((s, d) => s + ((d.width - 2 * PAD) * DASH_H) / d.height, 0) / dashes.length;
+  count = Math.max(1, Math.floor((wordW + MIN_GAP) / (dashW + MIN_GAP)));
+  inset = `${((PAD / img.width) * 100).toFixed(2)}%`;
+}
 ---
 
 {
-  fillImg ? (
-    <span class:list={['drawn-stack', cls]}>
+  underline ? (
+    <span class:list={['sewn', cls]} style={style}>
       <Image
         src={img}
         alt={alt}
@@ -44,21 +64,24 @@ const sizes = webH ? `(min-width: 700px) ${Math.round(webW)}px, ${Math.round(pho
         loading={loading}
         draggable="false"
         class="drawn"
-        style={`--h:${h}px;--h-web:${webH ?? h}px`}
+        style={style}
       />
-      <Image
-        src={fillImg}
-        alt=""
-        height={h}
-        widths={widths}
-        sizes={sizes}
-        format="webp"
-        quality="max"
-        loading={loading}
-        draggable="false"
-        class="drawn drawn-fill"
-        style={`--h:${h}px;--h-web:${webH ?? h}px`}
-      />
+      <span class:list={['sew-line', { one: count === 1 }]} style={`left:${inset};right:${inset}`} aria-hidden="true">
+        {Array.from({ length: count }, (_, i) => (
+          <Image
+            src={dashes[i % dashes.length]}
+            alt=""
+            height={DASH_H}
+            densities={[1, 2, 3]}
+            format="webp"
+            quality="max"
+            loading={loading}
+            draggable="false"
+            class="sew-dash"
+            style={`--i:${i}`}
+          />
+        ))}
+      </span>
     </span>
   ) : (
     <Image
@@ -72,7 +95,7 @@ const sizes = webH ? `(min-width: 700px) ${Math.round(webW)}px, ${Math.round(pho
       loading={loading}
       draggable="false"
       class:list={['drawn', cls]}
-      style={`--h:${h}px;--h-web:${webH ?? h}px`}
+      style={style}
     />
   )
 }

@@ -30,32 +30,6 @@ export type Product = {
 
 export const PRODUCTS: Product[] = [
   {
-    slug: 'blue-thermal',
-    title: 'blue thermal',
-    price: 10000,
-    category: 'thermals',
-    description:
-      'a unisex thermal in 100% cotton waffle knit, designed and sewn by hand in Seattle. relaxed through the body and sleeves, and cropped at the waist. wear it as an everyday overshirt or a breathable layer.',
-    details: [
-      { label: 'material', value: '100% cotton waffle knit' },
-      { label: 'fit', value: 'unisex, relaxed, cropped at the waist' },
-      { label: 'made in', value: 'Seattle' },
-      { label: 'care', value: 'machine wash cold, hang dry' },
-    ],
-    // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
-    stock: { s: 0, m: 0, l: 1, xl: 0 },
-    // TODO: real measurements
-    sizeChart: {
-      headers: ['size', 'chest', 'length', 'sleeve'],
-      rows: [
-        ['S', '-', '-', '-'],
-        ['M', '-', '-', '-'],
-        ['L', '-', '-', '-'],
-        ['XL', '-', '-', '-'],
-      ],
-    },
-  },
-  {
     slug: 'green-plaid-button-up',
     title: 'green plaid button up',
     price: 12000,
@@ -70,6 +44,32 @@ export const PRODUCTS: Product[] = [
     ],
     // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
     stock: { s: 1, m: 1, l: 1, xl: 1 },
+    // TODO: real measurements
+    sizeChart: {
+      headers: ['size', 'chest', 'length', 'sleeve'],
+      rows: [
+        ['S', '-', '-', '-'],
+        ['M', '-', '-', '-'],
+        ['L', '-', '-', '-'],
+        ['XL', '-', '-', '-'],
+      ],
+    },
+  },
+  {
+    slug: 'blue-thermal',
+    title: 'blue thermal',
+    price: 10000,
+    category: 'thermals',
+    description:
+      'a unisex thermal in 100% cotton waffle knit, designed and sewn by hand in Seattle. relaxed through the body and sleeves, and cropped at the waist. wear it as an everyday overshirt or a breathable layer.',
+    details: [
+      { label: 'material', value: '100% cotton waffle knit' },
+      { label: 'fit', value: 'unisex, relaxed, cropped at the waist' },
+      { label: 'made in', value: 'Seattle' },
+      { label: 'care', value: 'machine wash cold, hang dry' },
+    ],
+    // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
+    stock: { s: 0, m: 0, l: 1, xl: 0 },
     // TODO: real measurements
     sizeChart: {
       headers: ['size', 'chest', 'length', 'sleeve'],
