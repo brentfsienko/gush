@@ -62,7 +62,7 @@ body {
   align-items: center;
   column-gap: 8px;
   min-height: 0;
-  padding: max(6px, env(safe-area-inset-top)) 2% 10px;
+  padding: max(6px, env(safe-area-inset-top)) 2% 18px;
   position: relative;
   z-index: 2;
   view-transition-name: topbar;
@@ -76,10 +76,10 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -9px;
-  height: 9px;
+  bottom: 0; /* inside the header, so it's always on the fabric, never over the page scrolling by */
+  height: 7px;
   pointer-events: none;
-  background: url('../assets/header-stitch.png') left center / auto 9px repeat-x;
+  background: url('../assets/header-stitch.png') left center / auto 7px repeat-x;
 }
 
 .brand {
@@ -348,7 +348,7 @@ img.drawn {
   }
 
   .topbar {
-    padding: 18px 32px 16px;
+    padding: 18px 32px 24px;
   }
 
 

@@ -158,25 +158,39 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     padding: 0 0 12px;
   }
 
+  /* The outline: top and bottom on ::before, the sides on ::after. Each line is 7px tall with the
+     thread along its middle, and every side stops at the middle of the sides it meets, so the
+     corners meet without crossing. */
+  .card::before,
   .card::after {
     content: '';
     position: absolute;
-    inset: -6px;
     pointer-events: none;
     opacity: 0;
+  }
+
+  .card::before {
+    inset: -6px -2.5px;
     background:
-      url('../assets/header-stitch.png') 0 0 / auto 9px repeat-x,
-      url('../assets/stitch-bottom.png') 0 100% / auto 9px repeat-x,
-      url('../assets/stitch-side.png') 0 0 / 9px auto repeat-y,
-      url('../assets/stitch-side.png') 100% 37px / 9px auto repeat-y;
+      url('../assets/header-stitch.png') 0 0 / auto 7px repeat-x,
+      url('../assets/stitch-bottom.png') 0 100% / auto 7px repeat-x;
+  }
+
+  .card::after {
+    inset: -2.5px -6px;
+    background:
+      url('../assets/stitch-side.png') 0 0 / 7px auto repeat-y,
+      url('../assets/stitch-side.png') 100% 37px / 7px auto repeat-y;
   }
 
   @media (hover: hover) {
+    a.card:hover::before,
     a.card:hover::after {
       opacity: 1;
     }
   }
 
+  a.card:active::before,
   a.card:active::after {
     opacity: 1;
   }
