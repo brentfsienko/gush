@@ -4,7 +4,7 @@ import '../styles/global.css';
 import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import { drawn } from '../data/assets';
-import { TAGLINE, IMAGE_VERSION } from '../data/store';
+import { TAGLINE, IMAGE_VERSION, WEB_ANALYTICS_TOKEN } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 
 interface Props {
@@ -64,6 +64,16 @@ const digitUrls = digitImgs.every(Boolean)
     <!-- Preloaded so text and the drawn cart count never pop in late. -->
     <link rel="preload" as="font" type="font/woff2" href={plexFont} crossorigin />
     {digitUrls?.map((u) => <link rel="preload" as="image" href={u} />)}
+    {
+      WEB_ANALYTICS_TOKEN && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: WEB_ANALYTICS_TOKEN })}
+        />
+      )
+    }
   </head>
   <body>
     <div class="app">

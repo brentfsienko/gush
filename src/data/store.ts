@@ -52,6 +52,10 @@ export const SITE_URL = 'https://gush.supply';
 // logo or a product's main photo changes and they'll fetch the new one.
 export const IMAGE_VERSION = 'sewn-1';
 
+// Cloudflare Web Analytics (counts real visitors; no cookies, bots left out). Paste the site token from
+// dash.cloudflare.com > Analytics & Logs > Web Analytics > gush.supply. '' turns it off.
+export const WEB_ANALYTICS_TOKEN = 'e15eb9f90c22427cbea54fc2d1ff3991';
+
 // Shown under the title when a GÜSH link is shared (and to search engines).
 export const TAGLINE = 'Small Batch Clothing Made in Seattle';
 
