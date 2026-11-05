@@ -122,7 +122,7 @@ export function confirmEmail(p: Product, size: string) {
     ${gap(18)}
     <div ${td()}>${esc(body)}</div>
     ${gap(26)}
-    <div style="text-align:center;"><a href="${SITE_URL}/shop"><img src="${SITE_URL}/stripe/keep-shopping.png?v=${IMAGE_VERSION}" width="236" alt="keep shopping" style="display:inline-block;border:0;width:236px;height:auto;"></a></div>
+    <div style="text-align:center;"><a href="${SITE_URL}/shop" style="display:inline-block;border:1.5px solid ${INK};padding:10px 16px 8px;"><img src="${SITE_URL}/stripe/keep-shopping.png?v=${IMAGE_VERSION}" width="200" alt="keep shopping" style="display:block;border:0;width:200px;height:auto;"></a></div>
     ${gap(26)}
     <div ${td(`color:${GRAY};font-size:12px;`)}>${esc(outro)}</div>`);
   return { subject, text, html };
