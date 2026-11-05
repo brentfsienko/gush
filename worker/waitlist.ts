@@ -49,7 +49,9 @@ export async function joinWaitlist(request: Request, env: Env, ctx: ExecutionCon
   if (body.website) return json({ ok: true });
   const p = PRODUCTS.find((x) => x.slug === body.slug);
   const size = String(body.size ?? '');
-  if (!p || p.stock[size as Size] === undefined) return json({ error: 'something went wrong. try again?' }, 400);
+  if (!p) return json({ error: 'something went wrong. try again?' }, 400);
+  // A size has to be picked (the page checks too; this is in case someone skips the page).
+  if (p.stock[size as Size] === undefined) return json({ error: 'choose a size first.' }, 400);
   const email = String(body.email ?? '').trim().toLowerCase();
   if (email.length > 254 || !EMAIL.test(email)) return json({ error: "that email doesn't look right." }, 400);
   if (!env.STOCK) return json({ error: "this isn't working right now. email " + CONTACT_EMAIL + ' instead?' }, 503);
@@ -58,8 +60,9 @@ export async function joinWaitlist(request: Request, env: Env, ctx: ExecutionCon
 
   const k = key(p.slug, size, email);
   const old = await env.STOCK.getWithMetadata<Meta>(k);
-  // Already waiting (and not yet emailed): nothing to do, and no second email to you.
-  if (old.value !== null && !old.metadata?.sent) return json({ ok: true });
+  // Already waiting (and not yet emailed): no duplicate, and no second email to them or to you.
+  // (Each email is saved once per item and size, lowercased, so "A@x.com" and "a@x.com" match.)
+  if (old.value !== null && !old.metadata?.sent) return json({ ok: true, already: true });
   await env.STOCK.put(k, '', { metadata: { at: Date.now() } satisfies Meta });
   ctx.waitUntil(Promise.all([tellOwner(env, p, size, email), confirm(env, p, size, email)]));
   return json({ ok: true });

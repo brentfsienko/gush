@@ -724,7 +724,9 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
-      notifyNote.textContent = `got it. we’ll email you when ${title} in ${picked.toUpperCase()} is back.`;
+      notifyNote.textContent = data.already
+        ? `you’re already on the list for ${title} in ${picked.toUpperCase()}. we’ll email you when it’s back.`
+        : `got it. we’ll email you when ${title} in ${picked.toUpperCase()} is back.`;
       notifyNote.classList.add('done');
       notifyEmail.hidden = notifyBtn.hidden = true;
     } catch (err) {
