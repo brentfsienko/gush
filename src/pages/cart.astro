@@ -65,7 +65,7 @@ const config = { catalog, maxQty: MAX_QTY };
   </div>
 
   <template data-line-tpl>
-    <div class="line">
+    <div class="line sewn-box sew-hover">
       <img class="photo thumb" data-thumb alt="" />
       <div class="line-info">
         <a class="line-title" data-title></a>
@@ -100,9 +100,7 @@ const config = { catalog, maxQty: MAX_QTY };
     gap: 14px;
     padding: 8px;
     margin: 0 -8px;
-    border: 1.5px solid transparent;
     background: transparent;
-    transition: border-color 0.1s steps(2), box-shadow 0.1s steps(2), transform 0.1s steps(2);
     align-items: center;
   }
 
@@ -152,11 +150,6 @@ const config = { catalog, maxQty: MAX_QTY };
     opacity: 0.3;
   }
 
-  @media (hover: hover) {
-    :global(.line:hover) {
-      border-color: var(--ink);
-    }
-  }
 
   /* REMOVE sits in the item's upper-right corner. */
   :global(.remove) {

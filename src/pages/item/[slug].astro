@@ -58,7 +58,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 
   <!-- Zoom view: a tapped photo full screen; tap again to zoom in where you tapped. -->
   <dialog class="zoom" data-zoom-view aria-label={`${p.title} photos`}>
-    <button class="zoom-close" data-zoom-close aria-label="close">×</button>
+    <button class="zoom-close sewn-box" data-zoom-close aria-label="close">×</button>
     <div class="zoom-stage" data-zoom-stage>
       <img class="zoom-img" data-zoom-img alt="" />
     </div>
@@ -122,7 +122,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
            (worker/waitlist.ts). -->
       <form class="notify" data-notify hidden novalidate>
         <p class="notify-note" data-notify-note></p>
-        <div class="notify-row">
+        <div class="notify-row sewn-box">
           <input class="notify-email" type="email" name="email" required maxlength="254" placeholder="your email" autocomplete="email" aria-label="your email" />
           <button class="notify-btn" type="submit">email me</button>
         </div>
@@ -265,7 +265,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     width: 40px;
     height: 40px;
     padding: 0 0 3px;
-    border: 1.5px solid var(--ink);
+    border: 0;
     background: var(--page);
     color: var(--ink);
     font: 30px/1 var(--type);
@@ -393,15 +393,16 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
     max-width: 420px;
   }
 
+  /* One sewn box around both, with a sewn line between the field and the button. */
   .notify-email,
   .notify-btn {
     font: inherit;
     font-size: 16px; /* 16px+ so phones don't zoom in on the field */
     color: var(--ink);
-    border: 1.5px solid var(--ink);
+    border: 0;
     border-radius: 0;
-    padding: 9px 12px;
-    background: var(--page);
+    padding: 10px 12px;
+    background: transparent;
   }
 
   .notify-email {
@@ -419,15 +420,18 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   .notify-btn {
-    margin-left: -1.5px;
+    padding-left: 15px;
+    background: url('../../assets/stitch-side.png') 0 12px / 7px auto repeat-y;
     cursor: pointer;
     white-space: nowrap;
   }
 
+  /* Hover: the words get underlined, like the rest of the site's buttons. */
   .notify-btn:hover,
   .notify-btn:focus-visible {
-    background: var(--ink);
-    color: var(--page);
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
     outline: none;
   }
 

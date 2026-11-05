@@ -226,12 +226,58 @@ img.drawn {
 
 /* Clickable drawings don't move or change color: they get the sewn underline (above). */
 
-/* Main action buttons (ADD TO CART, CHECKOUT): the drawing sits in a square black box, with room at the
+/* Main action buttons (ADD TO CART, CHECKOUT): the drawing sits in a sewn box, with room at the
    bottom for its sewn underline. */
 .boxed-btn {
   padding: 10px 18px 14px;
-  border: 1.5px solid var(--ink);
   background: transparent;
+}
+
+/* Sewn box: every box on the site is outlined in the same real straight stitch as the header line,
+   instead of a drawn border. Top and bottom run between the two sides' threads, so the corners meet
+   without crossing. --sew moves the thread out from the edge (negative = inside). Add .sew-hover to
+   only show it on hover. */
+.sewn-box,
+.boxed-btn {
+  --sew: 0px;
+  position: relative;
+}
+
+.sewn-box::before,
+.sewn-box::after,
+.boxed-btn::before,
+.boxed-btn::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.sewn-box::before,
+.boxed-btn::before {
+  inset: calc(-3.5px - var(--sew)) calc(-1 * var(--sew));
+  background:
+    url('../assets/header-stitch.png') 0 0 / auto 7px repeat-x,
+    url('../assets/stitch-bottom.png') 0 100% / auto 7px repeat-x;
+}
+
+.sewn-box::after,
+.boxed-btn::after {
+  inset: calc(-1 * var(--sew)) calc(-3.5px - var(--sew));
+  background:
+    url('../assets/stitch-side.png') 0 0 / 7px auto repeat-y,
+    url('../assets/stitch-side.png') 100% 37px / 7px auto repeat-y;
+}
+
+.sew-hover::before,
+.sew-hover::after {
+  opacity: 0;
+}
+
+@media (hover: hover) {
+  .sew-hover:hover::before,
+  .sew-hover:hover::after {
+    opacity: 1;
+  }
 }
 
 .drawn-btn:disabled {
