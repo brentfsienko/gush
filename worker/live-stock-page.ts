@@ -1,13 +1,11 @@
 // Item pages are built ahead of time with the stock numbers in products.ts, but sales live in KV,
 // so a size that has since sold out would show as available for a moment, then gray out once the
 // page asks /api/stock. To avoid that flash, item pages pass through here: the live stock is read
-// first, and the page's size buttons, "add to cart" and message are set to match as the HTML streams
+// first, and the page's size buttons, "add to cart" and the email box are set as the HTML streams
 // out, so the very first paint is already right. (The page still checks /api/stock too, as a backup.)
 import { PRODUCTS, SIZES } from '../src/data/products';
 import { available } from './stock';
 import type { Env } from './index';
-
-const SOLD_OUT_MSG = 'sold out. pick your size to get an email when it’s back.';
 
 export async function itemPage(request: Request, env: Env, slug: string) {
   const page = await env.ASSETS.fetch(request);
@@ -22,6 +20,7 @@ export async function itemPage(request: Request, env: Env, slug: string) {
   const sizes = Object.keys(live);
   const allGone = sizes.length > 0 && sizes.every((s) => live[s] <= 0);
 
+  let note = '';
   const out = new HTMLRewriter()
     .on('button[data-size]', {
       element(el) {
@@ -37,15 +36,21 @@ export async function itemPage(request: Request, env: Env, slug: string) {
         }
       },
     })
+    // Everything sold out: the email box shows in place of "add to cart" (and the other way round).
     .on('[data-add]', {
       element(el) {
-        if (allGone) el.setAttribute('disabled', '');
-        else el.removeAttribute('disabled');
+        for (const attr of ['disabled', 'hidden']) allGone ? el.setAttribute(attr, '') : el.removeAttribute(attr);
       },
     })
-    .on('[data-msg]', {
+    .on('[data-notify]', {
       element(el) {
-        el.setInnerContent(allGone ? SOLD_OUT_MSG : '');
+        allGone ? el.removeAttribute('hidden') : el.setAttribute('hidden', '');
+        note = el.getAttribute('data-all-sold-note') ?? '';
+      },
+    })
+    .on('[data-notify-note]', {
+      element(el) {
+        el.setInnerContent(allGone ? note : '');
       },
     })
     .transform(page);
