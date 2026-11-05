@@ -75,7 +75,6 @@ async function tellOwner(env: Env, p: Product, size: string, email: string) {
     const lines = [
       `${email} wants ${p.title} in ${S}.`,
       `${waiting} ${waiting === 1 ? 'person is' : 'people are'} waiting for ${S}.`,
-      `When you restock (raise the number in src/data/products.ts and deploy), everyone waiting is emailed within the hour.`,
     ];
     const html = page(`<div ${td('font-size:22px;')}>${esc(subject)}</div>${gap(14)}${lines.map((l) => `<div ${td('margin:0 0 10px;')}>${esc(l)}</div>`).join('')}`);
     await env.ORDER_EMAIL.send({ from: { name: 'GÜSH waitlist', email: FROM.email }, to: env.ORDER_EMAIL_TO, subject, text: lines.join('\n\n'), html, replyTo: email });
