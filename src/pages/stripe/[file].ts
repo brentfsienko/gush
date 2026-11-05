@@ -1,5 +1,6 @@
 // Images for Stripe's checkout page, built at fixed URLs Stripe can load (worker/checkout.ts links to
 // them): /stripe/logo.png (the GÜSH logo drawing) and /stripe/<slug>.jpg (each product's main photo).
+// The emails use them too, plus /stripe/keep-shopping.png (the sewn KEEP SHOPPING, worker/waitlist.ts).
 import type { APIRoute, GetStaticPaths } from 'astro';
 import sharp from 'sharp';
 import { readdir, readFile } from 'node:fs/promises';
@@ -10,6 +11,7 @@ const PRODUCT_DIR = 'src/assets/products';
 export const getStaticPaths = (async () => {
   const paths: { params: { file: string }; props: { path: string } }[] = [
     { params: { file: 'logo.png' }, props: { path: 'src/assets/drawn/logo.png' } },
+    { params: { file: 'keep-shopping.png' }, props: { path: 'src/assets/drawn/btn-keep-shopping.png' } },
   ];
   for (const p of PRODUCTS) {
     const files = await readdir(`${PRODUCT_DIR}/${p.slug}`).catch(() => [] as string[]);
@@ -22,7 +24,7 @@ export const getStaticPaths = (async () => {
 export const GET: APIRoute = async ({ params, props }) => {
   // Trimmed to the drawing/garment so it fills as much of Stripe's small, fixed-size boxes as it can.
   const img = sharp(await readFile(props.path as string)).trim();
-  if (params.file === 'logo.png') {
+  if (params.file.endsWith('.png')) {
     const png = await img.resize({ width: 640 }).png().toBuffer();
     return new Response(new Uint8Array(png), { headers: { 'content-type': 'image/png' } });
   }

@@ -12,12 +12,13 @@ routes = [
   { pattern = "www.gush.supply", custom_domain = true },
 ]
 
-# The built site (dist/) is served as static files. Only /api/* runs the worker code.
+# The built site (dist/) is served as static files. Only /api/* runs the worker code, plus /item/*,
+# where it fills in live stock before the page is sent (worker/live-stock-page.ts).
 [assets]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/item/*"]
 
 # Stock tracking: a Cloudflare KV namespace keeping a "sold" count per size (see worker/stock.ts).
 [[kv_namespaces]]

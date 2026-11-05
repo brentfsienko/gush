@@ -112,19 +112,34 @@ async function confirm(env: Env, p: Product, size: string, email: string) {
 export function confirmEmail(p: Product, size: string) {
   const S = size.toUpperCase();
   const subject = `you're on the list: ${p.title} in ${S}`;
-  const body = `${p.title} in ${S} is sold out right now. we'll email you as soon as it's back, once, and that's it.`;
+  const body = `it's sold out right now. we'll email you as soon as it's back, once, and that's it.`;
   const outro = `didn't sign up for this? you can ignore this email.`;
-  const text = `${subject}\n\n${body}\n\n${outro}`;
+  const text = `you're on the list:\n${p.title}\nsize ${S}\n\n${body}\n\nkeep shopping: ${SITE_URL}/shop\n\n${outro}`;
   const html = page(`
-    <div ${td('font-size:22px;')}>${esc(subject)}</div>
+    ${itemHeading("you're on the list:", p, `size ${S}`)}
     ${gap(18)}
-    <img src="${SITE_URL}/stripe/${encodeURIComponent(p.slug)}.jpg?v=${IMAGE_VERSION}" width="240" height="240" alt="${esc(p.title)}" style="display:block;border:0;width:240px;height:240px;margin:0 auto;">
+    ${photo(p)}
     ${gap(18)}
     <div ${td()}>${esc(body)}</div>
-    ${gap(24)}
+    ${gap(26)}
+    <div style="text-align:center;"><a href="${SITE_URL}/shop"><img src="${SITE_URL}/stripe/keep-shopping.png?v=${IMAGE_VERSION}" width="200" alt="keep shopping" style="display:inline-block;border:0;width:200px;height:auto;"></a></div>
+    ${gap(26)}
     <div ${td(`color:${GRAY};font-size:12px;`)}>${esc(outro)}</div>`);
   return { subject, text, html };
 }
+
+/** Laid out like the item page: a small line, the item's name, then the size in gray. */
+const itemHeading = (lead: string, p: Product, sub: string) => `
+    <div ${td()}>${esc(lead)}</div>
+    ${gap(4)}
+    <div ${td('font-size:22px;line-height:1.25;')}>${esc(p.title)}</div>
+    ${gap(4)}
+    <div ${td(`color:${GRAY};`)}>${esc(sub)}</div>`;
+
+const photo = (p: Product, href?: string) => {
+  const img = `<img src="${SITE_URL}/stripe/${encodeURIComponent(p.slug)}.jpg?v=${IMAGE_VERSION}" width="240" height="240" alt="${esc(p.title)}" style="display:block;border:0;width:240px;height:240px;margin:0 auto;">`;
+  return href ? `<a href="${esc(href)}">${img}</a>` : img;
+};
 
 /** Hourly: email everyone waiting on a size that's back in stock. */
 export async function sendRestocks(env: Env) {
@@ -178,16 +193,12 @@ export function restockEmail(p: Product, size: string) {
   const url = `${SITE_URL}/item/${p.slug}?size=${size}`;
   const subject = `${p.title} in ${S} is back`;
   const outro = `you asked us to email you when this was back. this is the only email you'll get about it.`;
-  const text = `${subject}.\n\n${formatPrice(p.price)}. there aren't many, so don't wait too long.\n\n${url}\n\n${outro}`;
+  const text = `${subject}.\n\nsize ${S}, ${formatPrice(p.price)}.\n\n${url}\n\n${outro}`;
   const html = page(`
-    <div ${td('font-size:22px;')}>${esc(subject)}</div>
+    ${itemHeading("it's back:", p, `size ${S} · ${formatPrice(p.price)}`)}
     ${gap(18)}
-    <a href="${esc(url)}"><img src="${SITE_URL}/stripe/${encodeURIComponent(p.slug)}.jpg?v=${IMAGE_VERSION}" width="240" height="240" alt="${esc(p.title)}" style="display:block;border:0;width:240px;height:240px;margin:0 auto;"></a>
-    ${gap(14)}
-    <div ${td('text-align:center;')}>${esc(p.title)}<br><span style="color:${GRAY};">size ${esc(S)} · ${esc(formatPrice(p.price))}</span></div>
-    ${gap(18)}
-    <div ${td()}>there aren't many, so don't wait too long.</div>
-    ${gap(20)}
+    ${photo(p, url)}
+    ${gap(22)}
     <div style="text-align:center;"><a href="${esc(url)}" style="display:inline-block;font-family:${FONT};font-size:15px;color:${INK};text-decoration:none;border:1.5px solid ${INK};padding:10px 18px;">shop it</a></div>
     ${gap(24)}
     <div ${td(`color:${GRAY};font-size:12px;`)}>${esc(outro)}</div>`);

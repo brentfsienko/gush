@@ -1,9 +1,10 @@
 // The Worker in front of the site. Static pages and images are served straight from dist/
-// (see [assets] in wrangler.toml); only /api/* requests reach this code.
+// (see [assets] in wrangler.toml); only /api/* and /item/* requests reach this code.
 import { checkout } from './checkout';
 import { stripeWebhook } from './webhook';
 import { stockMap } from './stock';
 import { joinWaitlist, sendRestocks } from './waitlist';
+import { itemPage } from './live-stock-page';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -40,6 +41,9 @@ export default {
     if (pathname === '/api/waitlist') {
       return request.method === 'POST' ? joinWaitlist(request, env, ctx) : allow('POST');
     }
+    // Item pages: filled in with live stock so sold-out sizes don't flash as available.
+    const item = pathname.match(/^\/item\/([a-z0-9-]+)$/);
+    if (item && (request.method === 'GET' || request.method === 'HEAD')) return itemPage(request, env, item[1]);
     if (pathname.startsWith('/api/')) return new Response('not found', { status: 404 });
     return env.ASSETS.fetch(request);
   },
