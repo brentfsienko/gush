@@ -33,3 +33,7 @@ name = "ORDER_EMAIL"
 # (Workers → gush → Logs). Free up to 200,000 log lines a day.
 [observability]
 enabled = true
+
+# Every hour: email anyone on the waitlist whose size is back in stock (worker/waitlist.ts).
+[triggers]
+crons = ["0 * * * *"]

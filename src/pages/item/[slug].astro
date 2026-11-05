@@ -88,7 +88,7 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
           sizes.map((s) => {
             const soldOut = (p.stock[s] ?? 0) <= 0;
             return (
-              <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} aria-pressed="false" disabled={soldOut} aria-label={soldOut ? `${s} sold out` : s}>
+              <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} data-sold={soldOut ? '' : undefined} aria-pressed="false" aria-label={soldOut ? `${s}, sold out` : s}>
                 <Drawn name={`size-${s}`} h={31} webH={35} loading="eager" underline />
               </button>
             );
@@ -116,7 +116,19 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
           </details>
         )
       }
-      <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out.' : ''}</p>
+      <p class="msg" aria-live="polite" data-msg>{soldOut ? 'sold out. pick your size to get an email when it’s back.' : ''}</p>
+
+      <!-- A sold-out size is picked: instead of "add to cart", leave an email to hear when it's back
+           (worker/waitlist.ts). -->
+      <form class="notify" data-notify hidden novalidate>
+        <p class="notify-note" data-notify-note></p>
+        <div class="notify-row">
+          <input class="notify-email" type="email" name="email" required maxlength="254" placeholder="your email" autocomplete="email" aria-label="your email" />
+          <button class="notify-btn" type="submit">email me</button>
+        </div>
+        <!-- Only bots fill this in. -->
+        <input class="notify-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      </form>
 
       <button class="drawn-btn boxed-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut}>
         <Drawn name="btn-add-to-cart" h={37} webH={42} underline />
@@ -329,13 +341,18 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   }
 
   /* Sold out: the whole drawing goes gray: the ink to about the price gray (#7a7a7a), the white fill
-     to a light gray. */
-  .size:disabled :global(.drawn) {
+     to a light gray. It can still be picked, to join the waitlist. */
+  .size[data-sold] :global(.drawn) {
     filter: contrast(0.31) brightness(1.3);
   }
 
-  /* Hovering a sold-out size says so, in a small label where its underline would go. */
-  .size:disabled:hover::after {
+  /* Hovering a sold-out size says so, in a small label where its underline would go (instead of the
+     underline, until it's picked). */
+  .size[data-sold]:not([aria-pressed='true']):hover :global(.sew-line) {
+    opacity: 0;
+  }
+
+  .size[data-sold]:not([aria-pressed='true']):hover::after {
     content: 'sold out';
     position: absolute;
     top: 100%;
@@ -360,6 +377,71 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
 
   .add:disabled {
     opacity: 0.4;
+  }
+
+  .add[hidden] {
+    display: none;
+  }
+
+  /* The waitlist form: typed, boxed in the same 1.5px ink line as the rest of the site. */
+  .notify-note {
+    margin: 0 0 10px;
+  }
+
+  .notify-row {
+    display: flex;
+    max-width: 420px;
+  }
+
+  .notify-email,
+  .notify-btn {
+    font: inherit;
+    font-size: 16px; /* 16px+ so phones don't zoom in on the field */
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 9px 12px;
+    background: var(--page);
+  }
+
+  .notify-email {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notify-email::placeholder {
+    color: var(--gray);
+  }
+
+  .notify-email:focus {
+    outline: none;
+    box-shadow: inset 0 -3px 0 var(--ink);
+  }
+
+  .notify-btn {
+    margin-left: -1.5px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .notify-btn:hover,
+  .notify-btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .notify-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .notify-hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
   }
 
   /* Size chart folds open under the sizes; the + turns into a − while it's open. */
@@ -573,18 +655,63 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
   const sizeButtons = [...sizeGroup.querySelectorAll<HTMLButtonElement>('[data-size]')];
   const msg = document.querySelector<HTMLElement>('[data-msg]')!;
   const add = document.querySelector<HTMLButtonElement>('[data-add]')!;
+  const notify = document.querySelector<HTMLFormElement>('[data-notify]')!;
+  const notifyNote = notify.querySelector<HTMLElement>('[data-notify-note]')!;
+  const notifyEmail = notify.querySelector<HTMLInputElement>('input[name=email]')!;
+  const notifyBtn = notify.querySelector<HTMLButtonElement>('button')!;
+  const title = document.querySelector('.product-title')!.textContent!.trim();
   let size: string | null = null;
+  const isSold = (b: HTMLButtonElement) => b.dataset.sold !== undefined;
+
+  // A sold-out size swaps "add to cart" for the email form; an in-stock one swaps it back.
+  const showNotify = (on: boolean) => {
+    notify.hidden = !on;
+    add.hidden = on;
+    if (on) {
+      notifyNote.textContent = `${size!.toUpperCase()} is sold out. leave your email and we’ll let you know when it’s back.`;
+      notifyEmail.disabled = notifyBtn.disabled = false;
+      notifyEmail.hidden = notifyBtn.hidden = false;
+    }
+  };
 
   const pickSize = (b: HTMLButtonElement) => {
     size = b.dataset.size!;
     sizeButtons.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
     msg.textContent = '';
+    showNotify(isSold(b));
   };
+
+  notify.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = notifyEmail.value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      msg.textContent = 'that email doesn’t look right.';
+      notifyEmail.focus();
+      return;
+    }
+    msg.textContent = '';
+    notifyBtn.disabled = true;
+    const picked = size!;
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug: add.dataset.slug, size: picked, email, website: (notify.elements.namedItem('website') as HTMLInputElement).value }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+      notifyNote.textContent = `got it. we’ll email you when ${title} in ${picked.toUpperCase()} is back.`;
+      notifyEmail.hidden = notifyBtn.hidden = true;
+    } catch (err) {
+      msg.textContent = err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?';
+      notifyBtn.disabled = false;
+    }
+  });
   sizeButtons.forEach((b) => b.addEventListener('click', () => pickSize(b)));
 
   // Coming from the cart (?size=m): start with that size picked, if it's still available.
   const wanted = new URL(location.href).searchParams.get('size');
-  const preset = sizeButtons.find((b) => b.dataset.size === wanted && !b.disabled);
+  const preset = sizeButtons.find((b) => b.dataset.size === wanted && !isSold(b));
   if (preset) pickSize(preset);
 
   // Live stock: the page was built with the starting counts, so ask the site what's left now and
@@ -598,16 +725,15 @@ const soldOut = sizes.every((s) => (p.stock[s] ?? 0) <= 0);
         const left = live[b.dataset.size!];
         if (left === undefined) continue;
         b.dataset.stock = String(left);
-        b.disabled = left <= 0;
-        b.setAttribute('aria-label', left <= 0 ? `${b.dataset.size} sold out` : b.dataset.size!);
-        if (b.disabled && size === b.dataset.size) {
-          size = null;
-          b.setAttribute('aria-pressed', 'false');
-        }
+        if (left <= 0) b.dataset.sold = '';
+        else delete b.dataset.sold;
+        b.setAttribute('aria-label', left <= 0 ? `${b.dataset.size}, sold out` : b.dataset.size!);
+        if (size === b.dataset.size) showNotify(left <= 0);
       }
-      const allGone = sizeButtons.every((b) => b.disabled);
+      const allGone = sizeButtons.every(isSold);
       add.disabled = allGone;
-      if (allGone) msg.textContent = 'sold out.';
+      if (allGone && !size) msg.textContent = 'sold out. pick your size to get an email when it’s back.';
+      else if (!allGone && msg.textContent?.startsWith('sold out')) msg.textContent = '';
     })
     .catch(() => {});
 

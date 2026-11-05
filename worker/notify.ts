@@ -10,7 +10,7 @@ import { PRODUCTS, formatPrice } from '../src/data/products';
 import { SHIPPING_OPTIONS, SITE_URL, CONTACT_EMAIL, RECEIPT, IMAGE_VERSION } from '../src/data/store';
 import type { Env } from './index';
 
-const FROM = { name: 'GÜSH', email: 'orders@gush.supply' };
+export const FROM = { name: 'GÜSH', email: 'orders@gush.supply' };
 
 type Address = { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null; country?: string | null };
 
@@ -149,11 +149,11 @@ export function customerEmail(s: PaidSession) {
 // --- HTML. Email apps only reliably support tables and inline styles, so it's built that way;
 // colors and spacing follow src/styles/global.css. ---
 
-const INK = '#1f1b16';
-const GRAY = '#7a7a7a';
-const FONT = "'IBM Plex Mono', 'SF Mono', Menlo, Consolas, 'Courier New', monospace";
+export const INK = '#1f1b16';
+export const GRAY = '#7a7a7a';
+export const FONT = "'IBM Plex Mono', 'SF Mono', Menlo, Consolas, 'Courier New', monospace";
 
-const esc = (v: string) =>
+export const esc = (v: string) =>
   v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 function renderHtml(

@@ -3,6 +3,7 @@
 import { checkout } from './checkout';
 import { stripeWebhook } from './webhook';
 import { stockMap } from './stock';
+import { joinWaitlist, sendRestocks } from './waitlist';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -22,7 +23,7 @@ export interface Env {
 const allow = (method: string) => new Response('method not allowed', { status: 405, headers: { allow: method } });
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
     if (pathname === '/api/checkout') {
       return request.method === 'POST' ? checkout(request, env) : allow('POST');
@@ -36,7 +37,14 @@ export default {
         headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
       });
     }
+    if (pathname === '/api/waitlist') {
+      return request.method === 'POST' ? joinWaitlist(request, env, ctx) : allow('POST');
+    }
     if (pathname.startsWith('/api/')) return new Response('not found', { status: 404 });
     return env.ASSETS.fetch(request);
+  },
+  // Hourly (crons in wrangler.toml): email waitlisted people whose size is back in stock.
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(sendRestocks(env));
   },
 } satisfies ExportedHandler<Env>;

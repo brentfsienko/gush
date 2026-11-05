@@ -88,6 +88,13 @@ Resend (free up to 3,000/month): add gush.supply as a domain at resend.com (Clou
 create a sending-only API key, then `npx wrangler secret put RESEND_API_KEY`. Then turn off Stripe's
 own receipts (Settings → Customer emails → Successful payments) so buyers don't get two.
 
+### Waitlist: "email me when it's back" (free)
+A sold-out size can still be picked on the item page; instead of "add to cart" it shows an email box
+(`worker/waitlist.ts`). Each signup is saved in the same KV storage and emails you who wants what
+(reply to reach them). When you restock (raise the number in `products.ts` and deploy), an hourly
+check emails everyone waiting on that size, once, through Resend, and sends you a summary.
+`npm run waitlist` lists who's waiting for what.
+
 ### 3. Sales tax (optional, Stripe charges ~0.5% per sale)
 1. Stripe dashboard → Settings → Tax: add your business address and the state(s) you're registered in.
 2. Set `TAX_ENABLED = true` in `src/data/store.ts` and redeploy. Tax is then added on top of the price
