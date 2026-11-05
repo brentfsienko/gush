@@ -390,6 +390,11 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
     margin: 0 0 10px;
   }
 
+  /* "XL is sold out. leave your email…" */
+  .notify-note.red {
+    color: var(--red);
+  }
+
   .notify-row {
     display: flex;
     max-width: 420px;
@@ -678,6 +683,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       notifyNote.textContent = picked
         ? `${size!.toUpperCase()} is sold out. leave your email and we’ll let you know when it’s back.`
         : notify.dataset.allSoldNote!;
+      notifyNote.classList.toggle('red', !!picked);
       notifyEmail.disabled = notifyBtn.disabled = false;
       notifyEmail.hidden = notifyBtn.hidden = false;
     }
@@ -718,6 +724,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
       notifyNote.textContent = `got it. we’ll email you when ${title} in ${picked.toUpperCase()} is back.`;
+      notifyNote.classList.remove('red');
       notifyEmail.hidden = notifyBtn.hidden = true;
     } catch (err) {
       msg.textContent = err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?';
