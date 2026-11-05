@@ -386,13 +386,14 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
   }
 
   /* The waitlist form: typed, boxed in the same 1.5px ink line as the rest of the site. */
+  /* "XL is sold out. leave your email…" in red; the "got it" after signing up in black. */
   .notify-note {
     margin: 0 0 10px;
+    color: var(--red);
   }
 
-  /* "XL is sold out. leave your email…" */
-  .notify-note.red {
-    color: var(--red);
+  .notify-note.done {
+    color: var(--ink);
   }
 
   .notify-row {
@@ -683,7 +684,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       notifyNote.textContent = picked
         ? `${size!.toUpperCase()} is sold out. leave your email and we’ll let you know when it’s back.`
         : notify.dataset.allSoldNote!;
-      notifyNote.classList.toggle('red', !!picked);
+      notifyNote.classList.remove('done');
       notifyEmail.disabled = notifyBtn.disabled = false;
       notifyEmail.hidden = notifyBtn.hidden = false;
     }
@@ -724,7 +725,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
       notifyNote.textContent = `got it. we’ll email you when ${title} in ${picked.toUpperCase()} is back.`;
-      notifyNote.classList.remove('red');
+      notifyNote.classList.add('done');
       notifyEmail.hidden = notifyBtn.hidden = true;
     } catch (err) {
       msg.textContent = err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?';
