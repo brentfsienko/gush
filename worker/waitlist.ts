@@ -1,6 +1,7 @@
 // "Email me when it's back": the waitlist for sold-out sizes.
 //  - POST /api/waitlist { slug, size, email } (from the item page) saves the email in Cloudflare KV
-//    (the STOCK namespace, key want:<slug>:<size>:<email>) and emails you that someone's waiting.
+//    (the STOCK namespace, key want:<slug>:<size>:<email>), emails you that someone's waiting, and
+//    emails them a confirmation (through Resend).
 //  - Every hour (the cron in wrangler.toml), anyone waiting on a size that's in stock again is
 //    emailed once through Resend, and marked as sent. So to restock: raise the size's number in
 //    src/data/products.ts and deploy; the emails go out within the hour, and you get a summary.
@@ -60,7 +61,7 @@ export async function joinWaitlist(request: Request, env: Env, ctx: ExecutionCon
   // Already waiting (and not yet emailed): nothing to do, and no second email to you.
   if (old.value !== null && !old.metadata?.sent) return json({ ok: true });
   await env.STOCK.put(k, '', { metadata: { at: Date.now() } satisfies Meta });
-  ctx.waitUntil(tellOwner(env, p, size, email));
+  ctx.waitUntil(Promise.all([tellOwner(env, p, size, email), confirm(env, p, size, email)]));
   return json({ ok: true });
 }
 
@@ -83,6 +84,49 @@ async function tellOwner(env: Env, p: Product, size: string, email: string) {
   }
 }
 
+/** Sends one email through Resend (the same sender as the order receipts). True if it went. */
+async function resend(env: Env, to: string, idempotencyKey: string, mail: { subject: string; text: string; html: string }) {
+  if (!env.RESEND_API_KEY) return false;
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'content-type': 'application/json',
+      // Resend sends at most one email per key, so a retry can't send the same email twice.
+      'idempotency-key': idempotencyKey.slice(0, 256),
+    },
+    body: JSON.stringify({ from: `${FROM.name} <${FROM.email}>`, to: [to], reply_to: CONTACT_EMAIL, ...mail }),
+  });
+  if (!res.ok) console.error('resend failed', res.status, await res.text());
+  return res.ok;
+}
+
+/** The email to the person who just joined: you're on the list. */
+async function confirm(env: Env, p: Product, size: string, email: string) {
+  try {
+    await resend(env, email, `waitlist-${p.slug}-${size}-${email}-${Date.now()}`, confirmEmail(p, size));
+  } catch (err) {
+    console.error('waitlist confirmation failed', p.slug, size, err);
+  }
+}
+
+export function confirmEmail(p: Product, size: string) {
+  const S = size.toUpperCase();
+  const subject = `you're on the list: ${p.title} in ${S}`;
+  const body = `${p.title} in ${S} is sold out right now. we'll email you as soon as it's back, once, and that's it.`;
+  const outro = `didn't sign up for this? you can ignore this email.`;
+  const text = `${subject}\n\n${body}\n\n${outro}`;
+  const html = page(`
+    <div ${td('font-size:22px;')}>${esc(subject)}</div>
+    ${gap(18)}
+    <img src="${SITE_URL}/stripe/${encodeURIComponent(p.slug)}.jpg?v=${IMAGE_VERSION}" width="240" height="240" alt="${esc(p.title)}" style="display:block;border:0;width:240px;height:240px;margin:0 auto;">
+    ${gap(18)}
+    <div ${td()}>${esc(body)}</div>
+    ${gap(24)}
+    <div ${td(`color:${GRAY};font-size:12px;`)}>${esc(outro)}</div>`);
+  return { subject, text, html };
+}
+
 /** Hourly: email everyone waiting on a size that's back in stock. */
 export async function sendRestocks(env: Env) {
   if (!env.STOCK) return;
@@ -103,21 +147,8 @@ export async function sendRestocks(env: Env) {
   for (const w of due) {
     const p = PRODUCTS.find((x) => x.slug === w.slug)!;
     try {
-      const { subject, text, html } = restockEmail(p, w.size);
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${env.RESEND_API_KEY}`,
-          'content-type': 'application/json',
-          // One email per signup, even if this runs again before it's marked as sent.
-          'idempotency-key': `restock-${w.slug}-${w.size}-${w.meta.at}-${w.email}`.slice(0, 256),
-        },
-        body: JSON.stringify({ from: `${FROM.name} <${FROM.email}>`, to: [w.email], reply_to: CONTACT_EMAIL, subject, text, html }),
-      });
-      if (!res.ok) {
-        console.error('restock email failed', w.slug, w.size, res.status, await res.text());
-        continue;
-      }
+      // One email per signup, even if this runs again before it's marked as sent.
+      if (!(await resend(env, w.email, `restock-${w.slug}-${w.size}-${w.meta.at}-${w.email}`, restockEmail(p, w.size)))) continue;
       await env.STOCK.put(w.key, '', { metadata: { ...w.meta, sent: Date.now() } satisfies Meta });
       sent.push(w);
     } catch (err) {

@@ -90,8 +90,8 @@ own receipts (Settings → Customer emails → Successful payments) so buyers do
 
 ### Waitlist: "email me when it's back" (free)
 A sold-out size can still be picked on the item page; instead of "add to cart" it shows an email box
-(`worker/waitlist.ts`). Each signup is saved in the same KV storage and emails you who wants what
-(reply to reach them). When you restock (raise the number in `products.ts` and deploy), an hourly
+(`worker/waitlist.ts`). Each signup is saved in the same KV storage, emails you who wants what
+(reply to reach them), and emails them a confirmation that they're on the list. When you restock (raise the number in `products.ts` and deploy), an hourly
 check emails everyone waiting on that size, once, through Resend, and sends you a summary.
 `npm run waitlist` lists who's waiting for what.
 
