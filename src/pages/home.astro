@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
 import { homePhotos } from '../data/assets';
+import scan from '../assets/scans/scan-2.jpg';
 
 // Photos from src/assets/home/, in filename order, each the full width of the screen.
 const photos = homePhotos();
@@ -20,6 +21,9 @@ const photos = homePhotos();
   <a href="/shop" class="center cta" aria-label="shop">
     <Drawn name="tab-shop" h={64} underline />
   </a>
+
+  <!-- The sewing scan: all the site's words, sewn on fabric, straight off the scanner. -->
+  <Image src={scan} alt="the GÜSH lettering, machine sewn on white fabric" widths={[600, 1000, 1600, 2400, 3200]} sizes="100vw" class="photo scan" loading="lazy" />
 </Base>
 
 <style>

@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { homePhotos } from '../data/assets';
+import scan from '../assets/scans/scan-3.jpg';
 import { POLICIES, CONTACT_EMAIL } from '../data/store';
 
 // Same photos as the home page (src/assets/home/), each the full width of the screen.
@@ -37,9 +38,16 @@ const photos = homePhotos();
       }
     </section>
   </div>
+
+  <!-- The sewing scan: all the site's words, sewn on fabric, straight off the scanner. -->
+  <Image src={scan} alt="the GÜSH lettering, machine sewn on white fabric" widths={[600, 1000, 1600, 2400, 3200]} sizes="100vw" class="photo scan" loading="lazy" />
 </Base>
 
 <style>
+  .scan {
+    margin-top: 40px;
+  }
+
   .bleed {
     display: flex;
     flex-direction: column;
