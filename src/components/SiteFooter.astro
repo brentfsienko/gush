@@ -13,6 +13,7 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-foot">
+  <!-- The newsletter on its own: the pitch on the left, the sign-up on the right (web). -->
   <section class="news" aria-labelledby="news-heading">
     <h2 class="foot-label" id="news-heading">newsletter</h2>
     <p class="news-pitch"><span>join the newsletter</span> <span>for updates on our latest</span> <span>styles and projects.</span></p>
@@ -27,9 +28,15 @@ const year = new Date().getFullYear();
     </form>
   </section>
 
-  <div class="foot-cols">
+  <!-- Then a band of its own, a shade darker, with the links in columns. -->
+  <div class="foot-band">
+    <div class="foot-brand">
+      <h2 class="foot-label">GÜSH</h2>
+      <p>small batch clothing<br />made in Seattle</p>
+      <p class="foot-fine">© {year} GÜSH</p>
+    </div>
     <nav aria-labelledby="info-heading">
-      <h2 class="foot-label" id="info-heading">info</h2>
+      <h2 class="foot-label" id="info-heading">quick links</h2>
       <ul class="foot-links">
         {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
       </ul>
@@ -42,19 +49,21 @@ const year = new Date().getFullYear();
       </ul>
     </div>
   </div>
-
-  <p class="foot-fine">© {year} GÜSH · small batch clothing made in Seattle</p>
 </footer>
 
 <style>
   .site-foot {
-    position: relative;
     margin-top: 24px;
-    padding: 34px var(--gutter) calc(28px + env(safe-area-inset-bottom));
   }
 
-  /* The stitched line across the top, same as under the header. */
-  .site-foot::before {
+  /* A stitched line across the top of each part, same as under the header. */
+  .news,
+  .foot-band {
+    position: relative;
+  }
+
+  .news::before,
+  .foot-band::before {
     content: '';
     position: absolute;
     top: 0;
@@ -62,6 +71,14 @@ const year = new Date().getFullYear();
     right: 0;
     height: 7px;
     background: url('../assets/header-stitch.png') left center / auto 7px repeat-x;
+  }
+
+  .foot-band::before {
+    background-image: url('../assets/stitch-bottom.png');
+  }
+
+  .news {
+    padding: 34px var(--gutter) 40px;
   }
 
   .foot-label {
@@ -166,11 +183,22 @@ const year = new Date().getFullYear();
     opacity: 0;
   }
 
-  .foot-cols {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 28px 64px;
-    margin-top: 44px;
+  /* The band: a shade darker than the page, so it reads as the foot of the page. */
+  .foot-band {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 24px;
+    padding: 30px var(--gutter) calc(32px + env(safe-area-inset-bottom));
+    background: rgba(31, 27, 22, 0.045);
+    font-size: 14px;
+  }
+
+  .foot-brand {
+    grid-column: 1 / -1;
+  }
+
+  .foot-brand p {
+    margin: 0;
   }
 
   .foot-links {
@@ -194,28 +222,23 @@ const year = new Date().getFullYear();
     text-underline-offset: 4px;
   }
 
-  .foot-fine {
-    margin: 40px 0 0;
+  .foot-brand .foot-fine {
+    margin-top: 14px;
     font-size: 12px;
     color: var(--gray);
   }
 
-  /* Web: the pitch on the left in two lines, the sign-up beside it (centered on it), and the links
-     under the sign-up, so there's no big empty corner. The fine print sits bottom left. */
-  @media (min-width: 1000px) {
-    .site-foot {
+  /* Web: as on a catalog page. The pitch on the left, the sign-up on the right along its last line;
+     then the band with three columns (GÜSH, quick links, contact) spread across. */
+  @media (min-width: 900px) {
+    .news {
       display: grid;
-      grid-template-columns: minmax(0, max-content) minmax(300px, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       grid-template-areas:
         'label label'
-        'pitch form'
-        'fine cols';
-      column-gap: 56px;
-      padding: 40px 32px 32px;
-    }
-
-    .news {
-      display: contents;
+        'pitch form';
+      column-gap: 64px;
+      padding: 44px 32px 56px;
     }
 
     .news .foot-label {
@@ -230,24 +253,21 @@ const year = new Date().getFullYear();
 
     .news-form {
       grid-area: form;
-      align-self: center;
+      align-self: end;
     }
 
     .news-email {
       font-size: 20px;
     }
 
-    .foot-cols {
-      grid-area: cols;
-      margin-top: 36px;
-      flex-wrap: nowrap;
-      column-gap: 40px;
+    .foot-band {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 32px;
+      padding: 36px 32px 44px;
     }
 
-    .foot-fine {
-      grid-area: fine;
-      align-self: end;
-      margin: 0;
+    .foot-brand {
+      grid-column: auto;
     }
   }
 </style>
