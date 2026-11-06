@@ -73,11 +73,12 @@ const year = new Date().getFullYear();
   }
 
   .news-pitch {
-    margin: 0 0 26px;
-    font-size: clamp(24px, 6.4vw, 46px);
-    line-height: 1.15;
+    margin: 0 0 22px;
+    font-size: clamp(22px, 5.6vw, 34px);
+    line-height: 1.2;
     letter-spacing: -0.02em;
-    max-width: 17ch;
+    max-width: 42ch;
+    text-wrap: balance;
   }
 
   /* The field is just a line to write on; the button is a plain box. */
@@ -191,38 +192,54 @@ const year = new Date().getFullYear();
     color: var(--gray);
   }
 
-  /* Web: the pitch on the left, the sign-up on the right (lined up with the pitch's last line), as on a
-     page of a catalog. */
-  @media (min-width: 900px) {
+  /* Web: the pitch on the left in two lines, the sign-up beside it (centered on it), and the links
+     under the sign-up, so there's no big empty corner. The fine print sits bottom left. */
+  @media (min-width: 1000px) {
     .site-foot {
-      padding: 48px 32px 32px;
+      display: grid;
+      grid-template-columns: minmax(0, max-content) minmax(300px, 1fr);
+      grid-template-areas:
+        'label label'
+        'pitch form'
+        'fine cols';
+      column-gap: 56px;
+      padding: 40px 32px 32px;
     }
 
     .news {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
-      column-gap: 64px;
+      display: contents;
     }
 
     .news .foot-label {
-      grid-column: 1 / -1;
+      grid-area: label;
     }
 
     .news-pitch {
+      grid-area: pitch;
       margin: 0;
+      font-size: clamp(22px, 2.1vw, 38px);
     }
 
     .news-form {
-      align-self: end;
+      grid-area: form;
+      align-self: center;
     }
 
     .news-email {
-      font-size: 22px;
+      font-size: 20px;
     }
 
     .foot-cols {
-      margin-top: 64px;
+      grid-area: cols;
+      margin-top: 36px;
+      flex-wrap: nowrap;
+      column-gap: 40px;
+    }
+
+    .foot-fine {
+      grid-area: fine;
+      align-self: end;
+      margin: 0;
     }
   }
 </style>
