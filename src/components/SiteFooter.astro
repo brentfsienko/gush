@@ -15,7 +15,7 @@ const year = new Date().getFullYear();
 <footer class="site-foot">
   <section class="news" aria-labelledby="news-heading">
     <h2 class="foot-label" id="news-heading">newsletter</h2>
-    <p class="news-pitch">join the newsletter for updates on our latest styles and projects.</p>
+    <p class="news-pitch"><span>join the newsletter</span> <span>for updates on our latest</span> <span>styles and projects.</span></p>
     <form class="news-form" data-news novalidate>
       <div class="news-row">
         <input class="news-email" type="email" name="email" required maxlength="254" placeholder="email address" autocomplete="email" aria-label="email address" />
@@ -77,8 +77,11 @@ const year = new Date().getFullYear();
     font-size: clamp(22px, 5.6vw, 34px);
     line-height: 1.2;
     letter-spacing: -0.02em;
-    max-width: 42ch;
-    text-wrap: balance;
+  }
+
+  /* Three even lines, with "styles and projects." on its own. */
+  .news-pitch span {
+    display: block;
   }
 
   /* The field is just a line to write on; the button is a plain box. */
@@ -222,7 +225,7 @@ const year = new Date().getFullYear();
     .news-pitch {
       grid-area: pitch;
       margin: 0;
-      font-size: clamp(22px, 2.1vw, 38px);
+      font-size: clamp(26px, 2.9vw, 46px);
     }
 
     .news-form {
