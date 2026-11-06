@@ -171,7 +171,8 @@ function renderHtml(
 ) {
   const td = (style = '') => `style="font-family:${FONT};color:${INK};font-size:14px;line-height:1.5;${style}"`;
   const heading = (t: string) => `<div ${td('font-size:19px;margin:0 0 6px;')}>${esc(t)}</div>`;
-  const rule = `<tr><td style="border-top:1px solid ${INK};font-size:0;line-height:0;height:1px;">&nbsp;</td></tr>`;
+  // The stitched line from under the site's header, in place of a plain rule.
+  const rule = `<tr><td style="font-size:0;line-height:0;"><img src="${SITE_URL}/stripe/stitch.png?v=${IMAGE_VERSION}" width="480" alt="" style="display:block;border:0;width:100%;max-width:480px;height:auto;"></td></tr>`;
   const gap = (h: number) => `<tr><td style="height:${h}px;font-size:0;line-height:0;">&nbsp;</td></tr>`;
   const section = (inner: string) => `<tr><td>${inner}</td></tr>${gap(20)}`;
   const row = (label: string, value: string, strong = false) =>

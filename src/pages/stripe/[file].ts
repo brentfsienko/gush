@@ -1,6 +1,7 @@
 // Images for Stripe's checkout page, built at fixed URLs Stripe can load (worker/checkout.ts links to
 // them): /stripe/logo.png (the GÜSH logo drawing) and /stripe/<slug>.jpg (each product's main photo).
-// The emails use them too, plus /stripe/keep-shopping.png (the sewn KEEP SHOPPING, worker/waitlist.ts).
+// The emails use them too, plus /stripe/keep-shopping.png (the sewn KEEP SHOPPING, worker/waitlist.ts)
+// and /stripe/stitch.png (the stitched line from under the site's header, under the logo in every email).
 import type { APIRoute, GetStaticPaths } from 'astro';
 import sharp from 'sharp';
 import { readdir, readFile } from 'node:fs/promises';
@@ -12,6 +13,7 @@ export const getStaticPaths = (async () => {
   const paths: { params: { file: string }; props: { path: string } }[] = [
     { params: { file: 'logo.png' }, props: { path: 'src/assets/drawn/logo.png' } },
     { params: { file: 'keep-shopping.png' }, props: { path: 'src/assets/drawn/btn-keep-shopping.png' } },
+    { params: { file: 'stitch.png' }, props: { path: 'src/assets/header-stitch.png' } },
   ];
   for (const p of PRODUCTS) {
     const files = await readdir(`${PRODUCT_DIR}/${p.slug}`).catch(() => [] as string[]);
@@ -23,6 +25,15 @@ export const getStaticPaths = (async () => {
 
 export const GET: APIRoute = async ({ params, props }) => {
   // Trimmed to the drawing/garment so it fills as much of Stripe's small, fixed-size boxes as it can.
+  // The stitched line: the header's repeating strip laid end to end, 960 x 14 (shown at 480 x 7).
+  if (params.file === 'stitch.png') {
+    const strip = await readFile(props.path as string);
+    const png = await sharp({ create: { width: 960, height: 14, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+      .composite([{ input: strip, tile: true, top: 0, left: 0 }])
+      .png()
+      .toBuffer();
+    return new Response(new Uint8Array(png), { headers: { 'content-type': 'image/png' } });
+  }
   const img = sharp(await readFile(props.path as string)).trim();
   if (params.file?.endsWith('.png')) {
     const png = await img.resize({ width: 640 }).png().toBuffer();
