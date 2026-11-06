@@ -53,7 +53,7 @@ export async function joinNewsletter(request: Request, env: Env, ctx: ExecutionC
 export function welcomeEmail(email: string, token: string) {
   const url = unsubscribeUrl(email, token);
   const subject = "you're on the GÜSH list";
-  const body = "you'll get updates on the new styles and projects we're working on. that's it, no spam.";
+  const body = "you'll get updates on the latest styles and projects we're working on. that's it, no spam.";
   const text = `${subject}\n\n${body}\n\nshop: ${SITE_URL}/shop\n\nunsubscribe: ${url}`;
   const html = page(`
     <div ${td('font-size:22px;')}>${esc(subject)}</div>
