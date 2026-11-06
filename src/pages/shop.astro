@@ -258,6 +258,36 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     align-items: center;
     justify-content: center;
     text-align: center;
+    /* Its own card: always outlined in the same stitch as an item card on hover, --in from its edges. */
+    --in: var(--gutter);
+    position: relative;
+  }
+
+  .soon-box::before,
+  .soon-box::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .soon-box::before {
+    inset: calc(var(--in) - 3.5px) var(--in);
+    background:
+      url('../assets/header-stitch.png') 0 0 / auto 7px repeat-x,
+      url('../assets/stitch-bottom.png') 0 100% / auto 7px repeat-x;
+  }
+
+  .soon-box::after {
+    inset: var(--in) calc(var(--in) - 3.5px);
+    background:
+      url('../assets/stitch-side.png') 0 0 / 7px auto repeat-y,
+      url('../assets/stitch-side.png') 100% 37px / 7px auto repeat-y;
+  }
+
+  @media (min-width: 700px) {
+    .soon-box {
+      --in: 0px;
+    }
   }
 
   .note p {

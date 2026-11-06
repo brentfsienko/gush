@@ -15,7 +15,7 @@ const year = new Date().getFullYear();
 <footer class="site-foot">
   <section class="news" aria-labelledby="news-heading">
     <h2 class="foot-label" id="news-heading">newsletter</h2>
-    <p class="news-pitch">join our newsletter for updates on the latest styles and projects we’re working on.</p>
+    <p class="news-pitch">join the newsletter for updates on the latest styles and projects we’re working on.</p>
     <form class="news-form" data-news novalidate>
       <div class="news-row">
         <input class="news-email" type="email" name="email" required maxlength="254" placeholder="email address" autocomplete="email" aria-label="email address" />
@@ -23,7 +23,7 @@ const year = new Date().getFullYear();
       </div>
       <!-- Only bots fill this in. -->
       <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <p class="news-note" data-news-note aria-live="polite">no spam. unsubscribe anytime.</p>
+      <p class="news-note" data-news-note aria-live="polite"></p>
     </form>
   </section>
 
@@ -140,6 +140,11 @@ const year = new Date().getFullYear();
     margin: 10px 0 0;
     font-size: 12px;
     color: var(--gray);
+  }
+
+  /* Empty until there's something to say ("you're on the list", or what went wrong). */
+  .news-note:empty {
+    margin: 0;
   }
 
   .news-note.error {
