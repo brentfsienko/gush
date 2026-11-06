@@ -3,6 +3,7 @@ import '@fontsource/ibm-plex-mono/400.css';
 import '../styles/global.css';
 import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import { drawn } from '../data/assets';
 import { TAGLINE, IMAGE_VERSION, WEB_ANALYTICS_TOKEN } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
@@ -122,6 +123,8 @@ const digitUrls = digitImgs.every(Boolean)
 
       <main class:list={[{ fill }]}>
         <slot />
+        <!-- Pages that scroll themselves (the shop) put the footer at the end of their own scrolling. -->
+        {!fill && <SiteFooter />}
       </main>
     </div>
 

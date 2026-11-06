@@ -59,8 +59,9 @@ export const WEB_ANALYTICS_TOKEN = 'e15eb9f90c22427cbea54fc2d1ff3991';
 // Shown under the title when a GÜSH link is shared (and to search engines).
 export const TAGLINE = 'Small Batch Clothing Made in Seattle';
 
-// Shipping, returns & contact: the section at the bottom of the about page.
+// Where to reach you (the contact page, the footer, the emails' reply-to).
 export const CONTACT_EMAIL = 'hi@gush.supply';
+// Shipping and returns: the return & exchange policy page (/returns).
 export const POLICIES = [
   {
     heading: 'shipping',
@@ -69,10 +70,6 @@ export const POLICIES = [
   {
     heading: 'returns',
     text: 'returns and exchanges are welcome within 14 days of delivery, as long as the piece is unworn and unwashed (trying it on is fine). email us to start one. you cover the return shipping, and once it’s back we’ll refund you or send a different size, your choice. if your order arrives damaged or isn’t what you ordered, we’ll make it right and cover the shipping.',
-  },
-  {
-    heading: 'contact',
-    text: 'questions about sizing, an order, or anything else:',
   },
 ];
 

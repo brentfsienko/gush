@@ -19,9 +19,9 @@ type Meta = { at: number; sent?: number };
 type Want = { key: string; slug: string; size: string; email: string; meta: Meta };
 
 const key = (slug: string, size: string, email: string) => `${PREFIX}${slug}:${size}:${email}`;
-const EMAIL = /^[^\s@<>()[\],;:"]+@[^\s@<>()[\],;:"]+\.[a-z]{2,}$/i;
+export const EMAIL = /^[^\s@<>()[\],;:"]+@[^\s@<>()[\],;:"]+\.[a-z]{2,}$/i;
 
-const json = (body: unknown, status = 200) =>
+export const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 
 async function list(env: Env, prefix = PREFIX): Promise<Want[]> {
@@ -87,7 +87,12 @@ async function tellOwner(env: Env, p: Product, size: string, email: string) {
 }
 
 /** Sends one email through Resend (the same sender as the order receipts). True if it went. */
-async function resend(env: Env, to: string, idempotencyKey: string, mail: { subject: string; text: string; html: string }) {
+export async function resend(
+  env: Env,
+  to: string,
+  idempotencyKey: string,
+  mail: { subject: string; text: string; html: string; headers?: Record<string, string> },
+) {
   if (!env.RESEND_API_KEY) return false;
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -208,11 +213,11 @@ export function restockEmail(p: Product, size: string) {
   return { subject, text, html };
 }
 
-const td = (style = '') => `style="font-family:${FONT};color:${INK};font-size:14px;line-height:1.5;${style}"`;
-const gap = (h: number) => `<div style="height:${h}px;font-size:0;line-height:0;">&nbsp;</div>`;
+export const td = (style = '') => `style="font-family:${FONT};color:${INK};font-size:14px;line-height:1.5;${style}"`;
+export const gap = (h: number) => `<div style="height:${h}px;font-size:0;line-height:0;">&nbsp;</div>`;
 
 /** Same frame as the order emails: logo, a thin rule, then the content. */
-const page = (inner: string) => `<!doctype html>
+export const page = (inner: string) => `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"></head>
 <body style="margin:0;padding:0;background:#ffffff;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;"><tr><td align="center" style="padding:24px 16px;">

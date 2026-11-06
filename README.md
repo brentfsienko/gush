@@ -95,6 +95,17 @@ A sold-out size can still be picked on the item page; instead of "add to cart" i
 check emails everyone waiting on that size, once, through Resend, and sends you a summary.
 `npm run waitlist` lists who's waiting for what.
 
+### Newsletter, contact form and info pages (free)
+Every page ends with a footer (`src/components/SiteFooter.astro`): a newsletter sign-up, links to the
+info pages, and how to get in touch.
+- **Newsletter** (`worker/newsletter.ts`): each email is saved once in the same KV storage and gets a
+  welcome email (Resend) with a one-click unsubscribe link; unsubscribing deletes it.
+  `npm run newsletter` lists everyone, plus all the addresses on one line for an email's BCC.
+- **Contact** (`/contact`): the form emails you (same route as order emails); reply to answer.
+- **Info pages**: `/returns` (wording from `POLICIES` in `src/data/store.ts`), `/terms`, `/privacy`.
+  The terms and privacy policy are plain-language drafts written for how this shop works; they aren't
+  legal advice. Keep `/privacy` in step if the site starts collecting something new.
+
 ### 3. Sales tax (optional, Stripe charges ~0.5% per sale)
 1. Stripe dashboard → Settings → Tax: add your business address and the state(s) you're registered in.
 2. Set `TAX_ENABLED = true` in `src/data/store.ts` and redeploy. Tax is then added on top of the price

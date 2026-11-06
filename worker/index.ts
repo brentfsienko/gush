@@ -5,6 +5,7 @@ import { stripeWebhook } from './webhook';
 import { stockMap } from './stock';
 import { joinWaitlist, sendRestocks } from './waitlist';
 import { itemPage } from './live-stock-page';
+import { joinNewsletter, unsubscribe, contact } from './newsletter';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -40,6 +41,15 @@ export default {
     }
     if (pathname === '/api/waitlist') {
       return request.method === 'POST' ? joinWaitlist(request, env, ctx) : allow('POST');
+    }
+    if (pathname === '/api/newsletter') {
+      return request.method === 'POST' ? joinNewsletter(request, env, ctx) : allow('POST');
+    }
+    if (pathname === '/api/unsubscribe') {
+      return request.method === 'GET' || request.method === 'POST' ? unsubscribe(request, env) : allow('GET, POST');
+    }
+    if (pathname === '/api/contact') {
+      return request.method === 'POST' ? contact(request, env) : allow('POST');
     }
     // Item pages: filled in with live stock so sold-out sizes don't flash as available.
     const item = pathname.match(/^\/item\/([a-z0-9-]+)$/);

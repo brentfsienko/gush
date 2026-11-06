@@ -414,3 +414,43 @@ img.drawn {
     padding-top: 28px;
   }
 }
+
+/* ---------- text pages (contact, returns, terms, privacy) ---------- */
+
+.doc {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px var(--gutter) 32px;
+}
+
+.doc h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.doc .updated {
+  margin: 0 0 28px;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.doc h2 {
+  margin: 30px 0 8px;
+  font-size: 19px;
+}
+
+.doc p,
+.doc li {
+  margin: 0 0 0.8em;
+}
+
+.doc ul {
+  margin: 0 0 0.8em;
+  padding-left: 1.2em;
+}
+
+.doc a {
+  color: inherit;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}

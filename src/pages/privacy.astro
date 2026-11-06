@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../data/store';
+// Plain-language privacy policy, written for what this site actually collects (see worker/ for each
+// piece). Keep it in step if that changes. Not legal advice.
+const UPDATED = 'november 6, 2026';
+const mail = `mailto:${CONTACT_EMAIL}`;
+---
+
+<Base title="privacy policy" description="what GÜSH collects and why.">
+  <article class="doc type">
+    <h1 class="heading">privacy policy</h1>
+    <p class="updated">last updated {UPDATED}</p>
+
+    <p>GÜSH is a small shop. we only collect what we need to make and ship your order and to keep you posted if you ask us to. we don’t sell your information or share it for advertising.</p>
+
+    <h2 class="heading">what we collect</h2>
+    <ul>
+      <li><strong>when you order:</strong> your name, email, shipping address and any note you add at checkout, so we can ship your order and send a receipt. payment goes through Stripe; we never see your full card number.</li>
+      <li><strong>the waitlist:</strong> your email and the item and size you’re waiting on, so we can tell you when it’s back.</li>
+      <li><strong>the newsletter:</strong> your email, until you unsubscribe (every newsletter email has a link, and unsubscribing deletes it from the list).</li>
+      <li><strong>the contact form:</strong> your name, email and message, sent to our inbox so we can reply.</li>
+      <li><strong>your cart:</strong> kept in your own browser, not on our servers.</li>
+      <li><strong>visits:</strong> we count visits with Cloudflare Web Analytics, which uses no cookies and doesn’t follow you around the web.</li>
+    </ul>
+
+    <h2 class="heading">who helps us</h2>
+    <p>a few services handle parts of this for us, only for running the shop:</p>
+    <ul>
+      <li><strong>Stripe</strong> for payments and checkout.</li>
+      <li><strong>Cloudflare</strong> to host the site, store the waitlist and newsletter lists, count visits, and deliver order emails to us. like any host, it handles technical details such as IP addresses to keep the site running and safe.</li>
+      <li><strong>Resend</strong> to send receipts, waitlist and newsletter emails.</li>
+    </ul>
+
+    <h2 class="heading">cookies</h2>
+    <p>we don’t use cookies for tracking or ads. Stripe may use its own cookies on its checkout page to process payments and prevent fraud.</p>
+
+    <h2 class="heading">your choices</h2>
+    <p>you can unsubscribe from the newsletter at any time with the link in any newsletter email. to see, correct or delete what we have about you, email <a href={mail}>{CONTACT_EMAIL}</a> and we’ll take care of it. we keep order details as long as needed for records and taxes.</p>
+
+    <h2 class="heading">kids</h2>
+    <p>the site isn’t meant for children under 13, and we don’t knowingly collect their information.</p>
+
+    <h2 class="heading">changes</h2>
+    <p>if this changes, we’ll update this page and the date above. questions: <a href={mail}>{CONTACT_EMAIL}</a>.</p>
+  </article>
+</Base>

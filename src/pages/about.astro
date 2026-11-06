@@ -3,7 +3,6 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { homePhotos } from '../data/assets';
 import scan from '../assets/scans/scan-3.jpg';
-import { POLICIES, CONTACT_EMAIL } from '../data/store';
 
 // Same photos as the home page (src/assets/home/), each the full width of the screen.
 const photos = homePhotos();
@@ -16,27 +15,6 @@ const photos = homePhotos();
         <Image src={src} alt="GÜSH clothing" widths={[600, 1000, 1600, 2400]} sizes="100vw" class="photo" loading={i === 0 ? 'eager' : 'lazy'} />
       ))
     }
-  </div>
-
-  <div class="stack">
-    <section class="type info" id="info" aria-label="shipping, returns and contact">
-      {
-        POLICIES.map((p) => (
-          <div>
-            <h2 class="heading sub">{p.heading}</h2>
-            <p class="blurb">
-              {p.text}
-              {p.heading === 'contact' && (
-                <>
-                  {' '}
-                  <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-                </>
-              )}
-            </p>
-          </div>
-        ))
-      }
-    </section>
   </div>
 
   <!-- The sewing scan: all the site's words, sewn on fabric, straight off the scanner. -->
@@ -52,26 +30,4 @@ const photos = homePhotos();
     display: flex;
     flex-direction: column;
   }
-
-  .blurb {
-    margin: 12px 0 0;
-  }
-
-  /* Shipping, returns & contact, below a thin rule. */
-  .info {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    padding-top: 22px;
-    border-top: 1px solid var(--ink);
-  }
-
-  .info .blurb {
-    margin-top: 6px;
-  }
-
-  .info a {
-    color: inherit;
-  }
-
 </style>

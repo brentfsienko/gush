@@ -1,0 +1,157 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../data/store';
+// The form emails you (worker/newsletter.ts, contact); reply to the email to answer.
+---
+
+<Base title="contact" description="get in touch with GÜSH.">
+  <article class="doc type">
+    <h1 class="heading">get in touch</h1>
+    <p class="updated">questions about sizing, an order, or anything else.</p>
+
+    <form class="contact" data-contact novalidate>
+      <label>
+        <span>name</span>
+        <input type="text" name="name" maxlength="120" autocomplete="name" />
+      </label>
+      <label>
+        <span>email</span>
+        <input type="email" name="email" maxlength="254" autocomplete="email" required />
+      </label>
+      <label>
+        <span>message</span>
+        <textarea name="message" rows="6" maxlength="5000" required></textarea>
+      </label>
+      <!-- Only bots fill this in. -->
+      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <p class="contact-msg" data-contact-msg aria-live="polite"></p>
+      <button class="send" type="submit">send</button>
+    </form>
+
+    <p class="direct">or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+  </article>
+</Base>
+
+<style>
+  .contact {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .contact label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .contact label span {
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  /* Lines to write on, like the newsletter field; the message gets a plain box. */
+  .contact input,
+  .contact textarea {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 6px 0;
+  }
+
+  .contact textarea {
+    border: 1.5px solid var(--ink);
+    padding: 8px 10px;
+    resize: vertical;
+  }
+
+  .contact input:focus,
+  .contact textarea:focus {
+    outline: none;
+    box-shadow: inset 0 -1.5px 0 var(--ink);
+  }
+
+  .send {
+    align-self: flex-start;
+    padding: 8px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .send:hover,
+  .send:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .send:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .contact-msg {
+    min-height: 1.5em;
+    margin: 0;
+    color: var(--red);
+  }
+
+  .contact-msg.done {
+    color: var(--ink);
+  }
+
+  .direct {
+    margin-top: 28px;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact]')!;
+  const msg = form.querySelector<HTMLElement>('[data-contact-msg]')!;
+  const btn = form.querySelector<HTMLButtonElement>('button')!;
+  const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLTextAreaElement;
+  const say = (text: string, done = false) => {
+    msg.textContent = text;
+    msg.classList.toggle('done', done);
+  };
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = field('email').value.trim();
+    const message = field('message').value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) return say('that email doesn’t look right.');
+    if (!message) return say('write a message first.');
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: field('name').value, email, message, website: field('website').value }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+      form.reset();
+      say('sent ♥ we’ll get back to you soon.', true);
+    } catch (err) {
+      say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>

@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import { CATEGORIES, PRODUCTS, formatPrice } from '../data/products';
 import { productPhotos, drawn } from '../data/assets';
 
@@ -68,6 +69,11 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
         </div>
       </div>
     </article>
+
+    <!-- The footer, as the last stop in the feed (the full width under the grid on web). -->
+    <div class="feed-foot">
+      <SiteFooter />
+    </div>
   </div>
 </Base>
 
@@ -142,6 +148,17 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
 
   .feed-item[hidden] {
     display: none;
+  }
+
+  .feed-foot {
+    scroll-snap-align: end;
+  }
+
+  @media (min-width: 700px) {
+    .feed-foot {
+      grid-column: 1 / -1;
+      margin-inline: calc(-1 * var(--grid-side));
+    }
   }
 
   .card {

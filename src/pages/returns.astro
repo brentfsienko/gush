@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import { POLICIES, CONTACT_EMAIL } from '../data/store';
+// The wording lives in src/data/store.ts (POLICIES), shared with nothing else, so edit it there.
+const shipping = POLICIES.find((p) => p.heading === 'shipping')!;
+const returns = POLICIES.find((p) => p.heading === 'returns')!;
+---
+
+<Base title="return & exchange policy" description="GÜSH shipping, returns and exchanges.">
+  <article class="doc type">
+    <h1 class="heading">return &amp; exchange policy</h1>
+    <p class="updated">and shipping</p>
+
+    <h2 class="heading">returns &amp; exchanges</h2>
+    <p>{returns.text}</p>
+    <p>to start a return or exchange, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with your order and what you’d like to do.</p>
+
+    <h2 class="heading">shipping</h2>
+    <p>{shipping.text}</p>
+  </article>
+</Base>

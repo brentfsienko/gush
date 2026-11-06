@@ -1,0 +1,266 @@
+---
+// The bottom of every page, under a line of real stitching (the same as under the header): the
+// newsletter sign-up (worker/newsletter.ts), links to the info pages, and how to get in touch.
+import { CONTACT_EMAIL } from '../data/store';
+
+const links = [
+  { href: '/contact', label: 'contact' },
+  { href: '/returns', label: 'return & exchange policy' },
+  { href: '/terms', label: 'terms' },
+  { href: '/privacy', label: 'privacy policy' },
+];
+const year = new Date().getFullYear();
+---
+
+<footer class="site-foot">
+  <section class="news" aria-labelledby="news-heading">
+    <h2 class="foot-label" id="news-heading">newsletter</h2>
+    <p class="news-pitch">join the list for first looks at new pieces and restocks, before they go live.</p>
+    <form class="news-form" data-news novalidate>
+      <div class="news-row">
+        <input class="news-email" type="email" name="email" required maxlength="254" placeholder="email address" autocomplete="email" aria-label="email address" />
+        <button class="news-btn" type="submit">sign up →</button>
+      </div>
+      <!-- Only bots fill this in. -->
+      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <p class="news-note" data-news-note aria-live="polite">no spam. unsubscribe anytime.</p>
+    </form>
+  </section>
+
+  <div class="foot-cols">
+    <nav aria-labelledby="info-heading">
+      <h2 class="foot-label" id="info-heading">info</h2>
+      <ul class="foot-links">
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+    <div>
+      <h2 class="foot-label">contact</h2>
+      <ul class="foot-links">
+        <li><a href="/contact">get in touch</a></li>
+        <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="foot-fine">© {year} GÜSH · small batch clothing made in Seattle</p>
+</footer>
+
+<style>
+  .site-foot {
+    position: relative;
+    margin-top: 24px;
+    padding: 34px var(--gutter) calc(28px + env(safe-area-inset-bottom));
+  }
+
+  /* The stitched line across the top, same as under the header. */
+  .site-foot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background: url('../assets/header-stitch.png') left center / auto 7px repeat-x;
+  }
+
+  .foot-label {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: normal;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .news-pitch {
+    margin: 0 0 26px;
+    font-size: clamp(24px, 6.4vw, 46px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    max-width: 17ch;
+  }
+
+  /* The field is just a line to write on; the button is a plain box. */
+  .news-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+  }
+
+  .news-email {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 0;
+    font: inherit;
+    font-size: 18px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+  }
+
+  .news-email::placeholder {
+    color: var(--gray);
+  }
+
+  .news-email:focus {
+    outline: none;
+    border-bottom-width: 3px;
+    padding-bottom: 4.5px;
+  }
+
+  .news-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .news-btn:hover,
+  .news-btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .news-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .news-note {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .news-note.error {
+    color: var(--red);
+  }
+
+  .news-note.done {
+    color: var(--ink);
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .foot-cols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px 64px;
+    margin-top: 44px;
+  }
+
+  .foot-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .foot-links a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .foot-links a:hover,
+  .foot-links a:focus-visible {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+  }
+
+  .foot-fine {
+    margin: 40px 0 0;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  /* Web: the pitch on the left, the sign-up on the right (lined up with the pitch's last line), as on a
+     page of a catalog. */
+  @media (min-width: 900px) {
+    .site-foot {
+      padding: 48px 32px 32px;
+    }
+
+    .news {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      column-gap: 64px;
+    }
+
+    .news .foot-label {
+      grid-column: 1 / -1;
+    }
+
+    .news-pitch {
+      margin: 0;
+    }
+
+    .news-form {
+      align-self: end;
+    }
+
+    .news-email {
+      font-size: 22px;
+    }
+
+    .foot-cols {
+      margin-top: 64px;
+    }
+  }
+</style>
+
+<script>
+  // Newsletter sign-up (worker/newsletter.ts).
+  for (const form of document.querySelectorAll<HTMLFormElement>('[data-news]')) {
+    const email = form.querySelector<HTMLInputElement>('input[name=email]')!;
+    const btn = form.querySelector<HTMLButtonElement>('button')!;
+    const note = form.querySelector<HTMLElement>('[data-news-note]')!;
+    const say = (text: string, kind: '' | 'error' | 'done' = '') => {
+      note.textContent = text;
+      note.className = `news-note ${kind}`.trim();
+    };
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const value = email.value.trim();
+      if (!/^\S+@\S+\.\S+$/.test(value)) {
+        say('that email doesn’t look right.', 'error');
+        email.focus();
+        return;
+      }
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: value, website: (form.elements.namedItem('website') as HTMLInputElement).value }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+        say(data.already ? 'you’re already on the list ♥' : 'you’re on the list ♥ check your email.', 'done');
+        email.value = '';
+      } catch (err) {
+        say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+</script>

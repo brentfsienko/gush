@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../data/store';
+// Plain-language terms, written for how this shop actually works. Not legal advice: have a lawyer
+// look them over if the shop grows.
+const UPDATED = 'november 6, 2026';
+const mail = `mailto:${CONTACT_EMAIL}`;
+---
+
+<Base title="terms" description="GÜSH terms of service.">
+  <article class="doc type">
+    <h1 class="heading">terms</h1>
+    <p class="updated">last updated {UPDATED}</p>
+
+    <p>these are the terms for using gush.supply and buying from GÜSH. by using the site or placing an order, you agree to them.</p>
+
+    <h2 class="heading">the clothes</h2>
+    <p>every piece is designed and sewn by hand in Seattle, in small batches. that means no two are exactly alike: small differences in stitching, fabric pattern and measurements are part of it, not a defect. colors can look a little different on different screens.</p>
+
+    <h2 class="heading">prices &amp; payment</h2>
+    <p>prices are in US dollars and can change at any time, but never for an order you’ve already placed. payment is handled by Stripe at checkout; we never see or store your card number. if something goes wrong with an order (a pricing mistake, or a piece turns out to be unavailable), we may cancel it and refund you in full.</p>
+
+    <h2 class="heading">stock &amp; the waitlist</h2>
+    <p>there are only a few of each piece. an item isn’t yours until checkout is complete. joining the waitlist for a sold-out size doesn’t hold one for you; it just means we’ll email you when it’s back.</p>
+
+    <h2 class="heading">shipping, returns &amp; exchanges</h2>
+    <p>see the <a href="/returns">return &amp; exchange policy</a>.</p>
+
+    <h2 class="heading">promo codes</h2>
+    <p>promo codes have no cash value, can’t be combined unless we say so, and can end at any time.</p>
+
+    <h2 class="heading">our work</h2>
+    <p>the designs, photos, sewn lettering and everything else on this site belong to GÜSH. please don’t copy or reuse them without asking.</p>
+
+    <h2 class="heading">the fine print</h2>
+    <p>we do our best to keep the site accurate and working, but it’s provided as is. to the extent the law allows, GÜSH isn’t responsible for indirect losses, and our responsibility for any order is limited to what you paid for it. nothing here takes away rights you have under consumer law.</p>
+    <p>these terms are governed by the laws of the state of Washington. if they change, we’ll update this page and the date above.</p>
+
+    <h2 class="heading">questions</h2>
+    <p>email <a href={mail}>{CONTACT_EMAIL}</a>.</p>
+  </article>
+</Base>
