@@ -3,6 +3,12 @@
 // newsletter sign-up (worker/newsletter.ts), links to the info pages, and how to get in touch.
 import { CONTACT_EMAIL } from '../data/store';
 
+interface Props {
+  /** Show the newsletter sign-up above the links (only the home and about pages do). */
+  newsletter?: boolean;
+}
+const { newsletter = false } = Astro.props;
+
 const links = [
   { href: '/contact', label: 'contact' },
   { href: '/returns', label: 'return & exchange policy' },
@@ -14,6 +20,7 @@ const year = new Date().getFullYear();
 
 <footer class="site-foot">
   <!-- The newsletter on its own: the pitch on the left, the sign-up on the right (web). -->
+  {newsletter && (
   <section class="news" aria-labelledby="news-heading">
     <h2 class="foot-label" id="news-heading">newsletter</h2>
     <p class="news-pitch"><span>join the newsletter</span> <span>for updates on our latest</span> <span>styles and projects.</span></p>
@@ -27,6 +34,7 @@ const year = new Date().getFullYear();
       <p class="news-note" data-news-note aria-live="polite"></p>
     </form>
   </section>
+  )}
 
   <!-- Then a band of its own, a shade darker, with the links in columns. -->
   <div class="foot-band">

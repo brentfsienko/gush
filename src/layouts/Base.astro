@@ -18,9 +18,11 @@ interface Props {
   clearCart?: boolean;
   /** Link-preview image (a path on this site); defaults to the logo card, /og.png. */
   image?: string;
+  /** Newsletter sign-up in the footer (the home and about pages). */
+  newsletter?: boolean;
 }
 
-const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png' } = Astro.props;
+const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false } = Astro.props;
 const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
 // Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -124,7 +126,7 @@ const digitUrls = digitImgs.every(Boolean)
       <main class:list={[{ fill }]}>
         <slot />
         <!-- Pages that scroll themselves (the shop) put the footer at the end of their own scrolling. -->
-        {!fill && <SiteFooter />}
+        {!fill && <SiteFooter newsletter={newsletter} />}
       </main>
     </div>
 
