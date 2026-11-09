@@ -120,7 +120,7 @@ async function confirm(env: Env, p: Product, size: string, email: string) {
 export function confirmEmail(p: Product, size: string) {
   const S = size.toUpperCase();
   const subject = `you're on the list: ${p.title} in ${S}`;
-  const body = `it's sold out right now. we'll email you as soon as it's back, once, and that's it.`;
+  const body = `it's sold out right now. we'll email you as soon as it's back.`;
   const outro = `didn't sign up for this? you can ignore this email.`;
   const text = `you're on the list:\n${p.title}\nsize ${S}\n\n${body}\n\nkeep shopping: ${SITE_URL}/shop\n\n${outro}`;
   const html = page(`
