@@ -16,8 +16,8 @@ rng = np.random.default_rng(int(sys.argv[3]) if len(sys.argv) > 3 else 11)
 
 N = 2400                               # tile size in pixels (displayed at 800 CSS px, so 3x)
 S = N / 1600                           # sizes below were tuned at 1600px; scale them with the tile
-BASE = np.array([250, 249, 245.0])     # near-white, a whisper warm
-THREAD = np.array([1.0, 1.0, 0.97])    # threads are just a shade of the base color (barely tinted)
+BASE = np.array([253.5, 253, 250.5])   # near-white, barely warm
+THREAD = np.array([1.0, 1.0, 0.985])   # threads are just a shade of the base color (barely tinted)
 DARK, LIGHT = 2.0, 1.1                 # how much darker/lighter a thread can get (keep it subtle)
 
 

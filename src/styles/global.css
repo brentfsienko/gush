@@ -5,7 +5,7 @@
   --gray: #7a7a7a; /* prices */
   --red: #c8372d;
   --sun: #e8a317; /* mustard, same as brentsienko.com */
-  --page: #f8f7f3; /* the page everything is stuck onto: off-white cotton */
+  --page: #fcfcf9; /* the page everything is stuck onto: white cotton (the fabric texture's average color) */
   /* The page itself: a seamless slub-cotton texture over the off-white (src/assets/fabric.webp, made by
      scripts/fabric.py; the build gives it a new name whenever it changes, so caches never show an old one).
      The tile is 2400px shown at 800px (3x), so it stays sharp on high-density screens. */
