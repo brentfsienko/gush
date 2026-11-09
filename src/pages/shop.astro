@@ -258,7 +258,7 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     align-items: center;
     justify-content: center;
     text-align: center;
-    /* Its own card: always outlined in the same stitch as an item card on hover, --in from its edges. */
+    /* Its own card: on hover, outlined in the same stitch as an item card, --in from its edges. */
     --in: var(--gutter);
     position: relative;
   }
@@ -268,6 +268,19 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     content: '';
     position: absolute;
     pointer-events: none;
+    opacity: 0;
+  }
+
+  @media (hover: hover) {
+    .soon:hover .soon-box::before,
+    .soon:hover .soon-box::after {
+      opacity: 1;
+    }
+  }
+
+  .soon:active .soon-box::before,
+  .soon:active .soon-box::after {
+    opacity: 1;
   }
 
   .soon-box::before {
