@@ -136,6 +136,20 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     display: none;
   }
 
+  /* Phones: the feed only moves up and down. Nothing slides sideways (the card outline reaches a few
+     px past the screen edge, which would otherwise make the feed scrollable left and right). */
+  @media (max-width: 699px) {
+    .feed {
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+      touch-action: pan-y;
+    }
+
+    .feed-item {
+      overflow-x: clip;
+    }
+  }
+
   /* Phones: one item per screen, spanning the full width (the name/price keep a small gutter). */
   .feed-item {
     height: 100%;
