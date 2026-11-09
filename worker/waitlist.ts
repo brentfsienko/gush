@@ -200,7 +200,7 @@ export function restockEmail(p: Product, size: string) {
   const S = size.toUpperCase();
   const url = `${SITE_URL}/item/${p.slug}?size=${size}`;
   const subject = `${p.title} in ${S} is back`;
-  const outro = `you asked us to email you when this was back. this is the only email you'll get about it.`;
+  const outro = `you asked us to email you when this was back.`;
   const text = `${subject}.\n\nsize ${S}, ${formatPrice(p.price)}.\n\n${url}\n\n${outro}`;
   const html = page(`
     ${itemHeading("it's back:", p, `size ${S} · ${formatPrice(p.price)}`)}
