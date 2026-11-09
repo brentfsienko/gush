@@ -1,0 +1,32 @@
+---
+// The about page's content: the plaid photos full width, then the sewing scan. Shown at /about and
+// at the bare address, gush.supply (src/pages/index.astro), which stays as is in the address bar.
+import { Image } from 'astro:assets';
+import { homePhotos } from '../data/assets';
+import scan from '../assets/scans/scan-3.jpg';
+
+// Same photos as the home page (src/assets/home/), each the full width of the screen.
+const photos = homePhotos();
+---
+
+<div class="bleed">
+  {
+    photos.map((src, i) => (
+      <Image src={src} alt="GÜSH clothing" widths={[600, 1000, 1600, 2400]} sizes="100vw" class="photo" loading={i === 0 ? 'eager' : 'lazy'} />
+    ))
+  }
+</div>
+
+<!-- The sewing scan: all the site's words, sewn on fabric, straight off the scanner. -->
+<Image src={scan} alt="the GÜSH lettering, machine sewn on white fabric" widths={[600, 1000, 1600, 2400, 3200]} sizes="100vw" class="photo scan" loading="lazy" />
+
+<style>
+  .scan {
+    margin-top: 40px;
+  }
+
+  .bleed {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
