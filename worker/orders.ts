@@ -4,7 +4,7 @@
 //  - Every paid order is saved in Cloudflare KV (the STOCK namespace) as ord:<stripe session id>,
 //    with a long random code (ordtok:<code> points back to it) that makes the buyer's private
 //    tracking link. The webhook saves new orders; past ones are imported from Stripe.
-//  - Status goes order received → being sewn → shipped → delivered, each step with its date.
+//  - Status goes order received → on the machine → shipped → delivered, each step with its date.
 //  - Status emails to buyers only go out while ORDER_UPDATE_EMAILS (src/data/store.ts) is true.
 //
 // (The webhook's older order:<session id> keys are just "already counted" markers; separate.)
@@ -15,7 +15,7 @@ import type { Env } from './index';
 
 export const STATUSES = [
   { key: 'received', label: 'order received' },
-  { key: 'sewing', label: 'being sewn' },
+  { key: 'sewing', label: 'on the machine' },
   { key: 'shipped', label: 'shipped' },
   { key: 'delivered', label: 'delivered' },
 ] as const;
@@ -216,8 +216,8 @@ export function statusEmail(o: Order, status: Status) {
   let lines: string[] = [];
   let extra = '';
   if (status === 'sewing') {
-    subject = 'your GÜSH order is being sewn';
-    lines = [`${hi}your ${what} is on the machine.`, 'every piece is sewn by hand, so it usually ships within 1–2 weeks. we’ll email you when it’s on its way.'];
+    subject = 'your GÜSH order is on the machine';
+    lines = [`${hi}we’ve started sewing your ${what}.`, 'every piece is sewn by hand, so it usually ships within 1–2 weeks. we’ll email you when it’s on its way.'];
   } else if (status === 'shipped') {
     subject = 'your GÜSH order is on its way';
     lines = [`${hi}your ${what} is on its way.`];
@@ -254,9 +254,10 @@ export function statusEmail(o: Order, status: Status) {
 
 // ---------- the buyer's tracking page (filled into src/pages/order.astro) ----------
 
-/** The timeline's HTML. Only the items and status: no name, email or address, since links get
- *  forwarded. */
+/** The timeline's HTML: the buyer's first name, the items and the status. No full name, email or
+ *  address, since links get forwarded. */
 export function timelineHtml(o: Order) {
+  const first = (o.buyerName ?? o.shipName)?.trim().split(/\s+/)[0]?.toLowerCase();
   const step = stepOf(o.status);
   const items = o.items
     .map(
@@ -286,7 +287,7 @@ export function timelineHtml(o: Order) {
     </li>`;
   }).join('');
   return `<p class="ot-label">order #${o.number}</p>
-    <h1 class="heading ot-title">your order</h1>
+    <h1 class="heading ot-title">${first ? `${esc(first)}’s order` : 'your order'}</h1>
     <ul class="ot-items">${items}</ul>
     <ol class="ot-steps" aria-label="order status: ${esc(STATUSES[step].label)}">${steps}</ol>
     <p class="ot-help ot-dim">questions? email <a href="mailto:${esc(CONTACT_EMAIL)}">${esc(CONTACT_EMAIL)}</a> and mention order #${o.number}.</p>`;
