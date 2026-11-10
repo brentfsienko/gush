@@ -73,7 +73,7 @@ export const POLICIES = [
   },
 ];
 
-// Order updates to buyers (worker/orders.ts): the "on the machine" / "shipped" / "delivered" emails you
+// Order updates to buyers (worker/orders.ts): the "on the machine" / "on its way" / "delivered" emails you
 // send from the orders page (gush.supply/admin), and the "track your order" link in receipts. While
 // this is false, changing an order's status still updates its tracking page, but nothing is emailed.
 export const ORDER_UPDATE_EMAILS = true;

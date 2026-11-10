@@ -4,7 +4,7 @@
 //  - Every paid order is saved in Cloudflare KV (the STOCK namespace) as ord:<stripe session id>,
 //    with a long random code (ordtok:<code> points back to it) that makes the buyer's private
 //    tracking link. The webhook saves new orders; past ones are imported from Stripe.
-//  - Status goes order received → on the machine → shipped → delivered, each step with its date.
+//  - Status goes order received → on the machine → on its way → delivered, each step with its date.
 //  - Status emails to buyers only go out while ORDER_UPDATE_EMAILS (src/data/store.ts) is true.
 //
 // (The webhook's older order:<session id> keys are just "already counted" markers; separate.)
@@ -16,7 +16,7 @@ import type { Env } from './index';
 export const STATUSES = [
   { key: 'received', label: 'order received' },
   { key: 'sewing', label: 'on the machine' },
-  { key: 'shipped', label: 'shipped' },
+  { key: 'shipped', label: 'on its way' },
   { key: 'delivered', label: 'delivered' },
 ] as const;
 export type Status = (typeof STATUSES)[number]['key'];
@@ -274,7 +274,7 @@ export function timelineHtml(o: Order) {
     if (s.key === 'shipped' && i <= step) {
       detail = o.tracking
         ? `<a class="ot-detail" href="${esc(trackingLink(o.tracking))}" target="_blank" rel="noopener">tracking: ${esc(o.tracking.replace(/^https?:\/\//, ''))} →</a>`
-        : `<span class="ot-detail ot-dim">on its way</span>`;
+        : `<span class="ot-detail ot-dim">we’ll drop it off soon</span>`;
     } else if (s.key === 'shipped' && state === 'todo') {
       detail = `<span class="ot-detail ot-dim">usually ships within 1–2 weeks</span>`;
     }

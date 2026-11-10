@@ -101,7 +101,7 @@ check emails everyone waiting on that size, once, through Resend, and sends you 
   browser signed in for 30 days (`worker/admin.ts`).
 - Every paid order is saved (the webhook does it; "import past orders from Stripe" brings in older
   ones, and runs by itself the first time the page is empty). Move each order along:
-  order received → on the machine → shipped (with a USPS tracking number, or empty for a Seattle
+  order received → on the machine → on its way (with a USPS tracking number, or empty for a Seattle
   drop-off) → delivered. "archive" hides test orders.
 - Each order has a private tracking page, gush.supply/order/<code>, with its timeline (the buyer's
   first name, items and status: no full name, email or address, since links get forwarded) (`worker/orders.ts`, `src/pages/order.astro`).
