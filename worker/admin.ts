@@ -11,7 +11,7 @@
 import { FROM, esc, INK, GRAY, FONT } from './notify';
 import { page, td, gap } from './waitlist';
 import { listOrders, setStatus, setArchived, importFromStripe, isStatus } from './orders';
-import { ORDER_UPDATE_EMAILS } from '../src/data/store';
+import { ORDER_UPDATE_EMAILS, ORDER_UPDATE_EMAILS_SINCE } from '../src/data/store';
 import type { Env } from './index';
 
 const COOKIE = 'gush_admin';
@@ -101,7 +101,12 @@ export async function admin(request: Request, env: Env) {
 
   if (path === '/admin/api/orders' && method === 'GET') {
     const orders = await listOrders(env);
-    return json({ orders: orders.map((o) => ({ ...o, trackUrl: `/order/${o.token}` })), emailsOn: ORDER_UPDATE_EMAILS });
+    return json({
+      orders: orders.map((o) => ({ ...o, trackUrl: `/order/${o.token}` })),
+      emailsOn: ORDER_UPDATE_EMAILS,
+      // Older orders' "email the buyer" box starts unchecked (Seattle time, start of that day).
+      emailsSince: Date.parse(`${ORDER_UPDATE_EMAILS_SINCE}T00:00:00-08:00`),
+    });
   }
 
   if (method === 'POST' && !sameOrigin(request, url)) return json({ error: 'forbidden' }, 403);

@@ -259,6 +259,7 @@ import Base from '../layouts/Base.astro';
   const importBtn = document.querySelector<HTMLButtonElement>('[data-import]')!;
   let orders: Order[] = [];
   let emailsOn = false;
+  let emailsSince = 0;
 
   const say = (text: string, error = false) => {
     msg.textContent = text;
@@ -334,7 +335,7 @@ import Base from '../layouts/Base.astro';
     trackingRow.hidden = stepOf(chosen) < stepOf('shipped');
 
     const emailBox = h('input', { type: 'checkbox' });
-    emailBox.checked = emailsOn && o.live;
+    emailBox.checked = emailsOn && o.live && o.created >= emailsSince;
     emailBox.disabled = !emailsOn || !o.live || !o.buyerEmail;
     const emailLabel = h(
       'label',
@@ -406,6 +407,7 @@ import Base from '../layouts/Base.astro';
     const data = await api('/admin/api/orders');
     orders = data.orders;
     emailsOn = data.emailsOn;
+    emailsSince = data.emailsSince ?? 0;
     banner.hidden = emailsOn;
     banner.textContent = 'buyer emails are off. changing a status updates the buyer’s tracking page, but nobody is emailed. (to turn them on: ORDER_UPDATE_EMAILS in src/data/store.ts.)';
     render();
