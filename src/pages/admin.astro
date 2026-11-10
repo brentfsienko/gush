@@ -247,7 +247,7 @@ import Base from '../layouts/Base.astro';
   const STEPS: { key: Status; label: string }[] = [
     { key: 'received', label: 'order received' },
     { key: 'sewing', label: 'on the machine' },
-    { key: 'shipped', label: 'on its way' },
+    { key: 'shipped', label: 'headed your way' },
     { key: 'delivered', label: 'delivered' },
   ];
   const stepOf = (s: Status) => STEPS.findIndex((x) => x.key === s);

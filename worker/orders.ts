@@ -4,7 +4,7 @@
 //  - Every paid order is saved in Cloudflare KV (the STOCK namespace) as ord:<stripe session id>,
 //    with a long random code (ordtok:<code> points back to it) that makes the buyer's private
 //    tracking link. The webhook saves new orders; past ones are imported from Stripe.
-//  - Status goes order received → on the machine → on its way → delivered, each step with its date.
+//  - Status goes order received → on the machine → headed your way → delivered, each step with its date.
 //  - Status emails to buyers only go out while ORDER_UPDATE_EMAILS (src/data/store.ts) is true.
 //
 // (The webhook's older order:<session id> keys are just "already counted" markers; separate.)
@@ -16,7 +16,7 @@ import type { Env } from './index';
 export const STATUSES = [
   { key: 'received', label: 'order received' },
   { key: 'sewing', label: 'on the machine' },
-  { key: 'shipped', label: 'on its way' },
+  { key: 'shipped', label: 'headed your way' },
   { key: 'delivered', label: 'delivered' },
 ] as const;
 export type Status = (typeof STATUSES)[number]['key'];
@@ -217,10 +217,10 @@ export function statusEmail(o: Order, status: Status) {
   let extra = '';
   if (status === 'sewing') {
     subject = 'your GÜSH order is on the machine';
-    lines = [`${hi}we’ve started sewing your ${what}.`, 'every piece is sewn by hand, so it usually ships within 1–2 weeks. we’ll email you when it’s on its way.'];
+    lines = [`${hi}we’ve started sewing your ${what}.`, 'every piece is sewn by hand, so it usually ships within 1–2 weeks. we’ll email you when it’s headed your way.'];
   } else if (status === 'shipped') {
-    subject = 'your GÜSH order is on its way';
-    lines = [`${hi}your ${what} is on its way.`];
+    subject = 'your GÜSH order is headed your way';
+    lines = [`${hi}your ${what} is headed your way.`];
     if (o.tracking) {
       lines.push(`tracking: ${o.tracking}`);
       extra = `<div ${td()}><a href="${esc(trackingLink(o.tracking))}" style="color:${INK};">follow the package →</a></div>`;
