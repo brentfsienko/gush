@@ -120,11 +120,12 @@ export async function saveOrder(env: Env, s: PaidSession & { created?: number },
 }
 
 /** Moves an order to a status (forward or back). Later steps' dates are cleared when moving back.
- *  Emails the buyer only if asked to and ORDER_UPDATE_EMAILS is on. */
+ *  Emails the buyer only if the status changed, you asked to, and ORDER_UPDATE_EMAILS is on. */
 export async function setStatus(env: Env, id: string, status: Status, opts: { tracking?: string; email?: boolean } = {}) {
   const o = await getOrder(env, id);
   if (!o) return { error: 'order not found' };
   const step = stepOf(status);
+  const changed = o.status !== status;
   const now = Date.now();
   const dates: Order['dates'] = {};
   for (const s of STATUSES) {
@@ -139,7 +140,9 @@ export async function setStatus(env: Env, id: string, status: Status, opts: { tr
   await putOrder(env, o);
 
   let emailed = false;
-  if (opts.email && ORDER_UPDATE_EMAILS && o.buyerEmail && o.live && status !== 'received') {
+  // One email per step: only when the status actually changes (re-saving to fix a tracking number
+  // doesn't email again).
+  if (changed && opts.email && ORDER_UPDATE_EMAILS && o.buyerEmail && o.live && status !== 'received') {
     emailed = await resend(env, o.buyerEmail, `order-${o.id}-${status}-${o.dates[status]}`, statusEmail(o, status)).catch((err) => {
       console.error('order update email failed', o.id, status, err);
       return false;

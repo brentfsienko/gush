@@ -359,7 +359,7 @@ import Base from '../layouts/Base.astro';
           id: o.id,
           status: chosen,
           tracking: stepOf(chosen) >= stepOf('shipped') ? tracking.value : '',
-          email: emailBox.checked && !emailBox.disabled && chosen !== 'received',
+          email: emailBox.checked && !emailBox.disabled && chosen !== 'received' && chosen !== o.status,
         });
         orders = orders.map((x) => (x.id === o.id ? r.order : x));
         render();
