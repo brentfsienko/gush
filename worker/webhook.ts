@@ -1,9 +1,11 @@
 // POST /api/stripe-webhook: Stripe calls this after a checkout is paid. It checks the request
 // really came from Stripe (signature with STRIPE_WEBHOOK_SECRET) and counts the sold items off
-// the stock (worker/stock.ts), then emails you the order (worker/notify.ts). Each order is only
-// counted and emailed once, even if Stripe retries.
+// the stock (worker/stock.ts), saves the order for the orders page (worker/orders.ts), then emails
+// you the order (worker/notify.ts). Each order is only counted and emailed once, even if Stripe retries.
 import { recordSale } from './stock';
 import { notifyOrder, type PaidSession } from './notify';
+import { saveOrder, trackUrl } from './orders';
+import { ORDER_UPDATE_EMAILS } from '../src/data/store';
 import type { Env } from './index';
 
 const TOLERANCE_SECONDS = 5 * 60;
@@ -63,6 +65,15 @@ export async function stripeWebhook(request: Request, env: Env) {
     if (slug && size && Number.isInteger(n) && n > 0) await recordSale(env, slug, size, n);
   }
   await env.STOCK.put(doneKey, new Date().toISOString());
-  await notifyOrder(env, session);
+  // Save it for the orders page and the buyer's tracking page (worker/orders.ts). A failure here
+  // mustn't stop the order emails.
+  let track: string | undefined;
+  try {
+    const order = await saveOrder(env, session);
+    if (ORDER_UPDATE_EMAILS) track = trackUrl(order);
+  } catch (err) {
+    console.error('saving order failed', session.id, err);
+  }
+  await notifyOrder(env, session, track);
   return new Response('ok', { status: 200 });
 }

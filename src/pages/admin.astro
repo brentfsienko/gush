@@ -1,0 +1,440 @@
+---
+// The private orders page (gush.supply/admin). The worker only serves it when you're signed in
+// (worker/admin.ts); the orders themselves load from /admin/api/orders, which also needs you
+// signed in, so this file holds no order data.
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="orders" footer={false} noindex>
+  <div class="admin type">
+    <div class="admin-top">
+      <h1 class="heading">orders</h1>
+      <div class="admin-actions">
+        <button class="btn small" type="button" data-import>import past orders from Stripe</button>
+        <label class="check"><input type="checkbox" data-show-archived /> show archived</label>
+        <form method="post" action="/admin/logout"><button class="btn small" type="submit">sign out</button></form>
+      </div>
+    </div>
+    <p class="banner" data-banner hidden></p>
+    <p class="status-msg" data-msg aria-live="polite"></p>
+    <div class="orders" data-orders><p class="dim">loading…</p></div>
+  </div>
+</Base>
+
+<style>
+  .admin {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px var(--gutter) 64px;
+  }
+
+  .admin-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    margin-bottom: 14px;
+  }
+
+  .admin-top h1 {
+    font-size: 28px;
+  }
+
+  .admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+  }
+
+  .admin-actions form {
+    margin: 0;
+  }
+
+  .banner {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border: 1.5px dashed var(--ink);
+    font-size: 14px;
+  }
+
+  .status-msg {
+    min-height: 1.5em;
+    margin: 0 0 6px;
+    font-size: 14px;
+  }
+
+  .status-msg.error {
+    color: var(--red);
+  }
+
+  .orders {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  :global(.dim) {
+    color: var(--gray);
+  }
+
+  :global(.btn) {
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  :global(.btn.small) {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+
+  :global(.btn:hover:not(:disabled)),
+  :global(.btn:focus-visible) {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  :global(.btn:disabled) {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  :global(.check) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  :global(.check.off) {
+    color: var(--gray);
+    cursor: default;
+  }
+
+  /* One order: a plain ink box. */
+  :global(.order) {
+    border: 1.5px solid var(--ink);
+    padding: 16px;
+    background: var(--page);
+  }
+
+  :global(.order.archived) {
+    opacity: 0.55;
+  }
+
+  :global(.order-head) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 16px;
+    margin-bottom: 10px;
+  }
+
+  :global(.order-num) {
+    font-size: 19px;
+  }
+
+  :global(.tag) {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0 6px;
+    font-size: 12px;
+    border: 1px solid currentColor;
+    vertical-align: middle;
+  }
+
+  :global(.order-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px 28px;
+    font-size: 14px;
+  }
+
+  @media (min-width: 700px) {
+    :global(.order-grid) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  :global(.order-grid h3) {
+    margin: 0 0 2px;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  :global(.order-grid p) {
+    margin: 0;
+  }
+
+  :global(.steps) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 16px 0 10px;
+  }
+
+  :global(.step-btn[aria-pressed='true']) {
+    background: var(--ink);
+    color: var(--page);
+  }
+
+  :global(.tracking-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 10px;
+    font-size: 14px;
+  }
+
+  :global(.tracking-row input) {
+    flex: 1;
+    min-width: 200px;
+    padding: 6px 0;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+  }
+
+  :global(.tracking-row input:focus) {
+    outline: none;
+    border-bottom-width: 3px;
+  }
+
+  :global(.order-foot) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    font-size: 14px;
+  }
+
+  :global(.order-foot a) {
+    color: inherit;
+    text-underline-offset: 3px;
+  }
+
+  :global(.saved) {
+    color: var(--gray);
+  }
+</style>
+
+<script>
+  type Status = 'received' | 'sewing' | 'shipped' | 'delivered';
+  type Order = {
+    id: string; number: number; created: number; live: boolean; paymentIntent?: string; trackUrl: string;
+    items: { slug: string; title: string; size: string; qty: number; cents: number }[];
+    buyerName?: string; buyerEmail?: string; shipName?: string; address: string[];
+    shippingMethod: string; shippingCents: number; subtotal: number; discount: number; total: number; note?: string;
+    status: Status; dates: Partial<Record<Status, number>>; tracking?: string; archived?: boolean;
+  };
+
+  const STEPS: { key: Status; label: string }[] = [
+    { key: 'received', label: 'order received' },
+    { key: 'sewing', label: 'being sewn' },
+    { key: 'shipped', label: 'shipped' },
+    { key: 'delivered', label: 'delivered' },
+  ];
+  const stepOf = (s: Status) => STEPS.findIndex((x) => x.key === s);
+
+  const list = document.querySelector<HTMLElement>('[data-orders]')!;
+  const msg = document.querySelector<HTMLElement>('[data-msg]')!;
+  const banner = document.querySelector<HTMLElement>('[data-banner]')!;
+  const showArchived = document.querySelector<HTMLInputElement>('[data-show-archived]')!;
+  const importBtn = document.querySelector<HTMLButtonElement>('[data-import]')!;
+  let orders: Order[] = [];
+  let emailsOn = false;
+
+  const say = (text: string, error = false) => {
+    msg.textContent = text;
+    msg.classList.toggle('error', error);
+  };
+  const money = (c: number) => `$${(c / 100).toFixed(2).replace(/\.00$/, '')}`;
+  const day = (ms?: number) =>
+    ms ? new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Los_Angeles' }).toLowerCase() : '';
+
+  /** Tiny element builder: text only goes in as text, never as HTML. */
+  function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, string> = {}, ...kids: (Node | string | null | undefined | false)[]) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    for (const kid of kids) if (kid) el.append(kid);
+    return el;
+  }
+
+  async function api(path: string, body?: unknown) {
+    const res = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.status === 401) {
+      location.href = '/admin/login';
+      throw new Error('signed out');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `something went wrong (${res.status})`);
+    return data;
+  }
+
+  function section(title: string, ...lines: (string | undefined)[]) {
+    const kept = lines.filter(Boolean) as string[];
+    if (!kept.length) return null;
+    return h('div', {}, h('h3', {}, title), ...kept.map((l) => h('p', {}, l)));
+  }
+
+  function renderOrder(o: Order) {
+    let chosen: Status = o.status;
+    const card = h('article', { class: `order${o.archived ? ' archived' : ''}` });
+
+    const head = h(
+      'div',
+      { class: 'order-head' },
+      h('span', { class: 'order-num' }, `#${o.number}`, !o.live && h('span', { class: 'tag' }, 'test'), o.archived && h('span', { class: 'tag' }, 'archived')),
+      h('span', { class: 'dim' }, `${day(o.created)} · ${money(o.total)}`),
+    );
+
+    const grid = h(
+      'div',
+      { class: 'order-grid' },
+      section('items', ...o.items.map((i) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title} (${i.size}) · ${money(i.cents)}`)),
+      section('buyer', o.buyerName, o.buyerEmail),
+      section('ship to', ...o.address),
+      section('shipping', `${o.shippingMethod} (${o.shippingCents ? money(o.shippingCents) : 'free'})`, o.discount ? `promo code −${money(o.discount)}` : undefined),
+      section('note', o.note),
+      section('status', ...STEPS.filter((s) => o.dates[s.key]).map((s) => `${s.label}: ${day(o.dates[s.key])}`), o.tracking ? `tracking: ${o.tracking}` : undefined),
+    );
+
+    // Pick the status, then save.
+    const stepBtns = STEPS.map((s) => {
+      const b = h('button', { class: 'btn small step-btn', type: 'button', 'aria-pressed': String(s.key === chosen) }, s.label);
+      b.addEventListener('click', () => {
+        chosen = s.key;
+        stepBtns.forEach((x, i) => x.setAttribute('aria-pressed', String(STEPS[i].key === chosen)));
+        trackingRow.hidden = stepOf(chosen) < stepOf('shipped');
+        sync();
+      });
+      return b;
+    });
+    const steps = h('div', { class: 'steps', role: 'group', 'aria-label': 'status' }, ...stepBtns);
+
+    const tracking = h('input', { type: 'text', placeholder: 'USPS tracking number (leave empty for Seattle drop-off)', 'aria-label': 'tracking number' });
+    tracking.value = o.tracking ?? '';
+    const trackingRow = h('div', { class: 'tracking-row' }, h('span', { class: 'dim' }, 'tracking'), tracking);
+    trackingRow.hidden = stepOf(chosen) < stepOf('shipped');
+
+    const emailBox = h('input', { type: 'checkbox' });
+    emailBox.checked = emailsOn && o.live;
+    emailBox.disabled = !emailsOn || !o.live || !o.buyerEmail;
+    const emailLabel = h(
+      'label',
+      { class: `check${emailBox.disabled ? ' off' : ''}` },
+      emailBox,
+      emailsOn ? (o.live ? 'email the buyer' : 'email the buyer (not for test orders)') : 'email the buyer (buyer emails are off)',
+    );
+
+    const save = h('button', { class: 'btn', type: 'button' }, 'save');
+    const saved = h('span', { class: 'saved' });
+    const sync = () => {
+      save.disabled = chosen === o.status && (tracking.value.trim() || '') === (o.tracking ?? '');
+    };
+    tracking.addEventListener('input', sync);
+    sync();
+    save.addEventListener('click', async () => {
+      save.disabled = true;
+      saved.textContent = 'saving…';
+      try {
+        const r = await api('/admin/api/status', {
+          id: o.id,
+          status: chosen,
+          tracking: stepOf(chosen) >= stepOf('shipped') ? tracking.value : '',
+          email: emailBox.checked && !emailBox.disabled && chosen !== 'received',
+        });
+        orders = orders.map((x) => (x.id === o.id ? r.order : x));
+        render();
+        say(`#${o.number} is now “${STEPS[stepOf(chosen)].label}”.${r.emailed ? ' the buyer was emailed.' : ' nobody was emailed.'}`);
+      } catch (err) {
+        saved.textContent = '';
+        say(err instanceof Error ? err.message : 'that didn’t save', true);
+        sync();
+      }
+    });
+
+    const archive = h('button', { class: 'btn small', type: 'button' }, o.archived ? 'unarchive' : 'archive');
+    archive.addEventListener('click', async () => {
+      try {
+        const r = await api('/admin/api/archive', { id: o.id, archived: !o.archived });
+        orders = orders.map((x) => (x.id === o.id ? r.order : x));
+        render();
+      } catch (err) {
+        say(err instanceof Error ? err.message : 'that didn’t save', true);
+      }
+    });
+
+    const stripe = o.paymentIntent ? h('a', { href: `https://dashboard.stripe.com/${o.live ? '' : 'test/'}payments/${o.paymentIntent}`, target: '_blank', rel: 'noopener' }, 'stripe ↗') : null;
+    const foot = h(
+      'div',
+      { class: 'order-foot' },
+      save,
+      emailLabel,
+      saved,
+      h('a', { href: o.trackUrl, target: '_blank', rel: 'noopener' }, 'buyer’s tracking page ↗'),
+      stripe,
+      archive,
+    );
+
+    card.append(head, grid, steps, trackingRow, foot);
+    return card;
+  }
+
+  function render() {
+    const shown = orders.filter((o) => showArchived.checked || !o.archived);
+    list.replaceChildren(...(shown.length ? shown.map(renderOrder) : [h('p', { class: 'dim' }, orders.length ? 'no orders to show (some are archived).' : 'no orders yet.')]));
+  }
+
+  async function load() {
+    const data = await api('/admin/api/orders');
+    orders = data.orders;
+    emailsOn = data.emailsOn;
+    banner.hidden = emailsOn;
+    banner.textContent = 'buyer emails are off. changing a status updates the buyer’s tracking page, but nobody is emailed. (to turn them on: ORDER_UPDATE_EMAILS in src/data/store.ts.)';
+    render();
+  }
+
+  async function runImport(auto = false) {
+    importBtn.disabled = true;
+    say(auto ? 'first time here: bringing in past orders from Stripe…' : 'importing from Stripe…');
+    try {
+      const r = await api('/admin/api/import', {});
+      await load();
+      // Just-imported orders can take a minute to show up in the list, so add them in directly.
+      for (const o of r.orders as Order[]) if (!orders.some((x) => x.id === o.id)) orders.push(o);
+      orders.sort((a, b) => b.created - a.created);
+      render();
+      say(`found ${r.found} paid order${r.found === 1 ? '' : 's'} in Stripe, ${r.added} new. nobody was emailed.`);
+    } catch (err) {
+      say(err instanceof Error ? err.message : 'import failed', true);
+    } finally {
+      importBtn.disabled = false;
+    }
+  }
+
+  importBtn.addEventListener('click', () => runImport());
+  showArchived.addEventListener('change', render);
+
+  load()
+    .then(() => {
+      if (!orders.length) return runImport(true);
+    })
+    .catch((err) => say(err instanceof Error ? err.message : 'couldn’t load orders', true));
+</script>

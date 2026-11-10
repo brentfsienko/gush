@@ -1,11 +1,13 @@
 // The Worker in front of the site. Static pages and images are served straight from dist/
-// (see [assets] in wrangler.toml); only /api/* and /item/* requests reach this code.
+// (see [assets] in wrangler.toml); only /api/*, /item/*, /admin* and /order/* requests reach this code.
 import { checkout } from './checkout';
 import { stripeWebhook } from './webhook';
 import { stockMap } from './stock';
 import { joinWaitlist, sendRestocks } from './waitlist';
 import { itemPage } from './live-stock-page';
 import { joinNewsletter, unsubscribe, contact } from './newsletter';
+import { admin } from './admin';
+import { orderPage } from './orders';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -51,6 +53,11 @@ export default {
     if (pathname === '/api/contact') {
       return request.method === 'POST' ? contact(request, env) : allow('POST');
     }
+    // The private orders page (only you can sign in; see worker/admin.ts).
+    if (pathname === '/admin' || pathname.startsWith('/admin/') || pathname.startsWith('/admin.')) return admin(request, env);
+    // A buyer's order tracking page: /order/<private code>.
+    const tracked = pathname.match(/^\/order\/([A-Za-z0-9_-]+)$/);
+    if (tracked && (request.method === 'GET' || request.method === 'HEAD')) return orderPage(request, env, tracked[1]);
     // Item pages: filled in with live stock so sold-out sizes don't flash as available.
     const item = pathname.match(/^\/item\/([a-z0-9-]+)$/);
     if (item && (request.method === 'GET' || request.method === 'HEAD')) return itemPage(request, env, item[1]);

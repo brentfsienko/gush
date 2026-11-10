@@ -1,0 +1,159 @@
+---
+// A buyer's order tracking page. The address is /order/<private code>; the worker (worker/orders.ts,
+// orderPage) fills in the timeline below before the page is sent. Opened without a valid code, it
+// says the order wasn't found.
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../data/store';
+---
+
+<Base title="your order" description="your GÜSH order." noindex>
+  <article class="doc type ot">
+    <div data-order>
+      <h1 class="heading">we couldn’t find that order</h1>
+      <p>check the link in your order email, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we’ll help.</p>
+    </div>
+  </article>
+</Base>
+
+<!-- Global: the timeline is put in by the worker, so it doesn't carry this page's scoped-style tags. -->
+<style is:global>
+  .ot {
+    max-width: 520px;
+  }
+
+  .ot-label {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .ot-title {
+    margin: 0 0 18px;
+    font-size: 28px;
+  }
+
+  .ot-dim {
+    color: var(--gray);
+  }
+
+  .ot-items {
+    list-style: none;
+    margin: 0 0 30px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ot-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0;
+  }
+
+  .ot-item img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .ot-item-name {
+    font-size: 17px;
+  }
+
+  /* The timeline: a dot per step, joined by a line. Finished stretches are sewn (the same real
+     stitch as under the header); what's still to come is a faint dashed line. */
+  .ot-steps {
+    list-style: none;
+    margin: 0 0 32px;
+    padding: 0;
+  }
+
+  .ot-step {
+    position: relative;
+    margin: 0;
+    padding: 0 0 30px 36px;
+  }
+
+  .ot-step:last-child {
+    padding-bottom: 0;
+  }
+
+  .ot-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 18px;
+    bottom: 2px;
+    width: 0;
+    border-left: 1.5px dashed rgba(31, 27, 22, 0.25);
+  }
+
+  .ot-step.done:not(:last-child)::before {
+    left: 3.5px;
+    width: 7px;
+    border: 0;
+    background: url('../assets/stitch-side.png') center top / 7px auto repeat-y;
+  }
+
+  .ot-dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gray);
+    background: var(--page);
+  }
+
+  .ot-step.done .ot-dot,
+  .ot-step.now .ot-dot {
+    border-color: var(--ink);
+    background: var(--ink);
+  }
+
+  /* The current step gets a ring around its dot. */
+  .ot-step.now .ot-dot {
+    box-shadow: 0 0 0 4px var(--page), 0 0 0 5.5px var(--ink);
+  }
+
+  .ot-step-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 14px;
+  }
+
+  .ot-step-name {
+    font-size: 17px;
+  }
+
+  .ot-step.todo .ot-step-name {
+    color: var(--gray);
+  }
+
+  .ot-date {
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  .ot-detail {
+    flex-basis: 100%;
+    font-size: 14px;
+  }
+
+  a.ot-detail {
+    color: inherit;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+
+  .ot-help {
+    font-size: 14px;
+  }
+</style>

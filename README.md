@@ -95,6 +95,20 @@ A sold-out size can still be picked on the item page; instead of "add to cart" i
 check emails everyone waiting on that size, once, through Resend, and sends you a summary.
 `npm run waitlist` lists who's waiting for what.
 
+### Orders page and order tracking (free)
+- **gush.supply/admin** is your private orders page. Tap "email me a sign-in link": the link only
+  ever goes to ORDER_EMAIL_TO (your verified inbox), works once for 15 minutes, and keeps that
+  browser signed in for 30 days (`worker/admin.ts`).
+- Every paid order is saved (the webhook does it; "import past orders from Stripe" brings in older
+  ones, and runs by itself the first time the page is empty). Move each order along:
+  order received → being sewn → shipped (with a USPS tracking number, or empty for a Seattle
+  drop-off) → delivered. "archive" hides test orders.
+- Each order has a private tracking page, gush.supply/order/<code>, with its timeline (items and
+  status only: no name or address, since links get forwarded) (`worker/orders.ts`, `src/pages/order.astro`).
+- Buyer emails ("being sewn", "on its way", "arrived") and the "track your order" button in
+  receipts only go out once `ORDER_UPDATE_EMAILS` in `src/data/store.ts` is `true`. Until then,
+  status changes update the tracking page and nobody is emailed.
+
 ### Newsletter, contact form and info pages (free)
 Every page ends with a footer (`src/components/SiteFooter.astro`): a newsletter sign-up, links to the
 info pages, and how to get in touch.

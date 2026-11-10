@@ -34,7 +34,7 @@ export type PaidSession = {
 type Order = ReturnType<typeof readOrder>;
 
 /** Everything the emails show, pulled out of the session. */
-function readOrder(s: PaidSession) {
+export function readOrder(s: PaidSession) {
   const items = (s.metadata?.items ?? '')
     .split(',')
     .filter(Boolean)
@@ -109,8 +109,8 @@ export function ownerEmail(s: PaidSession) {
   };
 }
 
-/** The receipt to the buyer. */
-export function customerEmail(s: PaidSession) {
+/** The receipt to the buyer. With trackUrl, its button opens the order's tracking page. */
+export function customerEmail(s: PaidSession, trackUrl?: string) {
   const o = readOrder(s);
   const first = o.buyerName?.trim().split(/\s+/)[0]?.toLowerCase();
   const hello = first ? `thank you, ${first}!` : 'thank you!';
@@ -129,6 +129,7 @@ export function customerEmail(s: PaidSession) {
     ...(o.note ? ['', `your note: ${o.note}`] : []),
     '',
     RECEIPT.outro,
+    ...(trackUrl ? ['', `track your order: ${trackUrl}`] : []),
     '',
     SITE_URL.replace(/^https?:\/\//, ''),
   ].join('\n');
@@ -141,7 +142,7 @@ export function customerEmail(s: PaidSession) {
       noteHeading: 'your note',
       hideEmptyNote: true,
       outro: RECEIPT.outro,
-      button: { label: 'visit GÜSH →', href: SITE_URL },
+      button: trackUrl ? { label: 'track your order →', href: trackUrl } : { label: 'visit GÜSH →', href: SITE_URL },
     }),
   };
 }
@@ -241,9 +242,10 @@ function renderHtml(
 </body></html>`;
 }
 
-/** Sends both emails. Never throws: a failed email mustn't make Stripe retry the order. */
-export async function notifyOrder(env: Env, session: PaidSession) {
-  await Promise.all([emailOwner(env, session), emailCustomer(env, session)]);
+/** Sends both emails. Never throws: a failed email mustn't make Stripe retry the order. trackUrl
+ *  (when order update emails are on) puts a "track your order" link in the receipt. */
+export async function notifyOrder(env: Env, session: PaidSession, trackUrl?: string) {
+  await Promise.all([emailOwner(env, session), emailCustomer(env, session, trackUrl)]);
 }
 
 async function emailOwner(env: Env, session: PaidSession) {
@@ -256,11 +258,11 @@ async function emailOwner(env: Env, session: PaidSession) {
   }
 }
 
-async function emailCustomer(env: Env, session: PaidSession) {
+async function emailCustomer(env: Env, session: PaidSession, trackUrl?: string) {
   const to = session.customer_details?.email;
   if (!env.RESEND_API_KEY || !to || !session.livemode) return;
   try {
-    const { subject, text, html } = customerEmail(session);
+    const { subject, text, html } = customerEmail(session, trackUrl);
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {

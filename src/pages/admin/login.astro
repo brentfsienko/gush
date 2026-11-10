@@ -1,0 +1,75 @@
+---
+// Sign-in for the private orders page (worker/admin.ts): one button emails a sign-in link to your
+// own inbox (ORDER_EMAIL_TO), the only address it can go to.
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="sign in" footer={false} noindex>
+  <article class="doc type signin">
+    <h1 class="heading">orders</h1>
+    <p class="updated">private. sign in with a link sent to the GÜSH inbox.</p>
+    <button class="btn" type="button" data-send>email me a sign-in link</button>
+    <p class="msg" data-msg aria-live="polite"></p>
+  </article>
+</Base>
+
+<style>
+  .signin {
+    padding-top: 64px;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .btn:hover,
+  .btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .msg {
+    margin-top: 16px;
+    min-height: 1.5em;
+  }
+
+  .msg.error {
+    color: var(--red);
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-send]')!;
+  const msg = document.querySelector<HTMLElement>('[data-msg]')!;
+  const say = (text: string, error = false) => {
+    msg.textContent = text;
+    msg.classList.toggle('error', error);
+  };
+  if (new URL(location.href).searchParams.get('link') === 'expired') say('that link expired or was already used. send a new one.', true);
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const res = await fetch('/admin/api/login', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+      say(data.wait ? 'a link was just sent. check your inbox (and spam).' : 'sent. check your inbox for the sign-in link.');
+    } catch (err) {
+      say(err instanceof Error ? err.message : 'something went wrong. try again?', true);
+    } finally {
+      setTimeout(() => (btn.disabled = false), 5000);
+    }
+  });
+</script>

@@ -73,6 +73,11 @@ export const POLICIES = [
   },
 ];
 
+// Order updates to buyers (worker/orders.ts): the "being sewn" / "shipped" / "delivered" emails you
+// send from the orders page (gush.supply/admin), and the "track your order" link in receipts. While
+// this is false, changing an order's status still updates its tracking page, but nothing is emailed.
+export const ORDER_UPDATE_EMAILS = false;
+
 // The thank-you receipt emailed to buyers (worker/notify.ts). Replies go to CONTACT_EMAIL.
 export const RECEIPT = {
   subject: 'your GÜSH order ♥',
