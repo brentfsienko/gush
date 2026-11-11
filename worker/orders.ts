@@ -30,7 +30,8 @@ export type Order = {
   created: number; // ms
   live: boolean; // false for Stripe test-mode orders
   paymentIntent?: string;
-  items: { slug: string; title: string; size: string; qty: number; cents: number }[];
+  // swatch: a color (hex) shown instead of a photo, for family gifts (made to order, no photo yet).
+  items: { slug: string; title: string; size: string; qty: number; cents: number; swatch?: string }[];
   buyerName?: string;
   buyerEmail?: string;
   shipName?: string;
@@ -45,13 +46,15 @@ export type Order = {
   dates: Partial<Record<Status, number>>; // when each step happened
   tracking?: string; // tracking number (or link), set when shipped
   archived?: boolean; // hidden from the orders list (e.g. a test order)
+  family?: boolean; // a family Christmas gift (worker/family.ts), not a Stripe order
+  code?: string; // promo code used, if any (e.g. NORUTS100)
 };
 
 const ORDER = 'ord:';
 const TOKEN = 'ordtok:';
 const COUNTER = 'ordcount';
 
-const randomCode = () => {
+export const randomCode = () => {
   const b = crypto.getRandomValues(new Uint8Array(24));
   return btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
@@ -68,7 +71,7 @@ export async function getOrderByToken(env: Env, token: string) {
   return id ? getOrder(env, id) : null;
 }
 
-async function putOrder(env: Env, o: Order) {
+export async function putOrder(env: Env, o: Order) {
   await env.STOCK!.put(ORDER + o.id, JSON.stringify(o));
 }
 
@@ -91,8 +94,8 @@ export async function saveOrder(env: Env, s: PaidSession & { created?: number },
   const existing = await getOrder(env, s.id);
   if (existing) return existing;
   const r = readOrder(s);
-  const number = (lastNumber ?? (Number(await env.STOCK!.get(COUNTER)) || 1000)) + 1;
-  await env.STOCK!.put(COUNTER, String(number));
+  const code = r.discount ? await promoCode(env, s) : undefined;
+  const number = await nextNumber(env, lastNumber);
   const o: Order = {
     id: s.id,
     number,
@@ -111,12 +114,42 @@ export async function saveOrder(env: Env, s: PaidSession & { created?: number },
     discount: r.discount,
     total: r.total,
     note: r.note,
+    code,
     status: 'received',
     dates: { received: created },
   };
+  await addOrder(env, o);
+  return o;
+}
+
+/** The next order number (#1001, #1002, ...), counted up and saved. */
+export async function nextNumber(env: Env, last?: number) {
+  const number = (last ?? (Number(await env.STOCK!.get(COUNTER)) || 1000)) + 1;
+  await env.STOCK!.put(COUNTER, String(number));
+  return number;
+}
+
+/** Saves a new order and its tracking-link code. */
+export async function addOrder(env: Env, o: Order) {
   await env.STOCK!.put(TOKEN + o.token, o.id);
   await putOrder(env, o);
-  return o;
+}
+
+/** The promo code a buyer typed at Stripe checkout (e.g. "FRIENDS20"), looked up from Stripe, since
+ *  the order only carries the code's id. Undefined if there wasn't one or it can't be looked up. */
+async function promoCode(env: Env, s: PaidSession & { discounts?: { promotion_code?: string | { code?: string } | null }[] | null }) {
+  const promo = s.discounts?.find((d) => d.promotion_code)?.promotion_code;
+  if (!promo) return undefined;
+  if (typeof promo === 'object') return promo.code;
+  if (!env.STRIPE_SECRET_KEY) return undefined;
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/promotion_codes/${encodeURIComponent(promo)}`, {
+      headers: { authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+    });
+    return res.ok ? ((await res.json()) as { code?: string }).code : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Moves an order to a status (forward or back). Later steps' dates are cleared when moving back.
@@ -202,8 +235,20 @@ export function trackingLink(tracking: string) {
   return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(tracking.replace(/\s+/g, ''))}`;
 }
 
-const itemsText = (o: Order) =>
-  o.items.map((i) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title} (${i.size})`).join(', ');
+export const itemLabel = (i: Order['items'][number]) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title}${i.size ? ` (${i.size})` : ''}`;
+const itemsText = (o: Order) => o.items.map(itemLabel).join(', ');
+
+/** A photo of the item, or for family gifts (no photo yet) a square of its color. */
+export function itemPicture(i: Order['items'][number], size: number, absolute: boolean) {
+  if (i.swatch) {
+    return `<span style="display:inline-block;width:${size}px;height:${size}px;background:${esc(i.swatch)};border:1.5px solid ${INK};box-sizing:border-box;vertical-align:middle;margin:0 4px;" role="img" aria-label="${esc(i.title)}"></span>`;
+  }
+  if (i.slug.startsWith('family-')) {
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border:1.5px dashed ${INK};box-sizing:border-box;vertical-align:middle;margin:0 4px;font-family:${FONT};font-size:${Math.round(size / 3)}px;color:${INK};" role="img" aria-label="${esc(i.title)}">?</span>`;
+  }
+  const src = `${absolute ? SITE_URL : ''}/stripe/${encodeURIComponent(i.slug)}.jpg?v=${IMAGE_VERSION}`;
+  return `<img src="${src}" width="${size}" height="${size}" alt="${esc(i.title)}" style="display:inline-block;border:0;width:${size}px;height:${size}px;margin:0 4px;">`;
+}
 
 // ---------- status emails (only sent while ORDER_UPDATE_EMAILS is on) ----------
 
@@ -215,29 +260,34 @@ export function statusEmail(o: Order, status: Status) {
   let subject = '';
   let lines: string[] = [];
   let extra = '';
+  const thing = o.family ? 'gift' : 'order';
   if (status === 'sewing') {
-    subject = 'your GÜSH order is on the machine';
-    lines = [`${hi}we’ve started sewing your ${what}.`, 'every piece is sewn by hand, so it usually ships within 1–2 weeks. we’ll email you when it’s headed your way.'];
+    subject = `your GÜSH ${thing} is on the machine`;
+    lines = [
+      `${hi}we’ve started sewing your ${what}.`,
+      o.family
+        ? 'it’s being sewn by hand and will be ready for christmas.'
+        : 'every piece is sewn by hand, so it usually ships within 1–2 weeks. we’ll email you when it’s headed your way.',
+    ];
   } else if (status === 'shipped') {
-    subject = 'your GÜSH order is headed your way';
+    subject = `your GÜSH ${thing} is headed your way`;
     lines = [`${hi}your ${what} is headed your way.`];
-    if (o.tracking) {
+    if (o.family && !o.tracking) {
+      lines.push('see you at christmas ♥');
+    } else if (o.tracking) {
       lines.push(`tracking: ${o.tracking}`);
       extra = `<div ${td()}><a href="${esc(trackingLink(o.tracking))}" style="color:${INK};">follow the package →</a></div>`;
     } else {
       lines.push('we’ll drop it off soon.');
     }
   } else if (status === 'delivered') {
-    subject = 'your GÜSH order arrived';
-    lines = [`${hi}your ${what} should be with you now. we hope it fits just right.`, 'if it doesn’t, returns and exchanges are open for 14 days after delivery. just reply to this email.'];
+    subject = `your GÜSH ${thing} arrived`;
+    lines = o.family
+      ? [`${hi}your ${what} is yours now. we hope you love it ♥`, 'if anything about the fit is off, just reply and we’ll fix it.']
+      : [`${hi}your ${what} should be with you now. we hope it fits just right.`, 'if it doesn’t, returns and exchanges are open for 14 days after delivery. just reply to this email.'];
   }
-  const photos = o.items
-    .map(
-      (i) =>
-        `<img src="${SITE_URL}/stripe/${encodeURIComponent(i.slug)}.jpg?v=${IMAGE_VERSION}" width="160" height="160" alt="${esc(i.title)}" style="display:inline-block;border:0;width:160px;height:160px;margin:0 4px;">`,
-    )
-    .join('');
-  const text = [subject, '', ...lines, '', `see your order: ${url}`, '', `questions? just reply, or email ${CONTACT_EMAIL}.`].join('\n');
+  const photos = o.items.map((i) => itemPicture(i, 160, true)).join('');
+  const text = [subject, '', ...lines, '', `see your ${thing}: ${url}`, '', `questions? just reply, or email ${CONTACT_EMAIL}.`].join('\n');
   const html = page(`
     <div ${td('font-size:22px;')}>${esc(subject)}</div>
     ${gap(16)}
@@ -246,7 +296,7 @@ export function statusEmail(o: Order, status: Status) {
     ${lines.map((l) => `<div ${td('margin:0 0 10px;')}>${esc(l)}</div>`).join('')}
     ${extra}
     ${gap(20)}
-    <div style="text-align:center;"><a href="${esc(url)}" style="display:inline-block;font-family:${FONT};font-size:15px;color:${INK};text-decoration:none;border:1.5px solid ${INK};padding:10px 18px;">see your order</a></div>
+    <div style="text-align:center;"><a href="${esc(url)}" style="display:inline-block;font-family:${FONT};font-size:15px;color:${INK};text-decoration:none;border:1.5px solid ${INK};padding:10px 18px;">see your ${thing}</a></div>
     ${gap(24)}
     <div ${td(`color:${GRAY};font-size:12px;`)}>order #${o.number} · questions? just reply to this email.</div>`);
   return { subject, text, html };
@@ -260,12 +310,13 @@ export function timelineHtml(o: Order) {
   const first = (o.buyerName ?? o.shipName)?.trim().split(/\s+/)[0]?.toLowerCase();
   const step = stepOf(o.status);
   const items = o.items
-    .map(
-      (i) => `<li class="ot-item">
-        <img src="/stripe/${encodeURIComponent(i.slug)}.jpg?v=${IMAGE_VERSION}" alt="" width="72" height="72" />
-        <span><span class="ot-item-name">${esc(i.title)}</span><br /><span class="ot-dim">size ${esc(i.size)}${i.qty > 1 ? ` · ${i.qty} pieces` : ''}</span></span>
-      </li>`,
-    )
+    .map((i) => {
+      const sub = [i.size ? `size ${i.size}` : '', i.qty > 1 ? `${i.qty} pieces` : ''].filter(Boolean).join(' · ');
+      return `<li class="ot-item">
+        ${itemPicture(i, 72, false)}
+        <span><span class="ot-item-name">${esc(i.title)}</span>${sub ? `<br /><span class="ot-dim">${esc(sub)}</span>` : ''}</span>
+      </li>`;
+    })
     .join('');
   const steps = STATUSES.map((s, i) => {
     const state = i < step ? 'done' : i === step ? 'now' : 'todo';
@@ -274,9 +325,9 @@ export function timelineHtml(o: Order) {
     if (s.key === 'shipped' && i <= step) {
       detail = o.tracking
         ? `<a class="ot-detail" href="${esc(trackingLink(o.tracking))}" target="_blank" rel="noopener">tracking: ${esc(o.tracking.replace(/^https?:\/\//, ''))} →</a>`
-        : `<span class="ot-detail ot-dim">we’ll drop it off soon</span>`;
+        : `<span class="ot-detail ot-dim">${o.family ? 'see you at christmas ♥' : 'we’ll drop it off soon'}</span>`;
     } else if (s.key === 'shipped' && state === 'todo') {
-      detail = `<span class="ot-detail ot-dim">usually ships within 1–2 weeks</span>`;
+      detail = `<span class="ot-detail ot-dim">${o.family ? 'at christmas' : 'usually ships within 1–2 weeks'}</span>`;
     }
     return `<li class="ot-step ${state}">
       <span class="ot-dot" aria-hidden="true"></span>
@@ -287,7 +338,7 @@ export function timelineHtml(o: Order) {
     </li>`;
   }).join('');
   return `<p class="ot-label">order #${o.number}</p>
-    <h1 class="heading ot-title">${first ? `${esc(first)}’s order` : 'your order'}</h1>
+    <h1 class="heading ot-title">${first ? `${esc(first)}’s ${o.family ? 'gift' : 'order'}` : `your ${o.family ? 'gift' : 'order'}`}</h1>
     <ul class="ot-items">${items}</ul>
     <ol class="ot-steps" aria-label="order status: ${esc(STATUSES[step].label)}">${steps}</ol>
     <p class="ot-help ot-dim">questions? email <a href="mailto:${esc(CONTACT_EMAIL)}">${esc(CONTACT_EMAIL)}</a> and mention order #${o.number}.</p>`;

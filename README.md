@@ -109,6 +109,15 @@ check emails everyone waiting on that size, once, through Resend, and sends you 
   receipts only go out once `ORDER_UPDATE_EMAILS` in `src/data/store.ts` is `true`. Until then,
   status changes update the tracking page and nobody is emailed.
 
+### Family Christmas gift list
+A page only your family can open, through a secret link (`gush.supply/family/<key>`). Each person
+picks one gift (style, color, size or kind of bag, fit note), sees the secret code (NORUTS100) and
+sends their pick. No prices and no Stripe: picks go straight onto the orders page tagged "family"
+with the code, you get an email, and they get a receipt with their tracking link. Settings (styles,
+colors, sizes, the code, the Dec 1 deadline) are in `src/data/family.ts`; the code is in
+`worker/family.ts` and `src/pages/family.astro`. The link's secret part is kept in Cloudflare KV
+(`family:key`), not in this public repo, and the code only works through that link.
+
 ### Newsletter, contact form and info pages (free)
 Every page ends with a footer (`src/components/SiteFooter.astro`): a newsletter sign-up, links to the
 info pages, and how to get in touch.

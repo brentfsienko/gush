@@ -14,12 +14,13 @@ routes = [
 
 # The built site (dist/) is served as static files. Only /api/* runs the worker code, plus /item/*,
 # where it fills in live stock before the page is sent (worker/live-stock-page.ts), /admin* (the
-# private orders page, worker/admin.ts) and /order/* (buyers' order tracking pages, worker/orders.ts).
+# private orders page, worker/admin.ts) and /order/* (buyers' order tracking pages, worker/orders.ts) and /family* (the secret family gift list,
+# worker/family.ts).
 [assets]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*", "/item/*", "/admin*", "/order/*"]
+run_worker_first = ["/api/*", "/item/*", "/admin*", "/order/*", "/family*"]
 
 # Stock tracking: a Cloudflare KV namespace keeping a "sold" count per size (see worker/stock.ts).
 [[kv_namespaces]]

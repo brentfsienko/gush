@@ -73,8 +73,8 @@ export function readOrder(s: PaidSession) {
 
 const money = (cents: number) => (cents ? formatPrice(cents) : 'free');
 
-/** The email to you. */
-export function ownerEmail(s: PaidSession) {
+/** The email to you. code: the promo code they used, if any (looked up by worker/orders.ts). */
+export function ownerEmail(s: PaidSession, code?: string) {
   const o = readOrder(s);
   const summary = o.items.map((i) => (i.qty > 1 ? `${i.qty} × ${i.label}` : i.label)).join(', ');
   const buyer = [o.buyerName, o.buyerEmail].filter(Boolean).join(' · ') || 'unknown';
@@ -90,13 +90,14 @@ export function ownerEmail(s: PaidSession) {
     `note: ${o.note ?? '(none)'}`,
     '',
     `buyer: ${buyer}`,
-    `paid: ${formatPrice(o.total)}${o.discount ? ` (after ${formatPrice(o.discount)} off)` : ''}`,
+    `paid: ${formatPrice(o.total)}${o.discount ? ` (after ${formatPrice(o.discount)} off${code ? ` with code ${code}` : ''})` : ''}`,
     ...(o.stripeUrl ? ['', `in Stripe: ${o.stripeUrl}`] : []),
   ].join('\n');
   return {
-    subject: `${o.test ? '[test] ' : ''}new order: ${summary}${o.shipName ? ` for ${o.shipName}` : ''}`,
+    subject: `${o.test ? '[test] ' : ''}new order${code ? ` (code ${code})` : ''}: ${summary}${o.shipName ? ` for ${o.shipName}` : ''}`,
     text,
     html: renderHtml(o, {
+      code,
       title: 'new order',
       titleNote: o.test ? '(sandbox test, not real money)' : undefined,
       noteHeading: 'note',
@@ -161,6 +162,7 @@ function renderHtml(
   o: Order,
   v: {
     title: string;
+    code?: string;
     titleNote?: string;
     intro?: string;
     noteHeading: string;
@@ -192,7 +194,7 @@ function renderHtml(
   const totals = [
     row('subtotal', formatPrice(o.subtotal)),
     row(`shipping (${o.shippingMethod})`, money(o.shippingCents)),
-    o.discount ? row('promo code', `−${formatPrice(o.discount)}`) : '',
+    o.discount ? row(v.code ? `promo code ${v.code}` : 'promo code', `−${formatPrice(o.discount)}`) : '',
     row('paid', formatPrice(o.total), true),
   ].join('');
 
@@ -244,14 +246,14 @@ function renderHtml(
 
 /** Sends both emails. Never throws: a failed email mustn't make Stripe retry the order. trackUrl
  *  (when order update emails are on) puts a "track your order" link in the receipt. */
-export async function notifyOrder(env: Env, session: PaidSession, trackUrl?: string) {
-  await Promise.all([emailOwner(env, session), emailCustomer(env, session, trackUrl)]);
+export async function notifyOrder(env: Env, session: PaidSession, trackUrl?: string, code?: string) {
+  await Promise.all([emailOwner(env, session, code), emailCustomer(env, session, trackUrl)]);
 }
 
-async function emailOwner(env: Env, session: PaidSession) {
+async function emailOwner(env: Env, session: PaidSession, code?: string) {
   if (!env.ORDER_EMAIL || !env.ORDER_EMAIL_TO) return;
   try {
-    const { subject, text, html, replyTo } = ownerEmail(session);
+    const { subject, text, html, replyTo } = ownerEmail(session, code);
     await env.ORDER_EMAIL.send({ from: { name: 'GÜSH orders', email: FROM.email }, to: env.ORDER_EMAIL_TO, subject, text, html, ...(replyTo ? { replyTo } : {}) });
   } catch (err) {
     console.error('owner order email failed', session.id, err);

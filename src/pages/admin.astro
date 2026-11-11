@@ -198,6 +198,10 @@ import Base from '../layouts/Base.astro';
     font-size: 14px;
   }
 
+  :global(.tracking-row[hidden]) {
+    display: none;
+  }
+
   :global(.tracking-row input) {
     flex: 1;
     min-width: 200px;
@@ -241,7 +245,7 @@ import Base from '../layouts/Base.astro';
     items: { slug: string; title: string; size: string; qty: number; cents: number }[];
     buyerName?: string; buyerEmail?: string; shipName?: string; address: string[];
     shippingMethod: string; shippingCents: number; subtotal: number; discount: number; total: number; note?: string;
-    status: Status; dates: Partial<Record<Status, number>>; tracking?: string; archived?: boolean;
+    status: Status; dates: Partial<Record<Status, number>>; tracking?: string; archived?: boolean; family?: boolean; code?: string;
   };
 
   const STEPS: { key: Status; label: string }[] = [
@@ -301,18 +305,30 @@ import Base from '../layouts/Base.astro';
     const head = h(
       'div',
       { class: 'order-head' },
-      h('span', { class: 'order-num' }, `#${o.number}`, !o.live && h('span', { class: 'tag' }, 'test'), o.archived && h('span', { class: 'tag' }, 'archived')),
-      h('span', { class: 'dim' }, `${day(o.created)} · ${money(o.total)}`),
+      h(
+        'span',
+        { class: 'order-num' },
+        `#${o.number}`,
+        o.family && h('span', { class: 'tag' }, 'family'),
+        o.code && h('span', { class: 'tag' }, `code ${o.code}`),
+        !o.live && h('span', { class: 'tag' }, 'test'),
+        o.archived && h('span', { class: 'tag' }, 'archived'),
+      ),
+      h('span', { class: 'dim' }, `${day(o.created)} · ${o.family ? 'gift' : money(o.total)}`),
     );
 
     const grid = h(
       'div',
       { class: 'order-grid' },
-      section('items', ...o.items.map((i) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title} (${i.size}) · ${money(i.cents)}`)),
+      section('items', ...o.items.map((i) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title}${i.size ? ` (${i.size})` : ''}${o.family ? '' : ` · ${money(i.cents)}`}`)),
       section('buyer', o.buyerName, o.buyerEmail),
       section('ship to', ...o.address),
-      section('shipping', `${o.shippingMethod} (${o.shippingCents ? money(o.shippingCents) : 'free'})`, o.discount ? `promo code −${money(o.discount)}` : undefined),
-      section('note', o.note),
+      section(
+        o.family ? 'delivery' : 'shipping',
+        o.family ? o.shippingMethod : `${o.shippingMethod} (${o.shippingCents ? money(o.shippingCents) : 'free'})`,
+        o.code ? `code ${o.code}${o.discount ? ` · −${money(o.discount)}` : o.family ? ' · 100% off' : ''}` : o.discount ? `promo code −${money(o.discount)}` : undefined,
+      ),
+      section(o.family ? 'fit note' : 'note', o.note),
       section('status', ...STEPS.filter((s) => o.dates[s.key]).map((s) => `${s.label}: ${day(o.dates[s.key])}`), o.tracking ? `tracking: ${o.tracking}` : undefined),
     );
 

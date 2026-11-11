@@ -1,0 +1,591 @@
+---
+// The family Christmas gift list. Only opens through the secret link, /family/<key> (worker/family.ts
+// checks the key and serves this page; anything else is "not found"). Settings: src/data/family.ts.
+import Base from '../layouts/Base.astro';
+import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAMILY_COLORS, FAMILY_SIZES, BAG_IDEAS } from '../data/family';
+---
+
+<Base title="family" footer={false} noindex>
+  <article class="fam type">
+    <p class="fam-label">GÜSH · family christmas</p>
+    <h1 class="heading fam-title">pick your christmas gift</h1>
+    <p class="dim">one gift each, sewn by hand. pick by {FAMILY_DEADLINE_LABEL}.</p>
+
+    <div data-fam-body>
+      <form class="fam-form" data-fam novalidate>
+        <!-- 1. who -->
+        <section class="step" data-step="1">
+          <h2 class="heading step-title"><span class="step-num">1</span> who are you?</h2>
+          <label class="field">
+            <span>your name</span>
+            <input type="text" name="name" maxlength="80" autocomplete="name" required />
+          </label>
+          <label class="field">
+            <span>your email <span class="dim">(for updates on your gift)</span></span>
+            <input type="email" name="email" maxlength="254" autocomplete="email" required />
+          </label>
+          <div class="nav"><button class="btn" type="button" data-next>next →</button></div>
+        </section>
+
+        <!-- 2. the gift -->
+        <section class="step" data-step="2" hidden>
+          <h2 class="heading step-title"><span class="step-num">2</span> pick your gift</h2>
+
+          <fieldset class="group">
+            <legend>what</legend>
+            <div class="choices">
+              {
+                FAMILY_STYLES.map((s) => (
+                  <label class="choice">
+                    <input type="radio" name="style" value={s.key} />
+                    <span>{s.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <fieldset class="group" data-colors>
+            <legend>color</legend>
+            <div class="swatches">
+              {
+                FAMILY_COLORS.map((c) => (
+                  <label class="swatch">
+                    <input type="radio" name="color" value={c.key} />
+                    <span class="dot" style={`background:${c.hex}`} aria-hidden="true" />
+                    <span>{c.key}</span>
+                  </label>
+                ))
+              }
+              <label class="swatch" data-surprise hidden>
+                <input type="radio" name="color" value="surprise" />
+                <span class="dot surprise" aria-hidden="true">?</span>
+                <span>surprise me</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="group" data-sizes>
+            <legend>size</legend>
+            <div class="choices sizes">
+              {
+                FAMILY_SIZES.map((s) => (
+                  <label class="choice">
+                    <input type="radio" name="size" value={s} />
+                    <span>{s.toUpperCase()}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <label class="field" data-bag hidden>
+            <span>what kind of bag?</span>
+            <input type="text" name="bag" maxlength="60" placeholder={BAG_IDEAS.slice(0, 3).join(', ') + '…'} />
+            <span class="ideas">
+              {BAG_IDEAS.map((b) => <button class="idea" type="button" data-idea={b}>{b}</button>)}
+            </span>
+          </label>
+
+          <label class="field">
+            <span>fit note <span class="dim">(optional)</span></span>
+            <textarea name="fit" rows="3" maxlength="600" placeholder="how you like it to fit, length, a favorite detail…"></textarea>
+          </label>
+
+          <div class="nav">
+            <button class="btn ghost" type="button" data-back>← back</button>
+            <button class="btn" type="button" data-next>next →</button>
+          </div>
+        </section>
+
+        <!-- 3. the code -->
+        <section class="step" data-step="3" hidden>
+          <h2 class="heading step-title"><span class="step-num">3</span> your secret code</h2>
+          <div class="code sewn-box" data-code-box>
+            <span class="code-text">{FAMILY_CODE}</span>
+            <span class="code-sub" data-code-sub>takes 100% off. it’s on us ♥</span>
+          </div>
+          <button class="btn" type="button" data-apply>use code {FAMILY_CODE}</button>
+
+          <dl class="summary" data-summary></dl>
+
+          <div class="nav">
+            <button class="btn ghost" type="button" data-back>← back</button>
+            <button class="btn" type="submit" data-submit disabled>send my pick</button>
+          </div>
+        </section>
+
+        <!-- Only bots fill this in. -->
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      </form>
+
+      <!-- done -->
+      <section class="done" data-done hidden>
+        <h2 class="heading">you’re on the list ♥</h2>
+        <p data-done-text></p>
+        <p><a data-done-link href="#">see your gift →</a></p>
+      </section>
+
+      <p class="msg" data-msg aria-live="polite"></p>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .fam {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 36px var(--gutter) 64px;
+  }
+
+  /* Hidden parts stay hidden even where a layout style (flex) would show them. */
+  [hidden] {
+    display: none !important;
+  }
+
+  .fam-label {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .fam-title {
+    margin: 0 0 6px;
+    font-size: 30px;
+  }
+
+  .dim {
+    color: var(--gray);
+  }
+
+  .fam-form {
+    margin-top: 28px;
+  }
+
+  .step-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    font-size: 21px;
+  }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    font-size: 15px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 18px;
+  }
+
+  .field > span:first-child {
+    font-size: 14px;
+  }
+
+  /* Lines to write on, like the rest of the site's forms. */
+  input[type='text'],
+  input[type='email'],
+  textarea {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 6px 0;
+  }
+
+  textarea {
+    border: 1.5px solid var(--ink);
+    padding: 8px 10px;
+    resize: vertical;
+  }
+
+  input[type='text']:focus,
+  input[type='email']:focus,
+  textarea:focus {
+    outline: none;
+    box-shadow: inset 0 -1.5px 0 var(--ink);
+  }
+
+  .group {
+    border: 0;
+    margin: 0 0 22px;
+    padding: 0;
+  }
+
+  .group legend {
+    padding: 0;
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+
+  /* Multiple choice: plain ink boxes, filled when picked. */
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .choice {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .choice input,
+  .swatch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .choice span {
+    display: inline-block;
+    padding: 7px 12px;
+    font-size: 15px;
+    border: 1.5px solid var(--ink);
+    background: var(--page);
+  }
+
+  .choice input:checked + span {
+    background: var(--ink);
+    color: var(--page);
+  }
+
+  .choice input:focus-visible + span,
+  .swatch input:focus-visible ~ .dot {
+    outline: 2px dashed var(--red);
+    outline-offset: 3px;
+  }
+
+  .sizes .choice span {
+    min-width: 46px;
+    text-align: center;
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px 8px;
+  }
+
+  .swatch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+
+  .dot {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+  }
+
+  .dot.surprise {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-style: dashed;
+  }
+
+  .swatch input:checked ~ .dot {
+    box-shadow: 0 0 0 3px var(--page), 0 0 0 4.5px var(--ink);
+  }
+
+  .swatch input:checked ~ span:last-child {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+
+  .ideas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .idea {
+    padding: 3px 9px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px dashed var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .btn {
+    padding: 9px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .btn:hover:not(:disabled),
+  .btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .btn.ghost {
+    border-style: dashed;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* The code, in a sewn box (the same stitch as the header line). */
+  .code {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 16px;
+    padding: 26px 16px;
+    text-align: center;
+  }
+
+  .code-text {
+    font-size: clamp(30px, 9vw, 44px);
+    letter-spacing: 0.12em;
+  }
+
+  .code-sub {
+    font-size: 14px;
+    color: var(--gray);
+  }
+
+  .code.used .code-text {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    color: var(--gray);
+  }
+
+  .code.used .code-sub {
+    color: var(--ink);
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    margin: 22px 0 18px;
+    font-size: 15px;
+  }
+
+  .summary :global(dt) {
+    color: var(--gray);
+  }
+
+  .summary :global(dd) {
+    margin: 0;
+  }
+
+  .msg {
+    min-height: 1.5em;
+    margin-top: 14px;
+    color: var(--red);
+  }
+
+  .done {
+    margin-top: 28px;
+  }
+
+  .done a {
+    color: inherit;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+</style>
+
+<script define:vars={{ FAMILY_CODE, FAMILY_DELIVERY, STYLES: FAMILY_STYLES }}>
+  const form = document.querySelector('[data-fam]');
+  if (form) {
+    const key = location.pathname.split('/')[2] || '';
+    const msg = document.querySelector('[data-msg]');
+    const steps = [...form.querySelectorAll('[data-step]')];
+    const say = (t) => (msg.textContent = t);
+    const val = (n) => {
+      const el = form.elements.namedItem(n);
+      if (!el) return '';
+      if (el instanceof RadioNodeList) return el.value;
+      return el.value.trim();
+    };
+    let applied = false;
+
+    const show = (n) => {
+      steps.forEach((s) => (s.hidden = s.dataset.step !== String(n)));
+      say('');
+      window.scrollTo({ top: 0 });
+      document.querySelector('main')?.scrollTo({ top: 0 });
+      if (n === 3) renderSummary();
+    };
+
+    // Bags skip size and ask what kind; a mystery can be "surprise me" on color.
+    const sizes = form.querySelector('[data-sizes]');
+    const bagField = form.querySelector('[data-bag]');
+    const surprise = form.querySelector('[data-surprise]');
+    const syncStyle = () => {
+      const style = val('style');
+      sizes.hidden = style === 'bag';
+      bagField.hidden = style !== 'bag';
+      surprise.hidden = style !== 'mystery';
+      if (style !== 'mystery' && val('color') === 'surprise') surprise.querySelector('input').checked = false;
+    };
+    form.querySelectorAll('input[name=style]').forEach((r) => r.addEventListener('change', syncStyle));
+    form.querySelectorAll('[data-idea]').forEach((b) =>
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        form.elements.namedItem('bag').value = b.dataset.idea;
+      }),
+    );
+
+    const check = (n) => {
+      if (n === 1) {
+        if (!val('name')) return 'tell us your name.';
+        if (!/^\S+@\S+\.\S+$/.test(val('email'))) return 'that email doesn’t look right.';
+      }
+      if (n === 2) {
+        const style = val('style');
+        if (!style) return 'pick a gift.';
+        if (!val('color') && style !== 'mystery') return 'pick a color.';
+        if (style === 'bag' ? !val('bag') : !val('size')) return style === 'bag' ? 'tell us what kind of bag.' : 'pick a size.';
+      }
+      return '';
+    };
+
+    form.querySelectorAll('[data-next]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const n = Number(b.closest('[data-step]').dataset.step);
+        const problem = check(n);
+        if (problem) return say(problem);
+        show(n + 1);
+      }),
+    );
+    form.querySelectorAll('[data-back]').forEach((b) =>
+      b.addEventListener('click', () => show(Number(b.closest('[data-step]').dataset.step) - 1)),
+    );
+
+    const giftLabel = () => {
+      const style = val('style');
+      const label = STYLES.find((s) => s.key === style)?.label ?? '';
+      const color = val('color');
+      if (style === 'mystery') return color && color !== 'surprise' ? `mystery gift (${color})` : 'mystery gift';
+      if (style === 'bag') return `${color} bag · ${val('bag').toLowerCase()}`;
+      return `${color} ${label}`;
+    };
+
+    const summary = form.querySelector('[data-summary]');
+    function renderSummary() {
+      const rows = [
+        ['for', val('name')],
+        ['gift', giftLabel()],
+        val('style') === 'bag' ? null : ['size', val('size').toUpperCase()],
+        val('fit') ? ['fit note', val('fit')] : null,
+        ['delivery', FAMILY_DELIVERY],
+        applied ? ['code', `${FAMILY_CODE} · 100% off ♥`] : null,
+      ].filter(Boolean);
+      summary.replaceChildren(
+        ...rows.flatMap(([k, v]) => {
+          const dt = document.createElement('dt');
+          dt.textContent = k;
+          const dd = document.createElement('dd');
+          dd.textContent = v;
+          return [dt, dd];
+        }),
+      );
+    }
+
+    const apply = form.querySelector('[data-apply]');
+    const submit = form.querySelector('[data-submit]');
+    apply.addEventListener('click', () => {
+      applied = true;
+      form.querySelector('[data-code-box]').classList.add('used');
+      form.querySelector('[data-code-sub]').textContent = 'applied: 100% off ♥';
+      apply.hidden = true;
+      submit.disabled = false;
+      renderSummary();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!applied) return say('use your secret code first.');
+      submit.disabled = true;
+      say('');
+      try {
+        const res = await fetch('/api/family', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            key,
+            name: val('name'),
+            email: val('email'),
+            style: val('style'),
+            color: val('color'),
+            size: val('size'),
+            bag: val('bag'),
+            fit: val('fit'),
+            code: FAMILY_CODE,
+            website: val('website'),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+        form.hidden = true;
+        const done = document.querySelector('[data-done]');
+        done.querySelector('[data-done-text]').textContent = data.already
+          ? `you already picked your gift: ${data.label}. want to change it? text brent.`
+          : `${data.label}. it’ll be sewn by hand and given to you at christmas. we just emailed you a link to check on it.`;
+        done.querySelector('[data-done-link]').href = data.trackUrl;
+        done.hidden = false;
+        window.scrollTo({ top: 0 });
+        document.querySelector('main')?.scrollTo({ top: 0 });
+      } catch (err) {
+        say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?');
+        submit.disabled = false;
+      }
+    });
+  }
+</script>

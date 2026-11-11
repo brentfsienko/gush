@@ -68,12 +68,14 @@ export async function stripeWebhook(request: Request, env: Env) {
   // Save it for the orders page and the buyer's tracking page (worker/orders.ts). A failure here
   // mustn't stop the order emails.
   let track: string | undefined;
+  let code: string | undefined;
   try {
     const order = await saveOrder(env, session);
     if (ORDER_UPDATE_EMAILS) track = trackUrl(order);
+    code = order.code;
   } catch (err) {
     console.error('saving order failed', session.id, err);
   }
-  await notifyOrder(env, session, track);
+  await notifyOrder(env, session, track, code);
   return new Response('ok', { status: 200 });
 }
