@@ -8,6 +8,20 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
 
 <Base title="family" footer={false} noindex>
   <article class="fam type">
+    <!-- First thing they see: a wrapped present. Tapping it pops the lid, throws thread-and-fabric
+         confetti, and reveals the page below. -->
+    <section class="gift" data-gift>
+      <div class="present" data-present aria-hidden="true">
+        <span class="bow bow-l"></span>
+        <span class="bow bow-r"></span>
+        <span class="lid"><span class="ribbon-v"></span></span>
+        <span class="box"><span class="ribbon-v"></span></span>
+      </div>
+      <p class="gift-from">a christmas surprise from GÜSH</p>
+      <button class="btn gift-open" type="button" data-gift-open>tap to open</button>
+    </section>
+
+    <div class="reveal" data-reveal hidden>
     <p class="fam-label">GÜSH · family christmas</p>
     <h1 class="heading fam-title">pick your christmas gift</h1>
     <p class="intro" data-intro>
@@ -75,6 +89,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
 
       <p class="msg" data-msg aria-live="polite"></p>
     </div>
+    </div>
   </article>
 </Base>
 
@@ -83,6 +98,167 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
     max-width: 600px;
     margin: 0 auto;
     padding: 36px var(--gutter) 64px;
+  }
+
+  /* ---- the present ---- */
+  .gift {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 56px 0 40px;
+    text-align: center;
+    transition: opacity 0.35s, transform 0.35s;
+  }
+
+  .present {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    animation: nudge 2.4s ease-in-out infinite;
+  }
+
+  .box,
+  .lid {
+    position: absolute;
+    left: 50%;
+    border: 2px solid var(--ink);
+    background: var(--page);
+    transform: translateX(-50%);
+  }
+
+  .box {
+    bottom: 0;
+    width: 124px;
+    height: 96px;
+  }
+
+  /* the ribbon going around the box */
+  .box::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 14px;
+    margin-top: -7px;
+    background: var(--red);
+  }
+
+  .lid {
+    bottom: 94px;
+    width: 140px;
+    height: 26px;
+    z-index: 1;
+    transition: transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.3), opacity 0.55s;
+  }
+
+  .ribbon-v {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 16px;
+    margin-left: -8px;
+    background: var(--red);
+  }
+
+  .bow {
+    position: absolute;
+    bottom: 116px;
+    left: 50%;
+    width: 34px;
+    height: 24px;
+    border: 3px solid var(--red);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    z-index: 2;
+    transition: transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.3), opacity 0.55s;
+  }
+
+  .bow-l {
+    margin-left: -34px;
+    transform: rotate(-24deg);
+    transform-origin: right bottom;
+  }
+
+  .bow-r {
+    transform: rotate(24deg);
+    transform-origin: left bottom;
+  }
+
+  /* A little wiggle every few seconds, to say "tap me". */
+  @keyframes nudge {
+    0%, 80%, 100% { transform: rotate(0); }
+    84% { transform: rotate(-4deg); }
+    88% { transform: rotate(4deg); }
+    92% { transform: rotate(-3deg); }
+    96% { transform: rotate(2deg); }
+  }
+
+  /* Opening: a shake, then the lid and bow fly off. */
+  .present.opening {
+    animation: shake 0.35s ease-in-out;
+  }
+
+  .present.open {
+    animation: none;
+  }
+
+  .present.open .lid {
+    transform: translate(-50%, -90px) rotate(-18deg);
+    opacity: 0;
+  }
+
+  .present.open .bow-l {
+    transform: translate(-30px, -110px) rotate(-60deg);
+    opacity: 0;
+  }
+
+  .present.open .bow-r {
+    transform: translate(30px, -110px) rotate(60deg);
+    opacity: 0;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-6deg) scale(1.03); }
+    50% { transform: rotate(6deg) scale(1.05); }
+    75% { transform: rotate(-4deg) scale(1.03); }
+  }
+
+  .gift-from {
+    margin: 0;
+    font-size: 19px;
+  }
+
+  .gift-open {
+    font-size: 17px;
+    padding: 11px 26px;
+  }
+
+  .gift.gone {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  /* The page, fading up into place once the present is open. */
+  .reveal.in {
+    animation: rise 0.6s ease-out both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .present,
+    .present.opening,
+    .reveal.in {
+      animation: none;
+    }
   }
 
   /* Hidden parts stay hidden even where a layout style (flex) would show them. */
@@ -270,6 +446,123 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
   }
 </style>
 
+<script>
+  // Confetti: little thread snippets, fabric scraps and stitches in the gift colors, thrown from a
+  // point on the screen (x, y as fractions of it). Skipped for people who've turned off animations.
+  const COLORS = ['#c8372d', '#2f5d9e', '#e8c547', '#2f6b45', '#6b4a9e', '#e9a3b8', '#e07b2e', '#1f1b16'];
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function confetti(x = 0.5, y = 0.4, count = 150) {
+    if (still()) return;
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100dvh;pointer-events:none;z-index:50';
+    document.body.append(canvas);
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = innerWidth;
+    const h = innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(dpr, dpr);
+    const kinds = ['thread', 'thread', 'scrap', 'stitch'] as const;
+    const bits = Array.from({ length: count }, () => {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
+      const speed = 7 + Math.random() * 9;
+      return {
+        x: x * w,
+        y: y * h,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        rot: Math.random() * Math.PI,
+        spin: (Math.random() - 0.5) * 0.3,
+        size: 6 + Math.random() * 8,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        kind: kinds[Math.floor(Math.random() * kinds.length)],
+        wobble: Math.random() * 10,
+      };
+    });
+    const start = performance.now();
+    const frame = (t: number) => {
+      const age = (t - start) / 1000;
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalAlpha = Math.max(0, 1 - Math.max(0, age - 2.2) / 0.8);
+      for (const b of bits) {
+        b.vy += 0.32;
+        b.vx *= 0.985;
+        b.vy *= 0.985;
+        b.x += b.vx + Math.sin(age * 6 + b.wobble) * 0.6;
+        b.y += b.vy;
+        b.rot += b.spin;
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+        ctx.strokeStyle = b.color;
+        ctx.fillStyle = b.color;
+        ctx.lineCap = 'round';
+        if (b.kind === 'thread') {
+          // a curly bit of thread
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.moveTo(-b.size, 0);
+          ctx.quadraticCurveTo(-b.size / 3, -b.size / 2, 0, 0);
+          ctx.quadraticCurveTo(b.size / 3, b.size / 2, b.size, 0);
+          ctx.stroke();
+        } else if (b.kind === 'scrap') {
+          // a little square of fabric
+          ctx.fillRect(-b.size / 2, -b.size / 3, b.size, b.size * 0.66);
+        } else {
+          // a few stitches
+          ctx.lineWidth = 2;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(-b.size, 0);
+          ctx.lineTo(b.size, 0);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if (age < 3) requestAnimationFrame(frame);
+      else canvas.remove();
+    };
+    requestAnimationFrame(frame);
+  }
+  // For the "you're on the list" burst in the form script below.
+  (window as unknown as { gushConfetti: typeof confetti }).gushConfetti = confetti;
+
+  // The present: tap it (or the button) to open.
+  const gift = document.querySelector<HTMLElement>('[data-gift]');
+  const reveal = document.querySelector<HTMLElement>('[data-reveal]');
+  const present = document.querySelector<HTMLElement>('[data-present]');
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-gift-open]');
+  if (gift && reveal && present && openBtn) {
+    const showPage = () => {
+      gift.hidden = true;
+      reveal.hidden = false;
+      reveal.classList.add('in');
+    };
+    let opened = false;
+    const open = () => {
+      if (opened) return;
+      opened = true;
+      openBtn.disabled = true;
+      if (still()) return showPage();
+      present.classList.add('opening');
+      setTimeout(() => {
+        present.classList.remove('opening');
+        present.classList.add('open');
+        const r = present.getBoundingClientRect();
+        confetti((r.left + r.width / 2) / innerWidth, (r.top + r.height * 0.3) / innerHeight);
+        setTimeout(() => gift.classList.add('gone'), 450);
+        setTimeout(showPage, 800);
+      }, 350);
+    };
+    openBtn.addEventListener('click', open);
+    present.addEventListener('click', open);
+  }
+</script>
+
 <script define:vars={{ FAMILY_CODE, FAMILY_DELIVERY, STYLES: FAMILY_STYLES }}>
   const form = document.querySelector('[data-fam]');
   if (form) {
@@ -312,6 +605,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
 
     // The end screen: their new pick, or (already picked) what they picked before.
     const finish = (data) => {
+      if (!data.already) window.gushConfetti?.(0.5, 0.25, 70);
       form.hidden = true;
       intro.hidden = true;
       const done = document.querySelector('[data-done]');
