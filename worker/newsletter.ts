@@ -30,8 +30,8 @@ async function readBody(request: Request): Promise<Record<string, unknown> | nul
 export async function joinNewsletter(request: Request, env: Env, ctx: ExecutionContext) {
   const body = await readBody(request);
   if (!body) return json({ error: 'something went wrong. try again?' }, 400);
-  // "website" is a hidden field only bots fill in: pretend it worked.
-  if (body.website) return json({ ok: true });
+  // "gush_trap" is a hidden field only bots fill in: pretend it worked.
+  if (body.gush_trap) return json({ ok: true });
   const email = cleanEmail(body.email);
   if (email.length > 254 || !EMAIL.test(email)) return json({ error: "that email doesn't look right." }, 400);
   if (!env.STOCK) return json({ error: `this isn't working right now. email ${CONTACT_EMAIL} instead?` }, 503);
@@ -83,7 +83,7 @@ export async function unsubscribe(request: Request, env: Env) {
 export async function contact(request: Request, env: Env) {
   const body = await readBody(request);
   if (!body) return json({ error: 'something went wrong. try again?' }, 400);
-  if (body.website) return json({ ok: true });
+  if (body.gush_trap) return json({ ok: true });
   const name = String(body.name ?? '').trim().slice(0, 120);
   const email = cleanEmail(body.email);
   const message = String(body.message ?? '').trim();

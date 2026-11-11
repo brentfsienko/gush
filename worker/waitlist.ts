@@ -39,14 +39,14 @@ async function list(env: Env, prefix = PREFIX): Promise<Want[]> {
 }
 
 export async function joinWaitlist(request: Request, env: Env, ctx: ExecutionContext) {
-  let body: { slug?: unknown; size?: unknown; email?: unknown; website?: unknown };
+  let body: { slug?: unknown; size?: unknown; email?: unknown; gush_trap?: unknown };
   try {
     body = await request.json();
   } catch {
     return json({ error: 'something went wrong. try again?' }, 400);
   }
-  // "website" is a hidden field only bots fill in: pretend it worked.
-  if (body.website) return json({ ok: true });
+  // "gush_trap" is a hidden field only bots fill in (named so browsers never autofill it): pretend it worked.
+  if (body.gush_trap) return json({ ok: true });
   const p = PRODUCTS.find((x) => x.slug === body.slug);
   const size = String(body.size ?? '');
   if (!p) return json({ error: 'something went wrong. try again?' }, 400);

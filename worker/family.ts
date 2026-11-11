@@ -98,7 +98,6 @@ export async function familySubmit(request: Request, env: Env, ctx: ExecutionCon
   } catch {
     return json({ error: 'something went wrong. try again?' }, 400);
   }
-  if (b.website) return json({ ok: true }); // only bots fill this in
   if (!(await keyOk(env, b.key))) return json({ error: 'this link doesn’t work.' }, 404);
   if (!familyOpen()) return json({ error: `the gift list closed on ${FAMILY_DEADLINE_LABEL}.` }, 410);
 

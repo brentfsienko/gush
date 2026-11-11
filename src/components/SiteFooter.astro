@@ -29,8 +29,8 @@ const year = new Date().getFullYear();
         <input class="news-email" type="email" name="email" required maxlength="254" placeholder="email address" autocomplete="email" aria-label="email address" />
         <button class="news-btn" type="submit">sign up →</button>
       </div>
-      <!-- Only bots fill this in. -->
-      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <!-- Only bots fill this in (named so browsers never autofill it). -->
+      <input class="hp" type="text" name="gush_trap" tabindex="-1" autocomplete="one-time-code" aria-hidden="true" data-1p-ignore data-lpignore="true" data-form-type="other" />
       <p class="news-note" data-news-note aria-live="polite"></p>
     </form>
   </section>
@@ -303,7 +303,7 @@ const year = new Date().getFullYear();
         const res = await fetch('/api/newsletter', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email: value, website: (form.elements.namedItem('website') as HTMLInputElement).value }),
+          body: JSON.stringify({ email: value, gush_trap: (form.elements.namedItem('gush_trap') as HTMLInputElement).value }),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');

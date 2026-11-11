@@ -129,7 +129,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
           <button class="notify-btn" type="submit">email me</button>
         </div>
         <!-- Only bots fill this in. -->
-        <input class="notify-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <input class="notify-hp" type="text" name="gush_trap" tabindex="-1" autocomplete="one-time-code" aria-hidden="true" data-1p-ignore data-lpignore="true" data-form-type="other" />
       </form>
 
       <button class="drawn-btn boxed-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut} hidden={soldOut}>
@@ -720,7 +720,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ slug: add.dataset.slug, size: picked, email, website: (notify.elements.namedItem('website') as HTMLInputElement).value }),
+        body: JSON.stringify({ slug: add.dataset.slug, size: picked, email, gush_trap: (notify.elements.namedItem('gush_trap') as HTMLInputElement).value }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');

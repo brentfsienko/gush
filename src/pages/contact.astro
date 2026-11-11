@@ -23,7 +23,7 @@ import { CONTACT_EMAIL } from '../data/store';
         <textarea name="message" rows="6" maxlength="5000" required></textarea>
       </label>
       <!-- Only bots fill this in. -->
-      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <input class="hp" type="text" name="gush_trap" tabindex="-1" autocomplete="one-time-code" aria-hidden="true" data-1p-ignore data-lpignore="true" data-form-type="other" />
       <p class="contact-msg" data-contact-msg aria-live="polite"></p>
       <button class="send" type="submit">send</button>
     </form>
@@ -142,7 +142,7 @@ import { CONTACT_EMAIL } from '../data/store';
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name: field('name').value, email, message, website: field('website').value }),
+        body: JSON.stringify({ name: field('name').value, email, message, gush_trap: field('gush_trap').value }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
