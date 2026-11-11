@@ -7,7 +7,7 @@ import { joinWaitlist, sendRestocks } from './waitlist';
 import { itemPage } from './live-stock-page';
 import { joinNewsletter, unsubscribe, contact } from './newsletter';
 import { admin } from './admin';
-import { orderPage } from './orders';
+import { orderPage, editPage } from './orders';
 import { familyPage, familySubmit, familyCheck, familyEdit } from './family';
 
 export interface Env {
@@ -70,6 +70,9 @@ export default {
       return familyPage(request, env, pathname.match(/^\/family\/([A-Za-z0-9_-]+)$/)?.[1]);
     }
     // A buyer's order tracking page: /order/<private code>.
+    // A family gift's edit page: /order/<private code>/edit.
+    const editGift = pathname.match(/^\/order\/([A-Za-z0-9_-]+)\/edit$/);
+    if (editGift && (request.method === 'GET' || request.method === 'HEAD')) return editPage(request, env, editGift[1]);
     const tracked = pathname.match(/^\/order\/([A-Za-z0-9_-]+)$/);
     if (tracked && (request.method === 'GET' || request.method === 'HEAD')) return orderPage(request, env, tracked[1]);
     // Item pages: filled in with live stock so sold-out sizes don't flash as available.

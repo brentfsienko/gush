@@ -1,0 +1,162 @@
+---
+// "Edit your pick" for a family gift: its own page at /order/<code>/edit, reached from the gift's
+// tracking page or "change my pick" on the family page. The worker (worker/orders.ts, editPage) fills
+// in the gift and its current choices, or says it's locked once it's on the machine. Saving goes to
+// /api/order/<code>/edit, then back to the gift's page.
+import Base from '../../layouts/Base.astro';
+import FamilyPickFields from '../../components/FamilyPickFields.astro';
+import { CONTACT_EMAIL } from '../../data/store';
+---
+
+<Base title="edit your pick" description="edit your GÜSH gift." noindex>
+  <article class="doc type ep">
+    <div data-edit-head>
+      <h1 class="heading">we couldn’t find that gift</h1>
+      <p>check the link in your email, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+    </div>
+
+    <form class="ep-form" data-edit-form hidden novalidate>
+      <FamilyPickFields />
+      <div class="ep-nav">
+        <button class="btn" type="submit">save changes</button>
+        <a class="btn ghost" data-edit-back href="/">cancel</a>
+      </div>
+      <p class="ep-msg" data-edit-msg aria-live="polite"></p>
+    </form>
+  </article>
+</Base>
+
+<style>
+  .ep {
+    max-width: 600px;
+  }
+
+  .ep-form[hidden] {
+    display: none;
+  }
+
+  .ep-form {
+    margin-top: 24px;
+  }
+
+  .ep-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 9px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .btn:hover:not(:disabled),
+  .btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .btn.ghost {
+    border-style: dashed;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .ep-msg {
+    min-height: 1.5em;
+    margin: 12px 0 0;
+    color: var(--red);
+  }
+</style>
+
+<!-- Global: the heading is put in by the worker, so it doesn't carry this page's scoped-style tags. -->
+<style is:global>
+  .ep-label {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .ep-title {
+    margin: 0 0 8px;
+    font-size: 28px;
+  }
+
+  .ep-dim {
+    color: var(--gray);
+  }
+
+  .ep a {
+    color: inherit;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-edit-form]');
+  if (form && !form.hidden) {
+    const token = location.pathname.split('/')[2] ?? '';
+    const pick = form.querySelector<HTMLElement>('[data-pick]')!;
+    const msg = form.querySelector<HTMLElement>('[data-edit-msg]')!;
+    const val = (n: string) => {
+      const el = form.elements.namedItem(n) as RadioNodeList | HTMLInputElement | HTMLTextAreaElement | null;
+      return el ? el.value.trim() : '';
+    };
+
+    // Start from their current pick.
+    const d = form.dataset;
+    for (const name of ['style', 'color', 'size'] as const) {
+      const r = form.querySelector<HTMLInputElement>(`input[name=${name}][value="${CSS.escape(d[name] ?? '')}"]`);
+      if (r) r.checked = true;
+    }
+    (form.elements.namedItem('bag') as HTMLInputElement).value = d.bag ?? '';
+    (form.elements.namedItem('fit') as HTMLTextAreaElement).value = d.note ?? '';
+    pick.dispatchEvent(new Event('gush:sync'));
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const style = val('style');
+      const problem = !style
+        ? 'pick a gift.'
+        : !val('color') && style !== 'mystery'
+          ? 'pick a color.'
+          : style === 'bag'
+            ? !val('bag') && 'tell us what kind of bag.'
+            : !val('size') && 'pick a size.';
+      if (problem) {
+        msg.textContent = problem;
+        return;
+      }
+      const save = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      save.disabled = true;
+      msg.textContent = '';
+      try {
+        const res = await fetch(`/api/order/${encodeURIComponent(token)}/edit`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ style, color: val('color'), size: val('size'), bag: val('bag'), fit: val('fit') }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) throw new Error(data.error || 'that didn’t save. try again?');
+        location.href = `/order/${token}`;
+      } catch (err) {
+        msg.textContent = err instanceof Error && !(err instanceof TypeError) ? err.message : 'that didn’t save. try again?';
+        save.disabled = false;
+      }
+    });
+  }
+</script>

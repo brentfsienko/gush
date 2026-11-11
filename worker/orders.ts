@@ -355,8 +355,8 @@ export async function orderPage(request: Request, env: Env, token: string) {
   headers.set('x-robots-tag', 'noindex');
   headers.set('referrer-policy', 'no-referrer');
   if (!o) return new Response(shell.body, { status: 404, headers });
-  // A family gift can be edited until it's on the machine: the page gets its current choices.
-  const pick = o.family && o.status === 'received' ? familyChoices(o) : null;
+  // A family gift can be edited (on its own page) until it's on the machine.
+  const editable = o.family && o.status === 'received';
   const out = new HTMLRewriter()
     .on('[data-order]', {
       element(el) {
@@ -365,7 +365,57 @@ export async function orderPage(request: Request, env: Env, token: string) {
     })
     .on('[data-edit]', {
       element(el) {
-        if (!pick) {
+        if (!editable) {
+          el.remove();
+          return;
+        }
+        el.removeAttribute('hidden');
+      },
+    })
+    .on('[data-edit-link]', {
+      element(el) {
+        el.setAttribute('href', `/order/${o.token}/edit`);
+      },
+    })
+    .transform(new Response(shell.body, { status: 200, headers }));
+  return out;
+}
+
+/** /order/<code>/edit: a family gift's edit page, filled with its current choices; once it's on the
+ *  machine, it says the pick is locked in. Anything else is "not found". */
+export async function editPage(request: Request, env: Env, token: string) {
+  const shell = await env.ASSETS.fetch(new Request(new URL('/order/edit', request.url), request));
+  const o = await getOrderByToken(env, token);
+  const headers = new Headers(shell.headers);
+  headers.set('cache-control', 'no-store');
+  headers.set('x-robots-tag', 'noindex');
+  headers.set('referrer-policy', 'no-referrer');
+  if (!o || !o.family) return new Response(shell.body, { status: 404, headers });
+  const first = (o.buyerName ?? '').trim().split(/\s+/)[0]?.toLowerCase();
+  const whose = first ? `${esc(first)}’s gift` : 'your gift';
+  const now = esc(o.items.map(itemLabel).join(', '));
+  const back = `/order/${o.token}`;
+  const editable = o.status === 'received';
+  const pick = familyChoices(o);
+  return new HTMLRewriter()
+    .on('[data-edit-head]', {
+      element(el) {
+        el.setInnerContent(
+          editable
+            ? `<p class="ep-label">order #${o.number}</p>
+               <h1 class="heading ep-title">edit ${whose}</h1>
+               <p class="ep-dim">right now: ${now}. you can change it until it’s on the machine.</p>`
+            : `<p class="ep-label">order #${o.number}</p>
+               <h1 class="heading ep-title">${whose} is locked in ♥</h1>
+               <p>${now} is already on the machine, so it can’t be changed anymore.</p>
+               <p><a href="${back}">see your gift →</a></p>`,
+          { html: true },
+        );
+      },
+    })
+    .on('[data-edit-form]', {
+      element(el) {
+        if (!editable) {
           el.remove();
           return;
         }
@@ -377,8 +427,12 @@ export async function orderPage(request: Request, env: Env, token: string) {
         el.setAttribute('data-note', o.note ?? '');
       },
     })
+    .on('[data-edit-back]', {
+      element(el) {
+        el.setAttribute('href', back);
+      },
+    })
     .transform(new Response(shell.body, { status: 200, headers }));
-  return out;
 }
 
 /** A family gift's choices (older gifts saved before choices were kept: worked out from the item). */

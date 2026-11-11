@@ -321,7 +321,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
         // Already picked, not sewn yet: send them to change it.
         done.querySelector('[data-done-text]').textContent = `${data.label}. want to change it?`;
         link.textContent = 'change my pick →';
-        link.href = `${data.trackUrl}#edit`;
+        link.href = `${data.trackUrl}/edit`;
       } else {
         done.querySelector('[data-done-text]').textContent = data.already
           ? `${data.label}. it’s already on the machine, so it’s locked in ♥`
