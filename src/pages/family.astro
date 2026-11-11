@@ -126,7 +126,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
 
       <!-- done -->
       <section class="done" data-done hidden>
-        <h2 class="heading">you’re on the list ♥</h2>
+        <h2 class="heading" data-done-title>you’re on the list ♥</h2>
         <p data-done-text></p>
         <p><a data-done-link href="#">see your gift →</a></p>
       </section>
@@ -509,11 +509,44 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
       return '';
     };
 
+    // The end screen: their new pick, or (already picked) what they picked before.
+    const finish = (data) => {
+      form.hidden = true;
+      intro.hidden = true;
+      const done = document.querySelector('[data-done]');
+      done.querySelector('[data-done-title]').textContent = data.already ? 'you already picked your gift ♥' : 'you’re on the list ♥';
+      done.querySelector('[data-done-text]').textContent = data.already
+        ? `${data.label}. want to change it? text brent.`
+        : `${data.label}. it’ll be sewn by hand and given to you at christmas. we just emailed you a link to check on it.`;
+      done.querySelector('[data-done-link]').href = data.trackUrl;
+      done.hidden = false;
+      window.scrollTo({ top: 0 });
+      document.querySelector('main')?.scrollTo({ top: 0 });
+    };
+
     form.querySelectorAll('[data-next]').forEach((b) =>
-      b.addEventListener('click', () => {
+      b.addEventListener('click', async () => {
         const n = Number(b.closest('[data-step]').dataset.step);
         const problem = check(n);
         if (problem) return say(problem);
+        // Step 1: one gift per person. Stop here if this email or name already picked.
+        if (n === 1) {
+          b.disabled = true;
+          try {
+            const res = await fetch('/api/family/check', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ key, name: val('name'), email: val('email') }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+            if (data.already && data.trackUrl) return finish(data);
+          } catch (err) {
+            return say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?');
+          } finally {
+            b.disabled = false;
+          }
+        }
         show(n + 1);
       }),
     );
@@ -587,16 +620,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
         if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
         // Only show "you're on the list" once the pick is really saved (it comes back with its link).
         if (!data.trackUrl || !data.label) throw new Error('your pick didn’t save. try again, or text brent.');
-        form.hidden = true;
-        intro.hidden = true;
-        const done = document.querySelector('[data-done]');
-        done.querySelector('[data-done-text]').textContent = data.already
-          ? `you already picked your gift: ${data.label}. want to change it? text brent.`
-          : `${data.label}. it’ll be sewn by hand and given to you at christmas. we just emailed you a link to check on it.`;
-        done.querySelector('[data-done-link]').href = data.trackUrl;
-        done.hidden = false;
-        window.scrollTo({ top: 0 });
-        document.querySelector('main')?.scrollTo({ top: 0 });
+        finish(data);
       } catch (err) {
         say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?');
         submit.disabled = false;

@@ -8,7 +8,7 @@ import { itemPage } from './live-stock-page';
 import { joinNewsletter, unsubscribe, contact } from './newsletter';
 import { admin } from './admin';
 import { orderPage } from './orders';
-import { familyPage, familySubmit } from './family';
+import { familyPage, familySubmit, familyCheck } from './family';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -44,6 +44,9 @@ export default {
     }
     if (pathname === '/api/waitlist') {
       return request.method === 'POST' ? joinWaitlist(request, env, ctx) : allow('POST');
+    }
+    if (pathname === '/api/family/check') {
+      return request.method === 'POST' ? familyCheck(request, env) : allow('POST');
     }
     if (pathname === '/api/family') {
       return request.method === 'POST' ? familySubmit(request, env, ctx) : allow('POST');

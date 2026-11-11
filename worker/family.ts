@@ -13,7 +13,35 @@ import { FROM, esc, INK, GRAY, FONT } from './notify';
 import type { Env } from './index';
 
 const KEY = 'family:key';
-const CLAIM = 'famclaim:';
+const CLAIM = 'famclaim:'; // famclaim:<email> -> order id
+const CLAIM_NAME = 'famname:'; // famname:<name, lowercased> -> order id
+
+/** "Mom  Sienko" and "mom sienko" are the same person. */
+const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+/** The gift already picked under this email or name, if any. */
+async function existingPick(env: Env, email: string, name: string) {
+  for (const k of [email ? CLAIM + email : '', nameKey(name) ? CLAIM_NAME + nameKey(name) : '']) {
+    if (!k) continue;
+    const id = await env.STOCK!.get(k);
+    const o = id ? await getOrder(env, id) : null;
+    if (o) return o;
+  }
+  return null;
+}
+
+const pickReply = (o: Order) => ({ already: true, label: o.items.map(itemLabel).join(', '), trackUrl: `/order/${o.token}` });
+
+/** POST /api/family/check { key, name, email }: step 1 asks this before moving on, so someone who
+ *  already picked (by email or name) is stopped right there. */
+export async function familyCheck(request: Request, env: Env) {
+  const b = ((await request.json().catch(() => null)) ?? {}) as Record<string, unknown>;
+  if (!(await keyOk(env, b.key))) return json({ error: 'this link doesn’t work.' }, 404);
+  const email = String(b.email ?? '').trim().toLowerCase();
+  const name = String(b.name ?? '').trim();
+  const o = await existingPick(env, email, name);
+  return json(o ? { ok: true, ...pickReply(o) } : { ok: true, already: false });
+}
 
 /** Constant-time comparison, so the key can't be guessed a letter at a time. */
 function sameKey(a: string, b: string) {
@@ -110,12 +138,9 @@ export async function familySubmit(request: Request, env: Env, ctx: ExecutionCon
   if (String(b.code ?? '').trim().toUpperCase() !== FAMILY_CODE) return json({ error: 'use your secret code first.' }, 400);
   const fit = String(b.fit ?? '').trim().slice(0, 600);
 
-  // One gift per person (by email).
-  const claimed = await env.STOCK!.get(CLAIM + email);
-  if (claimed) {
-    const o = await getOrder(env, claimed);
-    if (o) return json({ ok: true, already: true, label: o.items.map(itemLabel).join(', '), trackUrl: `/order/${o.token}` });
-  }
+  // One gift per person (by email or name).
+  const existing = await existingPick(env, email, name);
+  if (existing) return json({ ok: true, ...pickReply(existing) });
 
   const now = Date.now();
   const o: Order = {
@@ -141,6 +166,7 @@ export async function familySubmit(request: Request, env: Env, ctx: ExecutionCon
   };
   await addOrder(env, o);
   await env.STOCK!.put(CLAIM + email, o.id);
+  if (nameKey(name)) await env.STOCK!.put(CLAIM_NAME + nameKey(name), o.id);
   ctx.waitUntil(Promise.all([tellOwner(env, o), sendReceipt(env, o)]));
   return json({ ok: true, label: o.items.map(itemLabel).join(', '), trackUrl: `/order/${o.token}` });
 }
