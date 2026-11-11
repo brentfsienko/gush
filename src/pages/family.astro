@@ -20,6 +20,24 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
           <span class="box"><span class="ribbon-v"></span></span>
         </div>
         <span class="ash" data-ash></span>
+        <!-- Out of the ashes: the sewing machine (a Pfaff 1475 CD). A drawing for now; swap in a
+             cut-out photo of the real one. -->
+        <svg class="machine" data-machine viewBox="0 0 170 130" role="img" aria-label="a sewing machine">
+          <line class="thread" x1="110" y1="14" x2="110" y2="6" />
+          <path class="thread" d="M110 16 C 90 4, 50 6, 35 30" />
+          <rect class="body" x="10" y="104" width="150" height="16" rx="3" />
+          <rect class="body" x="118" y="30" width="30" height="76" rx="6" />
+          <rect class="body" x="22" y="26" width="126" height="26" rx="10" />
+          <rect class="body" x="16" y="26" width="36" height="52" rx="6" />
+          <rect class="spool" x="104" y="12" width="12" height="14" rx="2" />
+          <line class="ink" x1="34" y1="78" x2="34" y2="92" />
+          <line class="ink needle" x1="34" y1="92" x2="34" y2="101" />
+          <path class="ink" d="M26 100 h16" />
+          <rect class="body" x="24" y="101" width="22" height="3" />
+          <circle class="body" cx="152" cy="60" r="12" />
+          <circle class="ink-fill" cx="152" cy="60" r="3.5" />
+          <line class="ink" x1="60" y1="39" x2="110" y2="39" />
+        </svg>
       </div>
       <p class="gift-from">a christmas surprise from GÜSH</p>
       <button class="btn gift-open" type="button" data-gift-open>tap to open</button>
@@ -234,6 +252,74 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
     transform: scaleY(0.2);
     transform-origin: bottom;
     transition: opacity 0.5s, transform 0.6s, box-shadow 1.6s;
+  }
+
+  /* The sewing machine, rising out of the ashes with a fiery glow. */
+  .machine {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    width: 170px;
+    margin-left: -85px;
+    opacity: 0;
+    transform: translateY(40px) scale(0.6);
+    transform-origin: bottom center;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .machine .body {
+    fill: var(--page);
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+
+  .machine .ink {
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    fill: none;
+  }
+
+  .machine .needle {
+    stroke-width: 1.2;
+  }
+
+  .machine .ink-fill {
+    fill: var(--ink);
+  }
+
+  .machine .spool {
+    fill: var(--red);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .machine .thread {
+    stroke: var(--red);
+    stroke-width: 1.3;
+    fill: none;
+  }
+
+  .machine.rise {
+    animation: phoenix 1.2s cubic-bezier(0.2, 0.9, 0.3, 1.15) forwards;
+  }
+
+  @keyframes phoenix {
+    0% {
+      opacity: 0;
+      transform: translateY(40px) scale(0.6);
+      filter: brightness(0.3) drop-shadow(0 0 0 rgba(255, 140, 40, 0));
+    }
+    40% {
+      opacity: 1;
+      filter: brightness(1.1) drop-shadow(0 0 18px rgba(255, 140, 40, 0.9));
+    }
+    100% {
+      opacity: 1;
+      transform: none;
+      filter: drop-shadow(0 0 6px rgba(255, 140, 40, 0.3));
+    }
   }
 
   .ash.on {
@@ -635,7 +721,8 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
   const present = document.querySelector<HTMLElement>('[data-present]');
   const openBtn = document.querySelector<HTMLButtonElement>('[data-gift-open]');
   const ash = document.querySelector<HTMLElement>('[data-ash]');
-  if (gift && reveal && present && openBtn && ash) {
+  const machine = document.querySelector<SVGElement | HTMLElement>('[data-machine]');
+  if (gift && reveal && present && openBtn && ash && machine) {
     const showPage = () => {
       gift.hidden = true;
       reveal.hidden = false;
@@ -655,12 +742,14 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
         present.classList.add('burning');
         burn(present, 1500, () => {
           ash.classList.add('on');
+          // Out of the ashes: the sewing machine rises, and the confetti bursts around it.
           setTimeout(() => {
+            machine.classList.add('rise');
             const r = ash.getBoundingClientRect();
             confetti((r.left + r.width / 2) / innerWidth, r.top / innerHeight);
           }, 300);
-          setTimeout(() => gift.classList.add('gone'), 1200);
-          setTimeout(showPage, 1550);
+          setTimeout(() => gift.classList.add('gone'), 2300);
+          setTimeout(showPage, 2650);
         });
       }, 350);
     };
