@@ -8,14 +8,18 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
 
 <Base title="family" footer={false} noindex>
   <article class="fam type">
-    <!-- First thing they see: a wrapped present. Tapping it pops the lid, throws thread-and-fabric
-         confetti, and reveals the page below. -->
+    <!-- First thing they see: a wrapped present. Tapping it sets it on fire ("from the ashes of his
+         software engineering crash and burn..."): it burns down to a pile of ash, and out of the ashes
+         comes a burst of thread-and-fabric confetti. Then the page below fades in. -->
     <section class="gift" data-gift>
-      <div class="present" data-present aria-hidden="true">
-        <span class="bow bow-l"></span>
-        <span class="bow bow-r"></span>
-        <span class="lid"><span class="ribbon-v"></span></span>
-        <span class="box"><span class="ribbon-v"></span></span>
+      <div class="stage" aria-hidden="true">
+        <div class="present" data-present>
+          <span class="bow bow-l"></span>
+          <span class="bow bow-r"></span>
+          <span class="lid"><span class="ribbon-v"></span></span>
+          <span class="box"><span class="ribbon-v"></span></span>
+        </div>
+        <span class="ash" data-ash></span>
       </div>
       <p class="gift-from">a christmas surprise from GÜSH</p>
       <button class="btn gift-open" type="button" data-gift-open>tap to open</button>
@@ -111,11 +115,15 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
     transition: opacity 0.35s, transform 0.35s;
   }
 
+  .stage {
+    position: relative;
+    margin-bottom: 6px;
+  }
+
   .present {
     position: relative;
     width: 150px;
     height: 150px;
-    margin-bottom: 6px;
     cursor: pointer;
     animation: nudge 2.4s ease-in-out infinite;
   }
@@ -197,28 +205,47 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
     96% { transform: rotate(2deg); }
   }
 
-  /* Opening: a shake, then the lid and bow fly off. */
+  /* Opening: a shake, then it burns down from the top (the script trims and darkens it as the
+     flames go), leaving a pile of ash. */
   .present.opening {
     animation: shake 0.35s ease-in-out;
   }
 
-  .present.open {
+  .present.burning {
     animation: none;
   }
 
-  .present.open .lid {
-    transform: translate(-50%, -90px) rotate(-18deg);
+  .ash {
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    width: 116px;
+    height: 20px;
+    margin-left: -58px;
+    border-radius: 50% 50% 10px 10px / 100% 100% 10px 10px;
+    background:
+      radial-gradient(circle at 22% 45%, #9a948c 0 2px, transparent 3px),
+      radial-gradient(circle at 48% 30%, #5c5650 0 2.5px, transparent 3.5px),
+      radial-gradient(circle at 70% 55%, #a8a29a 0 1.5px, transparent 2.5px),
+      radial-gradient(circle at 84% 70%, #4a4540 0 2px, transparent 3px),
+      linear-gradient(#77716a, #3e3a35);
+    box-shadow: 0 0 14px 2px rgba(255, 130, 40, 0.55);
     opacity: 0;
+    transform: scaleY(0.2);
+    transform-origin: bottom;
+    transition: opacity 0.5s, transform 0.6s, box-shadow 1.6s;
   }
 
-  .present.open .bow-l {
-    transform: translate(-30px, -110px) rotate(-60deg);
-    opacity: 0;
+  .ash.on {
+    opacity: 1;
+    transform: none;
+    box-shadow: 0 0 6px 0 rgba(255, 130, 40, 0.15);
   }
 
-  .present.open .bow-r {
-    transform: translate(30px, -110px) rotate(60deg);
+  .gift.burning .gift-from,
+  .gift.burning .gift-open {
     opacity: 0;
+    transition: opacity 0.4s;
   }
 
   @keyframes shake {
@@ -452,8 +479,8 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
   const COLORS = ['#c8372d', '#2f5d9e', '#e8c547', '#2f6b45', '#6b4a9e', '#e9a3b8', '#e07b2e', '#1f1b16'];
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function confetti(x = 0.5, y = 0.4, count = 150) {
-    if (still()) return;
+  /** A see-through canvas over the whole screen, for the confetti and the fire. */
+  function overlay() {
     const canvas = document.createElement('canvas');
     canvas.setAttribute('aria-hidden', 'true');
     canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100dvh;pointer-events:none;z-index:50';
@@ -465,6 +492,12 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
     canvas.height = h * dpr;
     const ctx = canvas.getContext('2d')!;
     ctx.scale(dpr, dpr);
+    return { canvas, ctx, w, h };
+  }
+
+  function confetti(x = 0.5, y = 0.4, count = 150) {
+    if (still()) return;
+    const { canvas, ctx, w, h } = overlay();
     const kinds = ['thread', 'thread', 'scrap', 'stitch'] as const;
     const bits = Array.from({ length: count }, () => {
       const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
@@ -531,12 +564,78 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
   // For the "you're on the list" burst in the form script below.
   (window as unknown as { gushConfetti: typeof confetti }).gushConfetti = confetti;
 
+  /** Burns an element down from the top over `ms`: flames along the burning edge, smoke, then embers
+   *  rising from the ash. Calls onAsh once it's gone. */
+  function burn(el: HTMLElement, ms: number, onAsh: () => void) {
+    const r = el.getBoundingClientRect();
+    const { canvas, ctx, w, h } = overlay();
+    type Bit = { kind: 'flame' | 'smoke' | 'ember'; x: number; y: number; vx: number; vy: number; life: number; max: number; size: number };
+    const bits: Bit[] = [];
+    let ashed = false;
+    const start = performance.now();
+    const frame = (t: number) => {
+      const age = t - start;
+      const p = Math.min(1, age / ms);
+      const burnt = p * p * (3 - 2 * p);
+      el.style.clipPath = `inset(${(burnt * 100).toFixed(2)}% 0 0 0)`;
+      el.style.filter = `brightness(${(1 - 0.8 * burnt).toFixed(3)}) sepia(${burnt.toFixed(3)})`;
+      const edge = r.top + burnt * r.height;
+      if (p < 1) {
+        for (let i = 0; i < 7; i++) {
+          bits.push({ kind: 'flame', x: r.left + 14 + Math.random() * (r.width - 28), y: edge + Math.random() * 6, vx: (Math.random() - 0.5) * 0.8, vy: -(1.2 + Math.random() * 2.2), life: 0, max: 28 + Math.random() * 24, size: 7 + Math.random() * 9 });
+        }
+        if (Math.random() < 0.5) {
+          bits.push({ kind: 'smoke', x: r.left + r.width / 2 + (Math.random() - 0.5) * r.width * 0.6, y: edge - 10, vx: (Math.random() - 0.5) * 0.6, vy: -(0.8 + Math.random()), life: 0, max: 70 + Math.random() * 40, size: 10 + Math.random() * 10 });
+        }
+      } else if (!ashed) {
+        ashed = true;
+        onAsh();
+      }
+      if (p >= 1 && age < ms + 900 && Math.random() < 0.35) {
+        bits.push({ kind: 'ember', x: r.left + r.width / 2 + (Math.random() - 0.5) * 90, y: r.bottom - 8, vx: (Math.random() - 0.5) * 0.5, vy: -(0.6 + Math.random() * 1.2), life: 0, max: 50 + Math.random() * 30, size: 1.5 + Math.random() * 1.5 });
+      }
+      ctx.clearRect(0, 0, w, h);
+      for (let i = bits.length - 1; i >= 0; i--) {
+        const b = bits[i];
+        if (++b.life > b.max) {
+          bits.splice(i, 1);
+          continue;
+        }
+        b.x += b.vx + Math.sin((b.life + i) * 0.3) * 0.4;
+        b.y += b.vy;
+        const f = b.life / b.max;
+        ctx.beginPath();
+        if (b.kind === 'flame') {
+          // yellow at the base, then orange, red, and dark as it rises and dies
+          const size = b.size * (1 - f * 0.8);
+          ctx.globalAlpha = (1 - f) * 0.9;
+          ctx.fillStyle = f < 0.25 ? '#ffd23f' : f < 0.55 ? '#ff8a1f' : f < 0.8 ? '#e0452a' : '#5a514a';
+          ctx.ellipse(b.x, b.y, size * 0.6, size, 0, 0, Math.PI * 2);
+        } else if (b.kind === 'smoke') {
+          ctx.globalAlpha = (1 - f) * 0.18;
+          ctx.fillStyle = '#4a4540';
+          ctx.arc(b.x, b.y, b.size * (1 + f * 1.5), 0, Math.PI * 2);
+        } else {
+          ctx.globalAlpha = 1 - f;
+          ctx.fillStyle = f < 0.5 ? '#ffb347' : '#e0452a';
+          ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (age < ms + 1000 || bits.length) requestAnimationFrame(frame);
+      else canvas.remove();
+    };
+    requestAnimationFrame(frame);
+  }
+
   // The present: tap it (or the button) to open.
   const gift = document.querySelector<HTMLElement>('[data-gift]');
   const reveal = document.querySelector<HTMLElement>('[data-reveal]');
   const present = document.querySelector<HTMLElement>('[data-present]');
   const openBtn = document.querySelector<HTMLButtonElement>('[data-gift-open]');
-  if (gift && reveal && present && openBtn) {
+  const ash = document.querySelector<HTMLElement>('[data-ash]');
+  if (gift && reveal && present && openBtn && ash) {
     const showPage = () => {
       gift.hidden = true;
       reveal.hidden = false;
@@ -548,14 +647,21 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
       opened = true;
       openBtn.disabled = true;
       if (still()) return showPage();
+      // A shake, then it goes up in flames, burns down to ash, and confetti bursts out of the ashes.
+      gift.classList.add('burning');
       present.classList.add('opening');
       setTimeout(() => {
         present.classList.remove('opening');
-        present.classList.add('open');
-        const r = present.getBoundingClientRect();
-        confetti((r.left + r.width / 2) / innerWidth, (r.top + r.height * 0.3) / innerHeight);
-        setTimeout(() => gift.classList.add('gone'), 450);
-        setTimeout(showPage, 800);
+        present.classList.add('burning');
+        burn(present, 1500, () => {
+          ash.classList.add('on');
+          setTimeout(() => {
+            const r = ash.getBoundingClientRect();
+            confetti((r.left + r.width / 2) / innerWidth, r.top / innerHeight);
+          }, 300);
+          setTimeout(() => gift.classList.add('gone'), 1200);
+          setTimeout(showPage, 1550);
+        });
       }, 350);
     };
     openBtn.addEventListener('click', open);
