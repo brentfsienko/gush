@@ -86,7 +86,7 @@ export async function familyPage(request: Request, env: Env, key: string | undef
     .on('[data-fam-body]', {
       element(el) {
         el.setInnerContent(
-          `<p>the gift list closed on ${esc(FAMILY_DEADLINE_LABEL)}. already picked? check the link in your email. otherwise, text brent ♥</p>`,
+          `<p>the gift list closed on ${esc(FAMILY_DEADLINE_LABEL)}. already picked? the link to your gift is in your email ♥</p>`,
           { html: true },
         );
       },
@@ -246,7 +246,7 @@ export function familyReceipt(o: Order) {
 export async function familyEdit(request: Request, env: Env, ctx: ExecutionContext, token: string) {
   const o = await getOrderByToken(env, token);
   if (!o || !o.family) return json({ error: 'this gift can’t be changed here.' }, 404);
-  if (o.status !== 'received') return json({ error: 'it’s already on the machine, so it can’t be changed. text brent ♥' }, 409);
+  if (o.status !== 'received') return json({ error: 'it’s already on the machine, so your pick is locked in ♥' }, 409);
   const b = ((await request.json().catch(() => null)) ?? {}) as Record<string, unknown>;
   const pick = readPick(b);
   if (typeof pick === 'string') return json({ error: pick }, 400);

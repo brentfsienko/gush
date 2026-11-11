@@ -429,7 +429,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } fr
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
         // Only show "you're on the list" once the pick is really saved (it comes back with its link).
-        if (!data.trackUrl || !data.label) throw new Error('your pick didn’t save. try again, or text brent.');
+        if (!data.trackUrl || !data.label) throw new Error('hmm, your pick didn’t save. give it another try?');
         finish(data);
       } catch (err) {
         say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?');
