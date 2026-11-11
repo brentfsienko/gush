@@ -20,14 +20,16 @@ interface Props {
   image?: string;
   /** Newsletter sign-up in the footer (the home and about pages). */
   newsletter?: boolean;
+  /** The whole title when the link is shared (and in the browser tab), instead of "<title> · tagline". */
+  shareTitle?: string;
   /** Leave the footer off (the private orders page). */
   footer?: boolean;
   /** Keep the page out of search engines (orders, tracking pages). */
   noindex?: boolean;
 }
 
-const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false, footer = true, noindex = false } = Astro.props;
-const fullTitle = title ? `${title} · GÜSH` : 'GÜSH';
+const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false, footer = true, noindex = false, shareTitle } = Astro.props;
+const fullTitle = shareTitle ?? (title ? `${title} · GÜSH` : 'GÜSH');
 // Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 const ogImageUrl = new URL(image, Astro.site ?? Astro.url);
@@ -54,13 +56,13 @@ const digitUrls = digitImgs.every(Boolean)
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GÜSH" />
     <!-- iMessage shows only the image and title, so the tagline goes in the shared title too. -->
-    <meta property="og:title" content={title ? `${titleCase(title)} · ${TAGLINE}` : TAGLINE} />
+    <meta property="og:title" content={shareTitle ?? (title ? `${titleCase(title)} · ${TAGLINE}` : TAGLINE)} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={pageUrl} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={title ? `${title} · GÜSH` : "GÜSH"} />
+    <meta property="og:image:alt" content={shareTitle ?? (title ? `${title} · GÜSH` : "GÜSH")} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
