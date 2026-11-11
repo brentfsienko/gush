@@ -9,7 +9,14 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
   <article class="fam type">
     <p class="fam-label">GÜSH · family christmas</p>
     <h1 class="heading fam-title">pick your christmas gift</h1>
-    <p class="dim">one gift each, sewn by brother brent. pick by {FAMILY_DEADLINE_LABEL}.</p>
+    <p class="intro" data-intro>
+      from the ashes of his software engineering crash and burn, a seamstress was born. this christmas, the sewing
+      prodigy based in Seattle, Brent, is opening up his unsustainably small apparel business, GÜSH, just for his
+      family. if you are reading this, you are not on the naughty list and have the rare opportunity to select what
+      kind of GÜSH gift you’d like to receive at christmas. if there’s any extra info you want to provide that would
+      help with understanding your gift idea, please leave a note. love ya &lt;3
+    </p>
+    <p class="dim">one gift each · pick by {FAMILY_DEADLINE_LABEL}.</p>
 
     <div data-fam-body>
       <form class="fam-form" data-fam novalidate>
@@ -88,8 +95,8 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
           </label>
 
           <label class="field">
-            <span>fit note <span class="dim">(optional)</span></span>
-            <textarea name="fit" rows="3" maxlength="600" placeholder="how you like it to fit, length, a favorite detail…"></textarea>
+            <span>note <span class="dim">(optional)</span></span>
+            <textarea name="fit" rows="3" maxlength="600" placeholder="fit, length, a favorite detail, anything that helps with your gift idea…"></textarea>
           </label>
 
           <div class="nav">
@@ -151,8 +158,13 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
   }
 
   .fam-title {
-    margin: 0 0 6px;
+    margin: 0 0 14px;
     font-size: 30px;
+  }
+
+  .intro {
+    margin: 0 0 12px;
+    line-height: 1.65;
   }
 
   .dim {
@@ -455,8 +467,11 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
     };
     let applied = false;
 
+    const intro = document.querySelector('[data-intro]');
     const show = (n) => {
       steps.forEach((s) => (s.hidden = s.dataset.step !== String(n)));
+      // Brent's note is just for the first page.
+      intro.hidden = n !== 1;
       say('');
       window.scrollTo({ top: 0 });
       document.querySelector('main')?.scrollTo({ top: 0 });
@@ -523,7 +538,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
         ['for', val('name')],
         ['gift', giftLabel()],
         val('style') === 'bag' ? null : ['size', val('size').toUpperCase()],
-        val('fit') ? ['fit note', val('fit')] : null,
+        val('fit') ? ['note', val('fit')] : null,
         ['delivery', FAMILY_DELIVERY],
         applied ? ['code', `${FAMILY_CODE} · 100% off ♥`] : null,
       ].filter(Boolean);
@@ -574,6 +589,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
         form.hidden = true;
+        intro.hidden = true;
         const done = document.querySelector('[data-done]');
         done.querySelector('[data-done-text]').textContent = data.already
           ? `you already picked your gift: ${data.label}. want to change it? text brent.`
