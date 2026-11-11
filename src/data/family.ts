@@ -16,7 +16,7 @@ export const FAMILY_DELIVERY = 'we’ll give it to you at christmas';
 /** What they can pick. A bag has no size (they describe the bag instead); a mystery is your pick, so
  *  its color is optional ("surprise me"). */
 export const FAMILY_STYLES = [
-  { key: 'thermal', label: 'thermal' },
+  { key: 'sweater', label: 'sweater' },
   { key: 't-shirt', label: 't-shirt' },
   { key: 'long-sleeve', label: 'long sleeve shirt' },
   { key: 'button-up-short', label: 'button up (short sleeve)' },
