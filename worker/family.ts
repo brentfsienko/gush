@@ -7,7 +7,7 @@
 //    The code only works here, with the key, until the deadline.
 import { FAMILY_CODE, FAMILY_DEADLINE, FAMILY_DEADLINE_LABEL, FAMILY_STYLES, FAMILY_COLORS, FAMILY_SIZES } from '../src/data/family';
 import { ORDER_UPDATE_EMAILS } from '../src/data/store';
-import { addOrder, nextNumber, randomCode, trackUrl, itemLabel, itemPicture, getOrder, type Order } from './orders';
+import { addOrder, nextNumber, randomCode, trackUrl, itemLabel, itemPicture, getOrder, getOrderByToken, putOrder, type Order } from './orders';
 import { resend, page, td, gap, json, EMAIL } from './waitlist';
 import { FROM, esc, INK, GRAY, FONT } from './notify';
 import type { Env } from './index';
@@ -30,7 +30,12 @@ async function existingPick(env: Env, email: string, name: string) {
   return null;
 }
 
-const pickReply = (o: Order) => ({ already: true, label: o.items.map(itemLabel).join(', '), trackUrl: `/order/${o.token}` });
+const pickReply = (o: Order) => ({
+  already: true,
+  label: o.items.map(itemLabel).join(', '),
+  trackUrl: `/order/${o.token}`,
+  editable: o.status === 'received', // can still change it (until it's on the machine)
+});
 
 /** POST /api/family/check { key, name, email }: step 1 asks this before moving on, so someone who
  *  already picked (by email or name) is stopped right there. */
@@ -89,7 +94,7 @@ export async function familyPage(request: Request, env: Env, key: string | undef
     .transform(res);
 }
 
-type Pick = { title: string; size: string; swatch?: string; slug: string };
+type Pick = { title: string; size: string; swatch?: string; slug: string; choices: NonNullable<Order['pick']> };
 
 /** Checks the form and turns it into the gift. Returns an error message for anything off. */
 function readPick(b: Record<string, unknown>): Pick | string {
@@ -116,7 +121,13 @@ function readPick(b: Record<string, unknown>): Pick | string {
     : bag
       ? `${colorName} bag · ${bagKind}`
       : `${colorName} ${style.label}`;
-  return { title, size, swatch: color?.hex, slug: `family-${style.key}` };
+  return {
+    title,
+    size,
+    swatch: color?.hex,
+    slug: `family-${style.key}`,
+    choices: { style: style.key, color: color?.key ?? (surprise ? 'surprise' : ''), size: size.toLowerCase(), bag: bagKind },
+  };
 }
 
 export async function familySubmit(request: Request, env: Env, ctx: ExecutionContext) {
@@ -162,6 +173,7 @@ export async function familySubmit(request: Request, env: Env, ctx: ExecutionCon
     status: 'received',
     dates: { received: now },
     family: true,
+    pick: pick.choices,
     code: FAMILY_CODE,
   };
   await addOrder(env, o);
@@ -214,7 +226,7 @@ export function familyReceipt(o: Order) {
   const subject = 'your GÜSH gift is on the list ♥';
   const lines = [
     `${first ? `${first}, ` : ''}we got your pick: ${gift}.`,
-    'it’ll be sewn by hand and given to you at christmas. you can check on it anytime.',
+    'it’ll be sewn by hand and given to you at christmas. you can check on it anytime, and change your pick there until it’s on the machine.',
   ];
   const text = [subject, '', ...lines, ...(o.note ? ['', `your fit note: ${o.note}`] : []), '', `see your gift: ${url}`].join('\n');
   const html = page(`
@@ -227,4 +239,43 @@ export function familyReceipt(o: Order) {
     ${gap(18)}
     <div style="text-align:center;"><a href="${esc(url)}" style="display:inline-block;font-family:${FONT};font-size:15px;color:${INK};text-decoration:none;border:1.5px solid ${INK};padding:10px 18px;">see your gift</a></div>`);
   return { subject, text, html };
+}
+
+/** POST /api/order/<code>/edit { style, color, size, bag, fit }: changes a family gift, but only
+ *  while it's still "order received". Once it's on the machine, it's locked. Emails you the change. */
+export async function familyEdit(request: Request, env: Env, ctx: ExecutionContext, token: string) {
+  const o = await getOrderByToken(env, token);
+  if (!o || !o.family) return json({ error: 'this gift can’t be changed here.' }, 404);
+  if (o.status !== 'received') return json({ error: 'it’s already on the machine, so it can’t be changed. text brent ♥' }, 409);
+  const b = ((await request.json().catch(() => null)) ?? {}) as Record<string, unknown>;
+  const pick = readPick(b);
+  if (typeof pick === 'string') return json({ error: pick }, 400);
+  const before = o.items.map(itemLabel).join(', ');
+  const beforeNote = o.note;
+  o.items = [{ slug: pick.slug, title: pick.title, size: pick.size, qty: 1, cents: 0, swatch: pick.swatch }];
+  o.pick = pick.choices;
+  o.note = String(b.fit ?? '').trim().slice(0, 600) || undefined;
+  await putOrder(env, o);
+  const after = o.items.map(itemLabel).join(', ');
+  if (after !== before || o.note !== beforeNote) ctx.waitUntil(tellOwnerChange(env, o, before));
+  return json({ ok: true, label: after });
+}
+
+/** To you: someone changed their pick. */
+async function tellOwnerChange(env: Env, o: Order, before: string) {
+  if (!env.ORDER_EMAIL || !env.ORDER_EMAIL_TO) return;
+  const after = o.items.map(itemLabel).join(', ');
+  const subject = `family gift changed: ${o.buyerName} now wants ${after}`;
+  const lines = [`${o.buyerName} changed their pick (#${o.number}).`, `was: ${before}`, `now: ${after}`, `note: ${o.note ?? '(none)'}`];
+  const html = page(`
+    <div ${td('font-size:22px;')}>${esc(subject)}</div>
+    ${gap(16)}
+    <div style="text-align:center;">${o.items.map((i) => itemPicture(i, 120, true)).join('')}</div>
+    ${gap(16)}
+    ${lines.map((l) => `<div ${td('margin:0 0 8px;')}>${esc(l)}</div>`).join('')}`);
+  try {
+    await env.ORDER_EMAIL.send({ from: { name: 'GÜSH family', email: FROM.email }, to: env.ORDER_EMAIL_TO, subject, text: lines.join('\n'), html, replyTo: o.buyerEmail });
+  } catch (err) {
+    console.error('family change email failed', o.id, err);
+  }
 }

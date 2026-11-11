@@ -1,0 +1,264 @@
+---
+// The family gift choices: what, color, size (or what kind of bag), and a note. Used on the family
+// page (src/pages/family.astro) and in "edit your pick" on a gift's tracking page (src/pages/order.astro),
+// so both look and work the same. Settings: src/data/family.ts. Form field names: style, color, size,
+// bag, fit.
+import { FAMILY_STYLES, FAMILY_COLORS, FAMILY_SIZES, BAG_IDEAS } from '../data/family';
+---
+
+<div class="pick" data-pick>
+  <fieldset class="group">
+    <legend>what</legend>
+    <div class="choices">
+      {
+        FAMILY_STYLES.map((s) => (
+          <label class="choice">
+            <input type="radio" name="style" value={s.key} />
+            <span>{s.label}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <fieldset class="group">
+    <legend>color</legend>
+    <div class="swatches">
+      {
+        FAMILY_COLORS.map((c) => (
+          <label class="swatch">
+            <input type="radio" name="color" value={c.key} />
+            <span class="dot" style={`background:${c.hex}`} aria-hidden="true" />
+            <span>{c.key}</span>
+          </label>
+        ))
+      }
+      <label class="swatch" data-surprise hidden>
+        <input type="radio" name="color" value="surprise" />
+        <span class="dot surprise" aria-hidden="true">?</span>
+        <span>surprise me</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="group" data-sizes>
+    <legend>size</legend>
+    <div class="choices sizes">
+      {
+        FAMILY_SIZES.map((s) => (
+          <label class="choice">
+            <input type="radio" name="size" value={s} />
+            <span>{s.toUpperCase()}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <label class="field" data-bag hidden>
+    <span>what kind of bag?</span>
+    <input type="text" name="bag" maxlength="60" placeholder={BAG_IDEAS.slice(0, 3).join(', ') + '…'} />
+    <span class="ideas">
+      {BAG_IDEAS.map((b) => <button class="idea" type="button" data-idea={b}>{b}</button>)}
+    </span>
+  </label>
+
+  <label class="field">
+    <span>note <span class="dim">(optional)</span></span>
+    <textarea name="fit" rows="3" maxlength="600" placeholder="fit, length, a favorite detail, anything that helps with your gift idea…"></textarea>
+  </label>
+</div>
+
+<style>
+  /* Hidden parts stay hidden even where a layout style (flex) would show them. */
+  [hidden] {
+    display: none !important;
+  }
+
+  .dim {
+    color: var(--gray);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 18px;
+  }
+
+  .field > span:first-child {
+    font-size: 14px;
+  }
+
+  /* Lines to write on, like the rest of the site's forms. */
+  input[type='text'] {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 6px 0;
+  }
+
+  textarea {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 8px 10px;
+    resize: vertical;
+  }
+
+  input[type='text']:focus,
+  textarea:focus {
+    outline: none;
+    box-shadow: inset 0 -1.5px 0 var(--ink);
+  }
+
+  .group {
+    border: 0;
+    margin: 0 0 22px;
+    padding: 0;
+  }
+
+  .group legend {
+    padding: 0;
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+
+  /* Multiple choice: plain ink boxes, filled when picked. */
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .choice {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .choice input,
+  .swatch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .choice span {
+    display: inline-block;
+    padding: 7px 12px;
+    font-size: 15px;
+    border: 1.5px solid var(--ink);
+    background: var(--page);
+  }
+
+  .choice input:checked + span {
+    background: var(--ink);
+    color: var(--page);
+  }
+
+  .choice input:focus-visible + span,
+  .swatch input:focus-visible ~ .dot {
+    outline: 2px dashed var(--red);
+    outline-offset: 3px;
+  }
+
+  .sizes .choice span {
+    min-width: 46px;
+    text-align: center;
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px 8px;
+  }
+
+  .swatch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+
+  .dot {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+  }
+
+  .dot.surprise {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-style: dashed;
+  }
+
+  .swatch input:checked ~ .dot {
+    box-shadow: 0 0 0 3px var(--page), 0 0 0 4.5px var(--ink);
+  }
+
+  .swatch input:checked ~ span:last-child {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+
+  .ideas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .idea {
+    padding: 3px 9px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px dashed var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  // Bags skip size and ask what kind instead; a mystery can be "surprise me" on color. Dispatch
+  // "gush:sync" on a [data-pick] after filling it in from code, so this catches up.
+  for (const pick of document.querySelectorAll<HTMLElement>('[data-pick]')) {
+    const sizes = pick.querySelector<HTMLElement>('[data-sizes]')!;
+    const bag = pick.querySelector<HTMLElement>('[data-bag]')!;
+    const surprise = pick.querySelector<HTMLElement>('[data-surprise]')!;
+    const sync = () => {
+      const style = pick.querySelector<HTMLInputElement>('input[name=style]:checked')?.value ?? '';
+      sizes.hidden = style === 'bag';
+      bag.hidden = style !== 'bag';
+      surprise.hidden = style !== 'mystery';
+      const s = surprise.querySelector('input')!;
+      if (style !== 'mystery' && s.checked) s.checked = false;
+    };
+    pick.addEventListener('change', (e) => {
+      if ((e.target as HTMLInputElement).name === 'style') sync();
+    });
+    pick.addEventListener('gush:sync', sync);
+    pick.querySelectorAll<HTMLButtonElement>('[data-idea]').forEach((b) =>
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        pick.querySelector<HTMLInputElement>('input[name=bag]')!.value = b.dataset.idea!;
+      }),
+    );
+    sync();
+  }
+</script>

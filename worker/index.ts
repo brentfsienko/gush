@@ -8,7 +8,7 @@ import { itemPage } from './live-stock-page';
 import { joinNewsletter, unsubscribe, contact } from './newsletter';
 import { admin } from './admin';
 import { orderPage } from './orders';
-import { familyPage, familySubmit, familyCheck } from './family';
+import { familyPage, familySubmit, familyCheck, familyEdit } from './family';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -45,6 +45,9 @@ export default {
     if (pathname === '/api/waitlist') {
       return request.method === 'POST' ? joinWaitlist(request, env, ctx) : allow('POST');
     }
+    // Editing a family gift from its tracking page (only until it's on the machine).
+    const editing = pathname.match(/^\/api\/order\/([A-Za-z0-9_-]+)\/edit$/);
+    if (editing) return request.method === 'POST' ? familyEdit(request, env, ctx, editing[1]) : allow('POST');
     if (pathname === '/api/family/check') {
       return request.method === 'POST' ? familyCheck(request, env) : allow('POST');
     }

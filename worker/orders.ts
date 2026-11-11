@@ -9,6 +9,7 @@
 //
 // (The webhook's older order:<session id> keys are just "already counted" markers; separate.)
 import { SITE_URL, ORDER_UPDATE_EMAILS, CONTACT_EMAIL, IMAGE_VERSION } from '../src/data/store';
+import { FAMILY_COLORS } from '../src/data/family';
 import { readOrder, esc, GRAY, INK, FONT, type PaidSession } from './notify';
 import { resend, page, td, gap } from './waitlist';
 import type { Env } from './index';
@@ -47,6 +48,7 @@ export type Order = {
   tracking?: string; // tracking number (or link), set when shipped
   archived?: boolean; // hidden from the orders list (e.g. a test order)
   family?: boolean; // a family Christmas gift (worker/family.ts), not a Stripe order
+  pick?: { style: string; color: string; size: string; bag: string }; // a family gift's choices (for editing)
   code?: string; // promo code used, if any (e.g. NORUTS100)
 };
 
@@ -353,13 +355,41 @@ export async function orderPage(request: Request, env: Env, token: string) {
   headers.set('x-robots-tag', 'noindex');
   headers.set('referrer-policy', 'no-referrer');
   if (!o) return new Response(shell.body, { status: 404, headers });
+  // A family gift can be edited until it's on the machine: the page gets its current choices.
+  const pick = o.family && o.status === 'received' ? familyChoices(o) : null;
   const out = new HTMLRewriter()
     .on('[data-order]', {
       element(el) {
         el.setInnerContent(timelineHtml(o), { html: true });
       },
     })
+    .on('[data-edit]', {
+      element(el) {
+        if (!pick) {
+          el.remove();
+          return;
+        }
+        el.removeAttribute('hidden');
+        el.setAttribute('data-style', pick.style);
+        el.setAttribute('data-color', pick.color);
+        el.setAttribute('data-size', pick.size);
+        el.setAttribute('data-bag', pick.bag);
+        el.setAttribute('data-note', o.note ?? '');
+      },
+    })
     .transform(new Response(shell.body, { status: 200, headers }));
   return out;
+}
+
+/** A family gift's choices (older gifts saved before choices were kept: worked out from the item). */
+function familyChoices(o: Order): NonNullable<Order['pick']> {
+  if (o.pick) return o.pick;
+  const i = o.items[0];
+  return {
+    style: i?.slug.replace(/^family-/, '') ?? '',
+    color: FAMILY_COLORS.find((c) => c.hex === i?.swatch)?.key ?? (i?.slug === 'family-mystery' ? 'surprise' : ''),
+    size: (i?.size ?? '').toLowerCase(),
+    bag: i?.slug === 'family-bag' ? (i.title.split(' · ')[1] ?? '') : '',
+  };
 }
 

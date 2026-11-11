@@ -2,7 +2,8 @@
 // The family Christmas gift list. Only opens through the secret link, /family/<key> (worker/family.ts
 // checks the key and serves this page; anything else is "not found"). Settings: src/data/family.ts.
 import Base from '../layouts/Base.astro';
-import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAMILY_COLORS, FAMILY_SIZES, BAG_IDEAS } from '../data/family';
+import FamilyPickFields from '../components/FamilyPickFields.astro';
+import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES } from '../data/family';
 ---
 
 <Base title="family" footer={false} noindex>
@@ -38,66 +39,7 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
         <section class="step" data-step="2" hidden>
           <h2 class="heading step-title"><span class="step-num">2</span> pick your gift</h2>
 
-          <fieldset class="group">
-            <legend>what</legend>
-            <div class="choices">
-              {
-                FAMILY_STYLES.map((s) => (
-                  <label class="choice">
-                    <input type="radio" name="style" value={s.key} />
-                    <span>{s.label}</span>
-                  </label>
-                ))
-              }
-            </div>
-          </fieldset>
-
-          <fieldset class="group" data-colors>
-            <legend>color</legend>
-            <div class="swatches">
-              {
-                FAMILY_COLORS.map((c) => (
-                  <label class="swatch">
-                    <input type="radio" name="color" value={c.key} />
-                    <span class="dot" style={`background:${c.hex}`} aria-hidden="true" />
-                    <span>{c.key}</span>
-                  </label>
-                ))
-              }
-              <label class="swatch" data-surprise hidden>
-                <input type="radio" name="color" value="surprise" />
-                <span class="dot surprise" aria-hidden="true">?</span>
-                <span>surprise me</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <fieldset class="group" data-sizes>
-            <legend>size</legend>
-            <div class="choices sizes">
-              {
-                FAMILY_SIZES.map((s) => (
-                  <label class="choice">
-                    <input type="radio" name="size" value={s} />
-                    <span>{s.toUpperCase()}</span>
-                  </label>
-                ))
-              }
-            </div>
-          </fieldset>
-
-          <label class="field" data-bag hidden>
-            <span>what kind of bag?</span>
-            <input type="text" name="bag" maxlength="60" placeholder={BAG_IDEAS.slice(0, 3).join(', ') + '…'} />
-            <span class="ideas">
-              {BAG_IDEAS.map((b) => <button class="idea" type="button" data-idea={b}>{b}</button>)}
-            </span>
-          </label>
-
-          <label class="field">
-            <span>note <span class="dim">(optional)</span></span>
-            <textarea name="fit" rows="3" maxlength="600" placeholder="fit, length, a favorite detail, anything that helps with your gift idea…"></textarea>
-          </label>
+          <FamilyPickFields />
 
           <div class="nav">
             <button class="btn ghost" type="button" data-back>← back</button>
@@ -230,120 +172,6 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
     box-shadow: inset 0 -1.5px 0 var(--ink);
   }
 
-  .group {
-    border: 0;
-    margin: 0 0 22px;
-    padding: 0;
-  }
-
-  .group legend {
-    padding: 0;
-    margin: 0 0 8px;
-    font-size: 14px;
-  }
-
-  /* Multiple choice: plain ink boxes, filled when picked. */
-  .choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .choice {
-    position: relative;
-    cursor: pointer;
-  }
-
-  .choice input,
-  .swatch input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .choice span {
-    display: inline-block;
-    padding: 7px 12px;
-    font-size: 15px;
-    border: 1.5px solid var(--ink);
-    background: var(--page);
-  }
-
-  .choice input:checked + span {
-    background: var(--ink);
-    color: var(--page);
-  }
-
-  .choice input:focus-visible + span,
-  .swatch input:focus-visible ~ .dot {
-    outline: 2px dashed var(--red);
-    outline-offset: 3px;
-  }
-
-  .sizes .choice span {
-    min-width: 46px;
-    text-align: center;
-  }
-
-  .swatches {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    gap: 10px 8px;
-  }
-
-  .swatch {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 15px;
-  }
-
-  .dot {
-    flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1.5px solid var(--ink);
-  }
-
-  .dot.surprise {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    border-style: dashed;
-  }
-
-  .swatch input:checked ~ .dot {
-    box-shadow: 0 0 0 3px var(--page), 0 0 0 4.5px var(--ink);
-  }
-
-  .swatch input:checked ~ span:last-child {
-    text-decoration: underline;
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 3px;
-  }
-
-  .ideas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
-  }
-
-  .idea {
-    padding: 3px 9px;
-    font: inherit;
-    font-size: 13px;
-    color: var(--ink);
-    background: transparent;
-    border: 1px dashed var(--ink);
-    border-radius: 0;
-    cursor: pointer;
-  }
-
   .nav {
     display: flex;
     flex-wrap: wrap;
@@ -440,14 +268,6 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
     text-decoration-thickness: 1.5px;
     text-underline-offset: 3px;
   }
-
-  .hp {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-  }
 </style>
 
 <script define:vars={{ FAMILY_CODE, FAMILY_DELIVERY, STYLES: FAMILY_STYLES }}>
@@ -476,25 +296,6 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
       if (n === 3) renderSummary();
     };
 
-    // Bags skip size and ask what kind; a mystery can be "surprise me" on color.
-    const sizes = form.querySelector('[data-sizes]');
-    const bagField = form.querySelector('[data-bag]');
-    const surprise = form.querySelector('[data-surprise]');
-    const syncStyle = () => {
-      const style = val('style');
-      sizes.hidden = style === 'bag';
-      bagField.hidden = style !== 'bag';
-      surprise.hidden = style !== 'mystery';
-      if (style !== 'mystery' && val('color') === 'surprise') surprise.querySelector('input').checked = false;
-    };
-    form.querySelectorAll('input[name=style]').forEach((r) => r.addEventListener('change', syncStyle));
-    form.querySelectorAll('[data-idea]').forEach((b) =>
-      b.addEventListener('click', (e) => {
-        e.preventDefault();
-        form.elements.namedItem('bag').value = b.dataset.idea;
-      }),
-    );
-
     const check = (n) => {
       if (n === 1) {
         if (!val('name')) return 'tell us your name.';
@@ -515,10 +316,19 @@ import { FAMILY_CODE, FAMILY_DEADLINE_LABEL, FAMILY_DELIVERY, FAMILY_STYLES, FAM
       intro.hidden = true;
       const done = document.querySelector('[data-done]');
       done.querySelector('[data-done-title]').textContent = data.already ? 'you already picked your gift ♥' : 'you’re on the list ♥';
-      done.querySelector('[data-done-text]').textContent = data.already
-        ? `${data.label}. want to change it? text brent.`
-        : `${data.label}. it’ll be sewn by hand and given to you at christmas. we just emailed you a link to check on it.`;
-      done.querySelector('[data-done-link]').href = data.trackUrl;
+      const link = done.querySelector('[data-done-link]');
+      if (data.already && data.editable) {
+        // Already picked, not sewn yet: send them to change it.
+        done.querySelector('[data-done-text]').textContent = `${data.label}. want to change it?`;
+        link.textContent = 'change my pick →';
+        link.href = `${data.trackUrl}#edit`;
+      } else {
+        done.querySelector('[data-done-text]').textContent = data.already
+          ? `${data.label}. it’s already on the machine, so it’s locked in ♥`
+          : `${data.label}. it’ll be sewn by hand and given to you at christmas. we just emailed you a link to check on it (you can change your pick there until it’s on the machine).`;
+        link.textContent = 'see your gift →';
+        link.href = data.trackUrl;
+      }
       done.hidden = false;
       window.scrollTo({ top: 0 });
       document.querySelector('main')?.scrollTo({ top: 0 });

@@ -3,6 +3,7 @@
 // orderPage) fills in the timeline below before the page is sent. Opened without a valid code, it
 // says the order wasn't found.
 import Base from '../layouts/Base.astro';
+import FamilyPickFields from '../components/FamilyPickFields.astro';
 import { CONTACT_EMAIL } from '../data/store';
 ---
 
@@ -12,8 +13,161 @@ import { CONTACT_EMAIL } from '../data/store';
       <h1 class="heading">we couldn’t find that order</h1>
       <p>check the link in your order email, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we’ll help.</p>
     </div>
+
+    <!-- Family gifts only, until they're on the machine: the worker unhides this and fills in the
+         current choices (worker/orders.ts, orderPage); otherwise it's removed. -->
+    <section class="edit" data-edit hidden>
+      <button class="btn" type="button" data-edit-open>edit your pick</button>
+      <p class="edit-hint">you can change it until it’s on the machine.</p>
+      <form class="edit-form" data-edit-form hidden novalidate>
+        <h2 class="heading edit-title">edit your pick</h2>
+        <FamilyPickFields />
+        <div class="edit-nav">
+          <button class="btn" type="submit">save changes</button>
+          <button class="btn ghost" type="button" data-edit-cancel>cancel</button>
+        </div>
+        <p class="edit-msg" data-edit-msg aria-live="polite"></p>
+      </form>
+    </section>
   </article>
 </Base>
+
+<style>
+  .edit {
+    margin: 4px 0 8px;
+    padding-top: 22px;
+    border-top: 1px dashed rgba(31, 27, 22, 0.35);
+  }
+
+  .edit[hidden],
+  .edit [hidden] {
+    display: none !important;
+  }
+
+  .edit-hint {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  .edit-title {
+    margin: 0 0 16px;
+    font-size: 21px;
+  }
+
+  .edit-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 9px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .btn:hover:not(:disabled),
+  .btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .btn.ghost {
+    border-style: dashed;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .edit-msg {
+    min-height: 1.5em;
+    margin: 12px 0 0;
+    color: var(--red);
+  }
+</style>
+
+<script>
+  // "edit your pick": fill the form with the current choices, check it, save, then reload.
+  const box = document.querySelector<HTMLElement>('[data-edit]');
+  if (box && !box.hidden) {
+    const token = location.pathname.split('/')[2] ?? '';
+    const open = box.querySelector<HTMLButtonElement>('[data-edit-open]')!;
+    const hint = box.querySelector<HTMLElement>('.edit-hint')!;
+    const form = box.querySelector<HTMLFormElement>('[data-edit-form]')!;
+    const pick = form.querySelector<HTMLElement>('[data-pick]')!;
+    const msg = box.querySelector<HTMLElement>('[data-edit-msg]')!;
+    const val = (n: string) => {
+      const el = form.elements.namedItem(n) as RadioNodeList | HTMLInputElement | HTMLTextAreaElement | null;
+      return el ? el.value.trim() : '';
+    };
+    const fill = () => {
+      const d = box.dataset;
+      for (const name of ['style', 'color', 'size'] as const) {
+        const r = form.querySelector<HTMLInputElement>(`input[name=${name}][value="${CSS.escape(d[name] ?? '')}"]`);
+        if (r) r.checked = true;
+      }
+      (form.elements.namedItem('bag') as HTMLInputElement).value = d.bag ?? '';
+      (form.elements.namedItem('fit') as HTMLTextAreaElement).value = d.note ?? '';
+      pick.dispatchEvent(new Event('gush:sync'));
+    };
+    const toggle = (editing: boolean) => {
+      form.hidden = !editing;
+      open.hidden = editing;
+      hint.hidden = editing;
+      msg.textContent = '';
+    };
+    open.addEventListener('click', () => {
+      fill();
+      toggle(true);
+    });
+    box.querySelector('[data-edit-cancel]')!.addEventListener('click', () => toggle(false));
+    // Arriving from "change my pick" on the family page (…#edit): open the form right away.
+    if (location.hash === '#edit') {
+      fill();
+      toggle(true);
+      requestAnimationFrame(() => form.scrollIntoView({ block: 'start' }));
+    }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const style = val('style');
+      const problem = !style
+        ? 'pick a gift.'
+        : !val('color') && style !== 'mystery'
+          ? 'pick a color.'
+          : style === 'bag'
+            ? !val('bag') && 'tell us what kind of bag.'
+            : !val('size') && 'pick a size.';
+      if (problem) {
+        msg.textContent = problem;
+        return;
+      }
+      const save = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      save.disabled = true;
+      try {
+        const res = await fetch(`/api/order/${encodeURIComponent(token)}/edit`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ style, color: val('color'), size: val('size'), bag: val('bag'), fit: val('fit') }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) throw new Error(data.error || 'that didn’t save. try again?');
+        location.reload();
+      } catch (err) {
+        msg.textContent = err instanceof Error && !(err instanceof TypeError) ? err.message : 'that didn’t save. try again?';
+        save.disabled = false;
+      }
+    });
+  }
+</script>
 
 <!-- Global: the timeline is put in by the worker, so it doesn't carry this page's scoped-style tags. -->
 <style is:global>
