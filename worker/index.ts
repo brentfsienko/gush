@@ -1,6 +1,7 @@
 // The Worker in front of the site. Static pages and images are served straight from dist/
 // (see [assets] in wrangler.toml); only /api/*, /item/*, /admin*, /order/* and /family* requests reach this code.
 import { checkout } from './checkout';
+import { checkCode } from './codes';
 import { stripeWebhook } from './webhook';
 import { stockMap } from './stock';
 import { joinWaitlist, sendRestocks } from './waitlist';
@@ -30,6 +31,14 @@ const allow = (method: string) => new Response('method not allowed', { status: 4
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
+    if (pathname === '/api/code') {
+      // The cart's "have a code?" box (worker/codes.ts).
+      if (request.method !== 'POST') return allow('POST');
+      const body = (await request.json().catch(() => ({}))) as { code?: unknown; items?: unknown };
+      const r = await checkCode(env, body.code, body.items);
+      const { promoId: _, ...pub } = 'error' in r ? { ...r, promoId: undefined } : r;
+      return new Response(JSON.stringify(pub), { status: 'error' in r ? 400 : 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+    }
     if (pathname === '/api/checkout') {
       return request.method === 'POST' ? checkout(request, env) : allow('POST');
     }

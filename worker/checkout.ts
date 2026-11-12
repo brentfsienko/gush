@@ -16,7 +16,7 @@ import {
   IMAGE_VERSION,
 } from '../src/data/store';
 import { available } from './stock';
-import { fixedProducts, forgetFixed, productId } from './codes';
+import { fixedProducts, forgetFixed, productId, checkCode } from './codes';
 import type { Env } from './index';
 
 const json = (body: unknown, status = 200) =>
@@ -26,8 +26,9 @@ export async function checkout(request: Request, env: Env) {
   if (!env.STRIPE_SECRET_KEY) return json({ error: 'checkout isn’t set up yet.' }, 503);
 
   let items: unknown;
+  let code: unknown;
   try {
-    items = ((await request.json()) as { items?: unknown }).items;
+    ({ items, code } = (await request.json()) as { items?: unknown; code?: unknown });
   } catch {
     return json({ error: 'bad request' }, 400);
   }
@@ -68,11 +69,19 @@ export async function checkout(request: Request, env: Env) {
   const fixed = new Set<string>();
   for (const slug of new Set(lines.map((l) => l.slug))) if (await fixedProducts(env, slug)) fixed.add(slug);
 
-  let res = await createSession(buildParams(lines, fixed, origin, images, wanted), env);
+  // A code typed in the cart's code box: checked again here, then already applied at Stripe.
+  let promoId: string | undefined;
+  if (typeof code === 'string' && code.trim()) {
+    const c = await checkCode(env, code, lines);
+    if ('error' in c) return json({ error: c.error, code: 'bad' }, 400);
+    promoId = c.promoId;
+  }
+
+  let res = await createSession(buildParams(lines, fixed, origin, images, wanted, promoId), env);
   if (!res.ok && fixed.size && /no such product/i.test(res.message)) {
     // The lasting products are gone from Stripe: forget them and check out the usual way.
     for (const slug of fixed) await forgetFixed(env, slug);
-    res = await createSession(buildParams(lines, new Set(), origin, images, wanted), env);
+    res = await createSession(buildParams(lines, new Set(), origin, images, wanted, promoId), env);
   }
   if (!res.ok) {
     console.error('stripe error', res.status, res.message);
@@ -100,6 +109,7 @@ function buildParams(
   origin: string,
   images: string,
   wanted: Map<string, number>,
+  promoId?: string,
 ) {
   const params = new URLSearchParams();
   lines.forEach(({ slug, size, qty, p }, i) => {
@@ -119,9 +129,11 @@ function buildParams(
   });
 
   params.set('mode', 'payment');
-  // Shows Stripe's "Add promotion code" field. Codes are created in the Stripe dashboard
-  // (Product catalog → Coupons), so no code changes are needed to add or retire one.
-  params.set('allow_promotion_codes', 'true');
+  // A code from the cart's code box comes already applied; otherwise Stripe shows its own "Add
+  // promotion code" field. Codes are made in the Stripe dashboard (Product catalog → Coupons) or on
+  // the orders page (worker/codes.ts), so no code changes are needed to add or retire one.
+  if (promoId) params.set('discounts[0][promotion_code]', promoId);
+  else params.set('allow_promotion_codes', 'true');
   params.set('success_url', `${origin}/success?session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${origin}/cart`);
   SHIP_TO_COUNTRIES.forEach((c, n) => params.set(`shipping_address_collection[allowed_countries][${n}]`, c));

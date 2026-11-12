@@ -43,9 +43,26 @@ const config = { catalog, maxQty: MAX_QTY };
         <dl>
           <dt>subtotal</dt>
           <dd data-subtotal></dd>
+          <dt class="code-dt" data-code-row hidden>
+            code <span data-code-name></span>
+            <button class="link-btn" type="button" data-code-remove>remove</button>
+          </dt>
+          <dd data-code-row data-code-off hidden></dd>
           <dt>shipping</dt>
           <dd class="ship">{shipping}</dd>
         </dl>
+        <p class="code-love" data-code-love hidden></p>
+
+        <!-- Promo codes can go in here (checked with Stripe by worker/codes.ts, then already applied at
+             checkout) or on Stripe's own page. -->
+        <div class="code-box" data-code-box>
+          <button class="link-btn" type="button" data-code-open>have a code?</button>
+          <form class="code-form" data-code-form hidden novalidate>
+            <input name="code" type="text" maxlength="40" placeholder="code" aria-label="code" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+            <button class="code-btn" type="submit">apply</button>
+          </form>
+          <p class="code-err" data-code-err aria-live="polite"></p>
+        </div>
       </div>
 
       <p class="msg" aria-live="polite" data-msg></p>
@@ -176,6 +193,106 @@ const config = { catalog, maxQty: MAX_QTY };
     color: var(--gray);
   }
 
+  /* The code box: a line to write on and a plain box button, like the newsletter sign-up. */
+  .link-btn {
+    padding: 0;
+    font: inherit;
+    font-size: 14px;
+    color: var(--gray);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .link-btn:hover,
+  .link-btn:focus-visible {
+    color: var(--ink);
+    outline: none;
+  }
+
+  .code-dt .link-btn {
+    margin-left: 6px;
+    font-size: 12px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  .code-box {
+    margin-top: 14px;
+  }
+
+  .code-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    max-width: 320px;
+  }
+
+  .code-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 0;
+    font: inherit;
+    font-size: 16px;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+  }
+
+  .code-form input::placeholder {
+    text-transform: none;
+    color: var(--gray);
+  }
+
+  .code-form input:focus {
+    outline: none;
+    border-bottom-width: 3px;
+    padding-bottom: 4.5px;
+  }
+
+  .code-btn {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .code-btn:hover:not(:disabled),
+  .code-btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .code-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .code-err {
+    min-height: 1.3em;
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--red);
+  }
+
+  .code-love {
+    margin: 8px 0 0;
+    color: var(--red);
+  }
+
   .msg {
     min-height: 1.5em;
     margin: 14px 0 6px;
@@ -196,6 +313,7 @@ const config = { catalog, maxQty: MAX_QTY };
 <script>
   import { readCart, writeCart, setQty, type CartLine } from '../scripts/cart';
   import { drawNumber } from '../scripts/digits';
+  import { hearts, loveNote } from '../scripts/hearts';
 
   type Item = { title: string; price: number; stock: Record<string, number>; thumb: string | null };
   const config = JSON.parse(document.getElementById('cart-config')!.textContent!) as {
@@ -219,7 +337,97 @@ const config = { catalog, maxQty: MAX_QTY };
 
     const subtotal = lines.reduce((s, l) => s + config.catalog[l.slug].price * l.qty, 0);
     $('[data-subtotal]').textContent = money(subtotal);
+    renderCode(lines);
   }
+
+  // ---- promo code (the "have a code?" box) ----
+  type Code = { code: string; slugs: string[] | null; amountOff: number | null; percentOff: number | null; message?: string };
+  const CODE_KEY = 'gush-code';
+  const codeForm = $<HTMLFormElement>('[data-code-form]');
+  const codeInput = $<HTMLInputElement>('input[name=code]', codeForm);
+  const codeOpen = $<HTMLButtonElement>('[data-code-open]');
+  const codeErr = $('[data-code-err]');
+  const codeLove = $('[data-code-love]');
+  let code: Code | null = null;
+  try {
+    code = JSON.parse(sessionStorage.getItem(CODE_KEY) ?? 'null');
+  } catch {}
+  const saveCode = () => {
+    try {
+      if (code) sessionStorage.setItem(CODE_KEY, JSON.stringify(code));
+      else sessionStorage.removeItem(CODE_KEY);
+    } catch {}
+  };
+
+  /** What the code takes off this cart (Stripe works out the real amount at checkout). */
+  function discount(lines: CartLine[], c: Code) {
+    const eligible = lines
+      .filter((l) => !c.slugs || c.slugs.includes(l.slug))
+      .reduce((s, l) => s + config.catalog[l.slug].price * l.qty, 0);
+    if (c.amountOff) return Math.min(c.amountOff, eligible);
+    if (c.percentOff) return Math.round((eligible * c.percentOff) / 100);
+    return 0;
+  }
+
+  function renderCode(lines: CartLine[]) {
+    const rows = document.querySelectorAll<HTMLElement>('[data-code-row]');
+    rows.forEach((r) => (r.hidden = !code));
+    codeOpen.hidden = !!code || !codeForm.hidden;
+    if (code) codeForm.hidden = true;
+    codeLove.hidden = !code?.message;
+    if (!code) return;
+    $('[data-code-name]').textContent = code.code;
+    const off = discount(lines, code);
+    $('[data-code-off]').textContent = off ? `−${money(off)}` : 'not for these items';
+    codeLove.textContent = code.message ? `♥ ${code.message}` : '';
+  }
+
+  codeOpen.addEventListener('click', () => {
+    codeForm.hidden = false;
+    codeOpen.hidden = true;
+    codeInput.focus();
+  });
+
+  $('[data-code-remove]').addEventListener('click', () => {
+    code = null;
+    saveCode();
+    codeErr.textContent = '';
+    render();
+  });
+
+  codeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const typed = codeInput.value.trim();
+    if (!typed) return;
+    const btn = $<HTMLButtonElement>('button[type=submit]', codeForm);
+    btn.disabled = true;
+    codeErr.textContent = '';
+    try {
+      const res = await fetch('/api/code', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ code: typed, items: readCart() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        codeErr.textContent = data.error ?? 'couldn’t check that code. try again in a bit.';
+      } else {
+        code = { code: data.code, slugs: data.slugs, amountOff: data.amountOff, percentOff: data.percentOff, message: data.message };
+        saveCode();
+        codeInput.value = '';
+        render();
+        if (code.message) {
+          // The love note: hearts burst up from the code, and the message, big.
+          const r = $('.summary').getBoundingClientRect();
+          hearts((r.left + r.width / 2) / innerWidth, Math.min(0.85, (r.top + r.height / 2) / innerHeight));
+          loveNote(code.message);
+        }
+      }
+    } catch {
+      codeErr.textContent = 'couldn’t check that code. check your connection and try again.';
+    }
+    btn.disabled = false;
+  });
 
   function lineEl(l: CartLine) {
     const item = config.catalog[l.slug];
@@ -259,14 +467,21 @@ const config = { catalog, maxQty: MAX_QTY };
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ items: readCart() }),
+        body: JSON.stringify({ items: readCart(), code: code?.code }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.url) {
         location.href = data.url;
         return;
       }
-      msg.textContent = data.error ?? 'checkout isn’t working right now. try again in a bit.';
+      if (data.code === 'bad') {
+        // The code stopped working (used up, or not for what's in the cart now): drop it.
+        code = null;
+        saveCode();
+        render();
+        codeErr.textContent = data.error;
+        msg.textContent = '';
+      } else msg.textContent = data.error ?? 'checkout isn’t working right now. try again in a bit.';
     } catch {
       msg.textContent = 'couldn’t reach checkout. check your connection and try again.';
     }

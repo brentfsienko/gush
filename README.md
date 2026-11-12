@@ -140,10 +140,13 @@ catalog → Coupons → create a coupon (e.g. 20% off, or $15 off), then add a c
 (e.g. `FRIENDS20`). You can set an expiry date, a max number of uses, first-order-only, or a minimum
 order. Turn a code off in the same place. No site changes needed.
 
-**A code for one item at a set price** (e.g. `LOVERS`: the blue thermal for $30, once): make it on the
+**A code for one item at a set price** (e.g. the blue thermal for $30, once): make it on the
 orders page, gush.supply/admin → codes. Pick the item, the price with the code and how many uses;
 it's made in Stripe and only works on that item (`worker/codes.ts`). The list there shows how many
-times each code has been used, with a button to turn one off.
+times each code has been used, with a button to turn one off. Give a code a **message** and when it's
+typed in the cart's "have a code?" box, hearts burst out and the message pops up big
+(`src/scripts/hearts.ts`). Codes typed in the cart arrive at Stripe already applied; Stripe's own
+"Add promotion code" field still works too.
 
 ### 5. Go live
 Finish Stripe's account activation (business details, bank account), then switch to **live** mode:
