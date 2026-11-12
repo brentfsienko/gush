@@ -213,7 +213,7 @@ export async function importFromStripe(env: Env) {
     after = data.data[data.data.length - 1].id;
   }
   // Oldest first, so order numbers follow the order they came in.
-  const paid = sessions.filter((s) => s.payment_status === 'paid' && s.metadata?.items).sort((a, b) => a.created - b.created);
+  const paid = sessions.filter((s) => (s.payment_status === 'paid' || s.payment_status === 'no_payment_required') && s.metadata?.items).sort((a, b) => a.created - b.created);
   // Saved orders are handed back too: KV can take up to a minute to list new keys.
   const saved: Order[] = [];
   let last = Number(await env.STOCK!.get(COUNTER)) || 1000;

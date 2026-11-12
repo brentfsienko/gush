@@ -46,8 +46,9 @@ export async function stripeWebhook(request: Request, env: Env) {
 
   const event = JSON.parse(payload) as { type: string; data: { object: Session } };
   const session = event.data.object;
+  // A checkout a code made free (e.g. LOVERS) completes as "no_payment_required": still an order.
   const paid =
-    (event.type === 'checkout.session.completed' && session.payment_status === 'paid') ||
+    (event.type === 'checkout.session.completed' && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required')) ||
     event.type === 'checkout.session.async_payment_succeeded';
   if (!paid) return new Response('ignored', { status: 200 });
 
