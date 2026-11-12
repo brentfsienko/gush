@@ -11,7 +11,7 @@
 import { FROM, esc, INK, GRAY, FONT } from './notify';
 import { page, td, gap } from './waitlist';
 import { listOrders, setStatus, setArchived, importFromStripe, isStatus } from './orders';
-import { listCodes, makeCode, setCodeActive } from './codes';
+import { listCodes, makeCode, setCodeActive, setCodeMessage } from './codes';
 import { ORDER_UPDATE_EMAILS, ORDER_UPDATE_EMAILS_SINCE } from '../src/data/store';
 import type { Env } from './index';
 
@@ -144,6 +144,11 @@ export async function admin(request: Request, env: Env) {
 
   if (path === '/admin/api/codes' && method === 'POST') {
     const r = await makeCode(env, body);
+    return json(r, 'error' in r ? 400 : 200);
+  }
+
+  if (path === '/admin/api/codes/message' && method === 'POST') {
+    const r = await setCodeMessage(env, body.id, body.message);
     return json(r, 'error' in r ? 400 : 200);
   }
 

@@ -595,6 +595,20 @@ import { PRODUCTS } from '../data/products';
                 toggle.disabled = false;
               }
             });
+            const note = h('button', { class: 'btn small', type: 'button' }, c.message ? 'edit message' : 'add message');
+            note.addEventListener('click', async () => {
+              const next = prompt(`message for ${c.code} (hearts + this, when it's typed in the cart). leave empty for none.`, c.message ?? '');
+              if (next === null) return;
+              note.disabled = true;
+              try {
+                await api('/admin/api/codes/message', { id: c.id, message: next });
+                sayCode(next.trim() ? `${c.code} now says “${next.trim()}” with hearts.` : `${c.code} has no message now.`);
+                await loadCodes();
+              } catch (err) {
+                sayCode(err instanceof Error ? err.message : 'that didn’t save', true);
+                note.disabled = false;
+              }
+            });
             const used = c.max ? `used ${c.used} of ${c.max}` : `used ${c.used}×`;
             const done = c.max !== null && c.used >= c.max;
             return h(
@@ -604,6 +618,7 @@ import { PRODUCTS } from '../data/products';
               h('span', {}, c.what),
               c.message && h('span', { class: 'code-love' }, `♥ ${c.message}`),
               h('span', { class: 'dim' }, `${used}${done ? ' (all used)' : c.active ? '' : ' · off'}`),
+              done ? null : note,
               done ? null : toggle,
             );
           })

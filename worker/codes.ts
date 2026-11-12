@@ -183,6 +183,15 @@ export async function makeCode(env: Env, input: { code?: unknown; slug?: unknown
   return { ok: true as const, code };
 }
 
+/** Give a code a message (hearts + the message when it's typed in the cart), change it, or clear it. */
+export async function setCodeMessage(env: Env, id: unknown, message: unknown) {
+  if (typeof id !== 'string' || !/^promo_[A-Za-z0-9]+$/.test(id)) return { error: 'bad request' };
+  const f = new URLSearchParams();
+  f.set('metadata[gush_message]', typeof message === 'string' ? message.trim().slice(0, 80) : ''); // empty clears it
+  const r = await stripe(env, `/promotion_codes/${id}`, f);
+  return r.ok ? { ok: true as const } : { error: r.error };
+}
+
 /** Turn a code off (or back on). Off codes stop working at checkout right away. */
 export async function setCodeActive(env: Env, id: unknown, active: boolean) {
   if (typeof id !== 'string' || !/^promo_[A-Za-z0-9]+$/.test(id)) return { error: 'bad request' };
