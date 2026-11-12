@@ -3,6 +3,7 @@
 // (worker/admin.ts); the orders themselves load from /admin/api/orders, which also needs you
 // signed in, so this file holds no order data.
 import Base from '../layouts/Base.astro';
+import { PRODUCTS } from '../data/products';
 ---
 
 <Base title="orders" footer={false} noindex>
@@ -17,6 +18,27 @@ import Base from '../layouts/Base.astro';
     </div>
     <p class="banner" data-banner hidden></p>
     <p class="status-msg" data-msg aria-live="polite"></p>
+
+    <!-- Promo codes for one item at a set price (worker/codes.ts). Stripe enforces them: buyers type
+         the code in "Add promotion code" at checkout, and it only works on that item, the set number
+         of times. /admin?code=LOVERS&item=blue-thermal&price=30 opens this with the form filled in. -->
+    <details class="codes" data-codes>
+      <summary>codes</summary>
+      <div class="codes-list" data-code-list><p class="dim">loading…</p></div>
+      <form class="code-form" data-code-form novalidate>
+        <label>code <input name="code" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="LOVERS" /></label>
+        <label>item
+          <select name="item">
+            {PRODUCTS.map((p) => <option value={p.slug} data-price={p.price}>{p.title} (${p.price / 100})</option>)}
+          </select>
+        </label>
+        <label>price with the code $<input name="price" type="number" min="0" step="1" inputmode="numeric" /></label>
+        <label>uses <input name="uses" type="number" min="1" max="100" step="1" value="1" /></label>
+        <button class="btn" type="submit">make code</button>
+      </form>
+      <p class="code-msg" data-code-msg aria-live="polite"></p>
+    </details>
+
     <div class="orders" data-orders><p class="dim">loading…</p></div>
   </div>
 </Base>
@@ -66,6 +88,92 @@ import Base from '../layouts/Base.astro';
   }
 
   .status-msg.error {
+    color: var(--red);
+  }
+
+  .codes {
+    margin: 0 0 22px;
+    padding: 12px 16px;
+    border: 1.5px dashed var(--ink);
+    font-size: 14px;
+  }
+
+  .codes summary {
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .codes-list {
+    margin: 12px 0 14px;
+  }
+
+  :global(.code-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(31, 27, 22, 0.25);
+  }
+
+  :global(.code-row.off) {
+    color: var(--gray);
+  }
+
+  :global(.code-name) {
+    min-width: 90px;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+
+  .code-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 16px;
+  }
+
+  .code-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--gray);
+    font-size: 12px;
+  }
+
+  .code-form input,
+  .code-form select {
+    padding: 5px 0;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+  }
+
+  .code-form input[name='code'] {
+    width: 130px;
+    text-transform: uppercase;
+  }
+
+  .code-form input[type='number'] {
+    width: 70px;
+  }
+
+  .code-form input:focus,
+  .code-form select:focus {
+    outline: none;
+    border-bottom-width: 3px;
+  }
+
+  .code-msg {
+    min-height: 1.4em;
+    margin: 10px 0 0;
+  }
+
+  .code-msg.error {
     color: var(--red);
   }
 
@@ -445,6 +553,93 @@ import Base from '../layouts/Base.astro';
     } finally {
       importBtn.disabled = false;
     }
+  }
+
+  // ---- promo codes ----
+  type Code = { id: string; code: string; active: boolean; used: number; max: number | null; what: string };
+  const codesBox = document.querySelector<HTMLDetailsElement>('[data-codes]')!;
+  const codeList = document.querySelector<HTMLElement>('[data-code-list]')!;
+  const codeForm = document.querySelector<HTMLFormElement>('[data-code-form]')!;
+  const codeMsg = document.querySelector<HTMLElement>('[data-code-msg]')!;
+  const field = (n: string) => codeForm.elements.namedItem(n) as HTMLInputElement;
+  const sayCode = (text: string, error = false) => {
+    codeMsg.textContent = text;
+    codeMsg.classList.toggle('error', error);
+  };
+  let codesLoaded = false;
+
+  function renderCodes(codes: Code[]) {
+    codeList.replaceChildren(
+      ...(codes.length
+        ? codes.map((c) => {
+            const toggle = h('button', { class: 'btn small', type: 'button' }, c.active ? 'turn off' : 'turn on');
+            toggle.addEventListener('click', async () => {
+              toggle.disabled = true;
+              try {
+                await api('/admin/api/codes/active', { id: c.id, active: !c.active });
+                await loadCodes();
+              } catch (err) {
+                sayCode(err instanceof Error ? err.message : 'that didn’t save', true);
+                toggle.disabled = false;
+              }
+            });
+            const used = c.max ? `used ${c.used} of ${c.max}` : `used ${c.used}×`;
+            const done = c.max !== null && c.used >= c.max;
+            return h(
+              'div',
+              { class: `code-row${c.active && !done ? '' : ' off'}` },
+              h('span', { class: 'code-name' }, c.code),
+              h('span', {}, c.what),
+              h('span', { class: 'dim' }, `${used}${done ? ' (all used)' : c.active ? '' : ' · off'}`),
+              done ? null : toggle,
+            );
+          })
+        : [h('p', { class: 'dim' }, 'no codes yet.')]),
+    );
+  }
+
+  async function loadCodes() {
+    const r = await api('/admin/api/codes');
+    codesLoaded = true;
+    renderCodes(r.codes);
+  }
+
+  codesBox.addEventListener('toggle', () => {
+    if (codesBox.open && !codesLoaded) loadCodes().catch((err) => sayCode(err instanceof Error ? err.message : 'couldn’t load codes', true));
+  });
+
+  codeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const item = codeForm.elements.namedItem('item') as HTMLSelectElement;
+    const code = field('code').value.trim().toUpperCase();
+    const dollars = Number(field('price').value);
+    const uses = Number(field('uses').value || 1);
+    const full = Number(item.selectedOptions[0]?.dataset.price ?? 0);
+    if (!/^[A-Z0-9]{3,24}$/.test(code)) return sayCode('the code should be 3 to 24 letters or numbers.', true);
+    if (field('price').value === '' || !(dollars >= 0) || dollars * 100 >= full) return sayCode(`the price should be less than ${money(full)}.`, true);
+    const btn = codeForm.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    btn.disabled = true;
+    sayCode('making it in Stripe…');
+    try {
+      await api('/admin/api/codes', { code, slug: item.value, price: Math.round(dollars * 100), uses });
+      sayCode(`${code} is ready: ${item.selectedOptions[0].textContent?.replace(/ \(.*\)$/, '')} for ${money(Math.round(dollars * 100))}, ${uses === 1 ? 'once' : `${uses} times`}. it goes in “Add promotion code” at checkout.`);
+      codeForm.reset();
+      await loadCodes();
+    } catch (err) {
+      sayCode(err instanceof Error ? err.message : 'that didn’t work', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // /admin?code=LOVERS&item=blue-thermal&price=30&uses=1 opens the codes with the form filled in.
+  const q = new URLSearchParams(location.search);
+  if (q.get('code')) {
+    field('code').value = q.get('code')!;
+    if (q.get('item')) (codeForm.elements.namedItem('item') as HTMLSelectElement).value = q.get('item')!;
+    if (q.get('price')) field('price').value = q.get('price')!;
+    if (q.get('uses')) field('uses').value = q.get('uses')!;
+    codesBox.open = true;
   }
 
   importBtn.addEventListener('click', () => runImport());

@@ -16,6 +16,7 @@ import {
   IMAGE_VERSION,
 } from '../src/data/store';
 import { available } from './stock';
+import { fixedProducts, forgetFixed, productId } from './codes';
 import type { Env } from './index';
 
 const json = (body: unknown, status = 200) =>
@@ -47,8 +48,8 @@ export async function checkout(request: Request, env: Env) {
   // Where Stripe loads the logo and product photos from (see src/pages/stripe/[file].ts).
   const images = /^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin) ? SITE_URL : origin;
 
-  const params = new URLSearchParams();
-  let i = 0;
+  // Check everything first, then build the Stripe request (twice at most: see the retry below).
+  const lines: { slug: string; size: Size; qty: number; p: (typeof PRODUCTS)[number] }[] = [];
   for (const [key, qty] of wanted) {
     const [slug, size] = key.split(':') as [string, Size];
     const p = PRODUCTS.find((x) => x.slug === slug);
@@ -58,20 +59,64 @@ export async function checkout(request: Request, env: Env) {
     const left = (await available(env, slug, size)) ?? 0;
     if (left <= 0) return json({ error: `${p.title} (${size.toUpperCase()}) is sold out.` }, 409);
     if (qty > Math.min(left, MAX_QTY)) return json({ error: `only ${Math.min(left, MAX_QTY)} ${p.title} (${size.toUpperCase()}) available.` }, 409);
+    lines.push({ slug, size, qty, p });
+  }
 
+  // Items with an item-only promo code (worker/codes.ts) are sold under their lasting Stripe
+  // products, so Stripe can tell which line the code applies to. Everything else gets a one-off
+  // product made for this checkout.
+  const fixed = new Set<string>();
+  for (const slug of new Set(lines.map((l) => l.slug))) if (await fixedProducts(env, slug)) fixed.add(slug);
+
+  let res = await createSession(buildParams(lines, fixed, origin, images, wanted), env);
+  if (!res.ok && fixed.size && /no such product/i.test(res.message)) {
+    // The lasting products are gone from Stripe: forget them and check out the usual way.
+    for (const slug of fixed) await forgetFixed(env, slug);
+    res = await createSession(buildParams(lines, new Set(), origin, images, wanted), env);
+  }
+  if (!res.ok) {
+    console.error('stripe error', res.status, res.message);
+    return json({ error: 'couldn’t start checkout. try again in a bit.' }, 502);
+  }
+  return json({ url: res.url });
+}
+
+async function createSession(params: URLSearchParams, env: Env) {
+  const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'content-type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  });
+  const data = (await res.json().catch(() => ({}))) as { url?: string; error?: { message?: string } };
+  return res.ok && data.url ? { ok: true as const, url: data.url } : { ok: false as const, status: res.status, message: data.error?.message ?? '' };
+}
+
+function buildParams(
+  lines: { slug: string; size: Size; qty: number; p: (typeof PRODUCTS)[number] }[],
+  fixed: Set<string>,
+  origin: string,
+  images: string,
+  wanted: Map<string, number>,
+) {
+  const params = new URLSearchParams();
+  lines.forEach(({ slug, size, qty, p }, i) => {
     params.set(`line_items[${i}][quantity]`, String(qty));
     params.set(`line_items[${i}][price_data][currency]`, 'usd');
     params.set(`line_items[${i}][price_data][unit_amount]`, String(p.price));
-    params.set(`line_items[${i}][price_data][product_data][name]`, `${p.title} (${size.toUpperCase()})`);
-    params.set(`line_items[${i}][price_data][product_data][metadata][slug]`, p.slug);
-    params.set(`line_items[${i}][price_data][product_data][metadata][size]`, size);
-    params.set(`line_items[${i}][price_data][product_data][images][0]`, `${images}/stripe/${p.slug}.jpg?v=${IMAGE_VERSION}`);
-    if (TAX_ENABLED) {
-      params.set(`line_items[${i}][price_data][product_data][tax_code]`, CLOTHING_TAX_CODE);
-      params.set(`line_items[${i}][price_data][tax_behavior]`, 'exclusive');
+    if (fixed.has(slug)) {
+      params.set(`line_items[${i}][price_data][product]`, productId(slug, size));
+    } else {
+      params.set(`line_items[${i}][price_data][product_data][name]`, `${p.title} (${size.toUpperCase()})`);
+      params.set(`line_items[${i}][price_data][product_data][metadata][slug]`, p.slug);
+      params.set(`line_items[${i}][price_data][product_data][metadata][size]`, size);
+      params.set(`line_items[${i}][price_data][product_data][images][0]`, `${images}/stripe/${p.slug}.jpg?v=${IMAGE_VERSION}`);
+      if (TAX_ENABLED) params.set(`line_items[${i}][price_data][product_data][tax_code]`, CLOTHING_TAX_CODE);
     }
-    i++;
-  }
+    if (TAX_ENABLED) params.set(`line_items[${i}][price_data][tax_behavior]`, 'exclusive');
+  });
 
   params.set('mode', 'payment');
   // Shows Stripe's "Add promotion code" field. Codes are created in the Stripe dashboard
@@ -122,18 +167,5 @@ export async function checkout(request: Request, env: Env) {
   // orders: it shows on the payment in the Stripe dashboard). Format: "slug:size:qty,...".
   params.set('metadata[items]', [...wanted].map(([k, q]) => `${k}:${q}`).join(','));
 
-  const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-    body: params,
-  });
-  const data = (await res.json()) as { url?: string; error?: { message?: string } };
-  if (!res.ok || !data.url) {
-    console.error('stripe error', res.status, data.error?.message);
-    return json({ error: 'couldn’t start checkout. try again in a bit.' }, 502);
-  }
-  return json({ url: data.url });
+  return params;
 }

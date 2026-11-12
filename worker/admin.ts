@@ -11,6 +11,7 @@
 import { FROM, esc, INK, GRAY, FONT } from './notify';
 import { page, td, gap } from './waitlist';
 import { listOrders, setStatus, setArchived, importFromStripe, isStatus } from './orders';
+import { listCodes, makeCode, setCodeActive } from './codes';
 import { ORDER_UPDATE_EMAILS, ORDER_UPDATE_EMAILS_SINCE } from '../src/data/store';
 import type { Env } from './index';
 
@@ -109,6 +110,12 @@ export async function admin(request: Request, env: Env) {
     });
   }
 
+  // Promo codes (worker/codes.ts): the list, with how many times each was used.
+  if (path === '/admin/api/codes' && method === 'GET') {
+    const r = await listCodes(env);
+    return json(r, 'error' in r ? 502 : 200);
+  }
+
   if (method === 'POST' && !sameOrigin(request, url)) return json({ error: 'forbidden' }, 403);
   let body: Record<string, unknown> = {};
   if (method === 'POST') body = ((await request.json().catch(() => ({}))) ?? {}) as Record<string, unknown>;
@@ -133,6 +140,16 @@ export async function admin(request: Request, env: Env) {
     const r = await importFromStripe(env);
     if ('error' in r) return json(r, 502);
     return json({ ...r, orders: r.orders.map((o) => ({ ...o, trackUrl: `/order/${o.token}` })) });
+  }
+
+  if (path === '/admin/api/codes' && method === 'POST') {
+    const r = await makeCode(env, body);
+    return json(r, 'error' in r ? 400 : 200);
+  }
+
+  if (path === '/admin/api/codes/active' && method === 'POST') {
+    const r = await setCodeActive(env, body.id, body.active === true);
+    return json(r, 'error' in r ? 400 : 200);
   }
 
   return json({ error: 'not found' }, 404);
