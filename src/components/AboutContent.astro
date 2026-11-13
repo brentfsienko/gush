@@ -1,23 +1,26 @@
 ---
-// The about page's content: the green plaid photos, then the blue thermal photos, then the bag (src/assets/home/, in filename
-// order), full width, then both sewing scans. Shown at /about and
-// at the bare address, gush.supply (src/pages/index.astro), which stays as is in the address bar.
+// The about page's content: big photos that stack as you scroll (StackPanels, in the style of
+// lou.equipment), then the sewing scans. Shown at /about and at the bare address, gush.supply
+// (src/pages/index.astro), which stays as is in the address bar.
 import { Image } from 'astro:assets';
-import { homePhotos } from '../data/assets';
+import StackPanels, { type Panel } from './StackPanels.astro';
 import scan from '../assets/scans/scan-3.jpg';
 import scan2 from '../assets/scans/scan-2.jpg';
+import gush from '../assets/stack/gush.webp';
+import thermals from '../assets/stack/thermals.webp';
+import shirts from '../assets/products/green-plaid-button-up/4.webp';
+import shop from '../assets/stack/shop.webp';
 
-// Same photos as the home page (src/assets/home/), each the full width of the screen.
-const photos = homePhotos();
+// The photos, in order. pos / posPhone: which part of the photo stays in view on computers / phones.
+const panels: Panel[] = [
+  { img: gush, alt: 'the GÜSH drawstring bag, held up over autumn leaves', title: 'logo', label: 'GÜSH', href: '/shop', cta: 'shop →', pos: '50% 42%', posPhone: '42% 50%' },
+  { img: thermals, alt: 'the blue thermal, folded on its GÜSH drawstring bag', title: 'filter-thermals', label: 'thermals', href: '/item/blue-thermal', cta: 'see it →', pos: '50% 36%', posPhone: '50% 40%' },
+  { img: shirts, alt: 'the GÜSH tag in the green plaid button up', title: 'filter-shirts', label: 'shirts', href: '/item/green-plaid-button-up', cta: 'see it →', pos: '50% 32%', posPhone: '55% 50%' },
+  { img: shop, alt: 'a GÜSH tag on the drawstring bag, by yellow clogs and fallen leaves', title: 'tab-shop', label: 'shop', href: '/shop', cta: 'shop all →', pos: '50% 85%', posPhone: '40% 50%' },
+];
 ---
 
-<div class="bleed">
-  {
-    photos.map((src, i) => (
-      <Image src={src} alt="GÜSH clothing" widths={[600, 1000, 1600, 2400]} sizes="100vw" class="photo" loading={i === 0 ? 'eager' : 'lazy'} />
-    ))
-  }
-</div>
+<StackPanels panels={panels} />
 
 <!-- The sewing scans: all the site's words, sewn on fabric, straight off the scanner. -->
 <Image src={scan} alt="the GÜSH lettering, machine sewn on white fabric" widths={[600, 1000, 1600, 2400, 3200]} sizes="100vw" class="photo scan" loading="lazy" />
@@ -26,10 +29,5 @@ const photos = homePhotos();
 <style>
   .scan {
     margin-top: 40px;
-  }
-
-  .bleed {
-    display: flex;
-    flex-direction: column;
   }
 </style>

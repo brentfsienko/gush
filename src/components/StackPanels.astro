@@ -1,0 +1,222 @@
+---
+// Big photos that stack as you scroll, in the style of lou.equipment: each photo panel pins to the top
+// of the page, and the next one slides up over it, sewn on with a line of real stitching. Each panel's
+// title is your sewn lettering (src/assets/drawn/), in white, sitting just above the next panel's
+// seam, so the titles scroll by while the photos stay put. The whole panel is a link.
+//
+// The page scrolls inside <main> (under the header), so a panel is as tall as that area, not the
+// window: the script at the bottom measures it. People who've turned off animations get the photos
+// one after another, without the stacking.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { drawn } from '../data/assets';
+
+export type Panel = {
+  img: ImageMetadata;
+  alt: string;
+  /** A drawing in src/assets/drawn/ (e.g. "filter-thermals"), shown white and big. */
+  title: string;
+  /** What the title says, for screen readers. */
+  label: string;
+  href: string;
+  /** The small box by the title, e.g. "shop →". */
+  cta: string;
+  /** Which part of the photo stays in view (CSS object-position), on computers and on phones. */
+  pos?: string;
+  posPhone?: string;
+};
+
+interface Props {
+  panels: Panel[];
+}
+
+const { panels } = Astro.props;
+const titles = panels.map((p) => {
+  const t = drawn(p.title);
+  if (!t) throw new Error(`Missing drawing: "${p.title}" in src/assets/drawn/`);
+  return t;
+});
+---
+
+<section class="stackp" data-stackp style={`--n:${panels.length}`}>
+  {
+    panels.map((p, i) => (
+      <a class="panel" href={p.href} tabindex="-1" aria-hidden="true" style={`--z:${i + 1};--pos:${p.pos ?? '50% 50%'};--pos-phone:${p.posPhone ?? p.pos ?? '50% 50%'}`}>
+        <Image
+          src={p.img}
+          alt=""
+          class="media"
+          widths={[640, 960, 1400, 1800, 2400].filter((w) => w <= p.img.width)}
+          sizes="100vw"
+          loading={i === 0 ? 'eager' : 'lazy'}
+          fetchpriority={i === 0 ? 'high' : 'auto'}
+        />
+      </a>
+    ))
+  }
+  {
+    panels.map((p, i) => (
+      <a class="title" href={p.href} style={`--slot:${i + 1}`} aria-label={`${p.label}: ${p.cta.replace(/\s*→$/, '')}`}>
+        <span class="cta" aria-hidden="true">{p.cta}</span>
+        <Image src={titles[i]} alt="" class="word" widths={[480, 960, 1440, titles[i].width].filter((w, k, a) => w <= titles[i].width && a.indexOf(w) === k)} sizes="(min-width: 700px) 70vw, 90vw" loading={i === 0 ? 'eager' : 'lazy'} />
+      </a>
+    ))
+  }
+</section>
+
+<script>
+  // A panel is 92% as tall as the scrolling area under the header (80% on phones), so the next
+  // photo's seam peeks in at the bottom. Measured once, and again only when the width changes, so
+  // a phone's address bar sliding in and out doesn't make the panels jump.
+  const stack = document.querySelector<HTMLElement>('[data-stackp]');
+  const main = document.querySelector('main');
+  if (stack && main) {
+    let lastW = 0;
+    const measure = () => {
+      if (main.clientWidth === lastW) return;
+      lastW = main.clientWidth;
+      stack.style.setProperty('--area-h', `${main.clientHeight}px`);
+    };
+    measure();
+    addEventListener('resize', measure);
+  }
+</script>
+
+<style>
+  .stackp {
+    --area-h: calc(100svh - 100px); /* until the script measures it */
+    --panel-h: calc(var(--area-h) * 0.92);
+    --pad: 20px;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .panel {
+    position: sticky;
+    top: 0;
+    z-index: var(--z);
+    display: block;
+    height: var(--panel-h);
+    overflow: hidden;
+    background: var(--ink);
+  }
+
+  .panel :global(.media) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--pos);
+  }
+
+  /* A soft dark fade at the bottom, so the white lettering reads on any photo. */
+  .panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(20, 16, 12, 0.42) 0%, rgba(20, 16, 12, 0) 48%);
+    pointer-events: none;
+  }
+
+  /* Each next photo is sewn onto the one before: a strip of the page's cotton with the real stitch
+     line on it, the same one under the header. */
+  .panel:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 11px;
+    z-index: 2;
+    background: var(--page) url('../assets/header-stitch.png') left center / auto 7px repeat-x;
+  }
+
+  /* The titles: one per panel, at the bottom of that panel's spot on the page, above all the photos. */
+  .title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--slot) * var(--panel-h));
+    transform: translateY(-100%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--pad) calc(var(--panel-h) * 0.05);
+    color: #fff;
+    text-decoration: none;
+    pointer-events: none;
+  }
+
+  .title > * {
+    pointer-events: auto;
+  }
+
+  .word {
+    display: block;
+    width: auto;
+    height: clamp(52px, 12vw, 190px);
+    max-width: 100%;
+    object-fit: contain;
+    object-position: left bottom;
+    /* the sewn lettering, turned white, with a little shadow under the thread */
+    filter: brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+  }
+
+  .cta {
+    align-self: flex-end;
+    margin-bottom: 16px;
+    padding: 7px 12px;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: #fff;
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  @media (min-width: 700px) {
+    .cta {
+      padding: 9px 15px;
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+  }
+
+  .title:hover .cta,
+  .title:focus-visible .cta {
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .title:focus-visible {
+    outline: none;
+  }
+
+  @media (max-width: 699px) {
+    .stackp {
+      --panel-h: calc(var(--area-h) * 0.8);
+      --pad: 14px;
+    }
+
+    .panel :global(.media) {
+      object-position: var(--pos-phone);
+    }
+
+    .word {
+      height: clamp(40px, 15vw, 90px);
+    }
+
+    .cta {
+      margin-bottom: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel {
+      position: relative;
+    }
+  }
+</style>
