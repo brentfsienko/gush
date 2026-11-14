@@ -1,0 +1,18 @@
+---
+// A word in Rubik Black, where the sewn-word drawings used to be (tabs, buttons, filters, sizes): the
+// same chunky font as the big titles on the home page photos. With `underline`, it's underlined while
+// you hover it and on whatever's selected (the current page, a chosen filter or size).
+interface Props {
+  text: string;
+  /** Font size in px on phones. */
+  size: number;
+  /** Font size on screens 700px and wider (defaults to size). */
+  webSize?: number;
+  underline?: boolean;
+  class?: string;
+}
+
+const { text, size, webSize, underline = false, class: cls } = Astro.props;
+---
+
+<span class:list={['label', { ul: underline }, cls]} style={`--fs:${size}px;--fs-web:${webSize ?? size}px`}>{text}</span>

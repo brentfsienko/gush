@@ -2,6 +2,7 @@
 import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import Drawn from '../../components/Drawn.astro';
+import Label from '../../components/Label.astro';
 import { PRODUCTS, SIZES, formatPrice, type Product } from '../../data/products';
 import { productPhotos } from '../../data/assets';
 import { TAGLINE } from '../../data/store';
@@ -34,7 +35,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
   <div class="item-layout">
   <div class="item-media">
   <a href="/shop" class="back" aria-label="back to shop" data-back>
-    <Drawn name="btn-back" h={34} webH={44} underline />
+    <Label text="← back" size={18} webSize={20} underline />
   </a>
 
   <div class="gallery" data-gallery>
@@ -48,10 +49,10 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
     photos.length > 1 && (
       <div class="gallery-nav">
         <button class="drawn-btn" data-prev aria-label="previous photo" disabled>
-          <Drawn name="arrow-left" h={24} webH={28} />
+          <Label text="←" size={24} webSize={28} />
         </button>
         <button class="drawn-btn" data-next aria-label="next photo">
-          <Drawn name="arrow-right" h={24} webH={28} />
+          <Label text="→" size={24} webSize={28} />
         </button>
       </div>
     )
@@ -68,10 +69,10 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       photos.length > 1 && (
         <div class="zoom-nav">
           <button class="drawn-btn" data-zoom-prev aria-label="previous photo">
-            <Drawn name="arrow-left" h={24} webH={28} />
+            <Label text="←" size={24} webSize={28} />
           </button>
           <button class="drawn-btn" data-zoom-next aria-label="next photo">
-            <Drawn name="arrow-right" h={24} webH={28} />
+            <Label text="→" size={24} webSize={28} />
           </button>
         </div>
       )
@@ -91,7 +92,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
             const soldOut = (p.stock[s] ?? 0) <= 0;
             return (
               <button class="drawn-btn size" data-size={s} data-stock={p.stock[s]} data-sold={soldOut ? '' : undefined} aria-pressed="false" aria-label={soldOut ? `${s}, sold out` : s}>
-                <Drawn name={`size-${s}`} h={31} webH={35} loading="eager" underline />
+                <Label text={s.toUpperCase()} size={24} webSize={28} underline />
               </button>
             );
           })
@@ -133,7 +134,7 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
       </form>
 
       <button class="drawn-btn boxed-btn add" data-add data-slug={p.slug} aria-label="add to cart" disabled={soldOut} hidden={soldOut}>
-        <Drawn name="btn-add-to-cart" h={37} webH={42} underline />
+        <Label text="add to cart" size={22} webSize={26} underline />
       </button>
     </div>
 
@@ -344,14 +345,15 @@ const ALL_SOLD_NOTE = 'sold out. pick your size and leave your email, and we’l
 
   /* Sold out: the whole drawing goes gray: the ink to about the price gray (#7a7a7a), the white fill
      to a light gray. It can still be picked, to join the waitlist. */
-  .size[data-sold] :global(.drawn) {
-    filter: contrast(0.31) brightness(1.3);
+  .size[data-sold] :global(.label) {
+    color: var(--gray);
+    opacity: 0.6;
   }
 
   /* Hovering a sold-out size says so, in a small label where its underline would go (instead of the
      underline, until it's picked). */
-  .size[data-sold]:not([aria-pressed='true']):hover :global(.sew-line) {
-    opacity: 0;
+  .size[data-sold]:not([aria-pressed='true']):hover :global(.label.ul) {
+    text-decoration-color: transparent;
   }
 
   .size[data-sold]:not([aria-pressed='true']):hover::after {

@@ -1,13 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
+import Label from '../components/Label.astro';
 ---
 
 <Base title="unsubscribed">
   <article class="doc type bye">
     <h1 class="heading">you’re off the list.</h1>
     <p>you won’t get any more newsletter emails. changed your mind? you can sign up again at the bottom of any page.</p>
-    <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={44} webH={55} underline /></a>
+    <a href="/shop" aria-label="keep shopping"><Label text="keep shopping" size={22} webSize={26} underline /></a>
   </article>
 </Base>
 

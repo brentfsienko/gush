@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
+import Label from '../components/Label.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { CATEGORIES, PRODUCTS, formatPrice } from '../data/products';
 import { productPhotos, drawn } from '../data/assets';
@@ -22,7 +23,7 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     {
       filters.map((c) => (
         <button class="drawn-btn filter" data-filter={c} aria-pressed={c === 'all' ? 'true' : 'false'} aria-label={c}>
-          <Drawn name={`filter-${c}`} h={22} webH={27} loading="eager" underline />
+          <Label text={c} size={18} webSize={21} underline />
         </button>
       ))
     }
