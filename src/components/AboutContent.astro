@@ -6,17 +6,17 @@ import { Image } from 'astro:assets';
 import StackPanels, { type Panel } from './StackPanels.astro';
 import scan from '../assets/scans/scan-3.jpg';
 import scan2 from '../assets/scans/scan-2.jpg';
-import gush from '../assets/stack/gush.webp';
 import thermals from '../assets/stack/thermals.webp';
 import shirts from '../assets/products/green-plaid-button-up/4.webp';
-import shop from '../assets/stack/shop.webp';
+import leaves from '../assets/stack/shop.webp';
+import tag from '../assets/stack/tag.webp';
 
 // The photos, in order. pos / posPhone: which part of the photo stays in view on computers / phones.
 const panels: Panel[] = [
-  { img: gush, alt: 'the GÜSH drawstring bag, held up over autumn leaves', title: 'logo', label: 'GÜSH', href: '/shop', cta: 'shop →', pos: '50% 42%', posPhone: '42% 50%' },
+  { img: leaves, alt: 'a GÜSH tag on the drawstring bag, by yellow clogs and fallen leaves', title: 'logo', label: 'GÜSH', href: '/shop', cta: 'shop →', pos: '50% 100%', posPhone: '40% 50%' },
   { img: thermals, alt: 'the blue thermal, folded on its GÜSH drawstring bag', title: 'filter-thermals', label: 'thermals', href: '/item/blue-thermal', cta: 'see it →', pos: '50% 36%', posPhone: '50% 40%' },
   { img: shirts, alt: 'the GÜSH tag in the green plaid button up', title: 'filter-shirts', label: 'shirts', href: '/item/green-plaid-button-up', cta: 'see it →', pos: '50% 32%', posPhone: '55% 50%' },
-  { img: shop, alt: 'a GÜSH tag on the drawstring bag, by yellow clogs and fallen leaves', title: 'tab-shop', label: 'shop', href: '/shop', cta: 'shop all →', pos: '50% 85%', posPhone: '40% 50%' },
+  { img: tag, alt: 'the sewn GÜSH tag in the neck of the blue thermal', title: 'tab-shop', label: 'shop', href: '/shop', cta: 'shop all →', pos: '50% 62%', posPhone: '57% 50%' },
 ];
 ---
 
