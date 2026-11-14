@@ -25,8 +25,9 @@ export type Panel = {
   /** Which part of the photo stays in view (CSS object-position), on computers and on phones. */
   pos?: string;
   posPhone?: string;
-  /** On computers, a tall (3:4) patch at the left with a bigger name beside it, instead of a wide one. */
-  tall?: boolean;
+  /** The photo runs the full width of the page, edge to edge, instead of a patch with cotton around
+   *  it (stitched along the bottom, where it meets the cotton), with a bigger name. */
+  full?: boolean;
 };
 
 interface Props {
@@ -46,10 +47,10 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
         href={p.href}
         aria-label={p.label}
         data-side={i % 2 ? 'right' : 'left'}
-        data-tall={p.tall ? '' : undefined}
+        data-full={p.full ? '' : undefined}
         style={`--z:${i + 1};--pos:${p.pos ?? '50% 50%'};--pos-phone:${p.posPhone ?? p.pos ?? '50% 50%'};--tilt:${TILTS[i % TILTS.length]}`}
       >
-        <span class="patch sewn-box">
+        <span class:list={['patch', { 'sewn-box': !p.full }]}>
           <Image
             src={p.img}
             alt={p.alt}
@@ -61,7 +62,7 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
           />
         </span>
         <span class="label">
-          <Drawn name={p.title} h={30} webH={p.tall ? 120 : 60} loading={i === 0 ? 'eager' : 'lazy'} underline={!!drawn(`${p.title}-line`)} />
+          <Drawn name={p.title} h={30} webH={p.full ? 84 : 60} loading={i === 0 ? 'eager' : 'lazy'} underline={!!drawn(`${p.title}-line`)} />
         </span>
       </a>
     ))
@@ -160,23 +161,29 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
     transform-origin: right center;
   }
 
-  /* A tall patch (computers only; on phones every patch is tall already): 3:4, at the left, with
-     its name bigger, beside it at the bottom. */
+  /* A full-width photo: edge to edge from the top, no outline (its sides would run off the page),
+     just the stitch line along the bottom where it meets the cotton. */
+  .panel[data-full] .patch {
+    top: 0;
+    left: 0;
+    right: 0;
+    box-shadow: none;
+  }
+
+  .panel[data-full] .patch::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    height: 7px;
+    background: url('../assets/stitch-bottom.png') left center / auto 7px repeat-x;
+    pointer-events: none;
+  }
+
   @media (min-width: 700px) {
-    .panel[data-tall] {
-      --patch-w: calc((var(--panel-h) - var(--top) - var(--strip)) * 0.75);
-    }
-
-    .panel[data-tall] .patch {
-      right: auto;
-      width: var(--patch-w);
-    }
-
-    .panel[data-tall] .label {
-      left: calc(var(--side) + var(--patch-w) + 56px);
-      right: auto;
-      bottom: var(--strip);
-      transform-origin: left bottom;
+    .panel[data-full] .label {
+      bottom: calc(var(--strip) / 2 - 42px);
     }
   }
 
