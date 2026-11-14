@@ -29,6 +29,8 @@ export type Panel = {
   posPhone?: string;
   /** A dark title, for a light photo. */
   dark?: boolean;
+  /** A squatter, flatter title with the letters closer together (the GÜSH one). */
+  squat?: boolean;
   /** Scroll through the whole photo, top to bottom, before the next one comes up (when it's taller
    *  than the panel, as on computers). One per page. */
   pan?: boolean;
@@ -85,7 +87,7 @@ const panAt = panels.findIndex((p) => p.pan);
             />
           </picture>
           {p.pan && p.title && (
-            <span class:list={['title', 'inpanel', { dark: p.dark }]} aria-hidden="true">
+            <span class:list={['title', 'inpanel', { dark: p.dark, squat: p.squat }]} aria-hidden="true">
               <span class="words">
                 {p.title.split('\n').map((line) => (
                   <span class="line">{line}</span>
@@ -269,6 +271,12 @@ const panAt = panels.findIndex((p) => p.pan);
     -webkit-text-stroke: 0.035em currentColor;
     paint-order: stroke fill;
     white-space: nowrap;
+  }
+
+  .title.squat .words {
+    letter-spacing: -0.09em;
+    transform: scale(1.08, 0.78);
+    transform-origin: left bottom;
   }
 
   .title:not(.dark) .words {

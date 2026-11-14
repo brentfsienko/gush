@@ -59,13 +59,13 @@ body {
   grid-template-rows: auto auto 1fr;
 }
 
-/* The free-shipping banner across the very top: a thin black strip with the words scrolling by
+/* The free-shipping banner across the very top: a thin mustard strip with the words scrolling by
    (FREE_SHIPPING_BANNER in src/data/store.ts). Two identical runs side by side, moved left by one
    run's width and repeated, so it loops without a jump. Still for people who turn off animations. */
 .banner {
   overflow: hidden;
-  background: var(--ink);
-  color: var(--page);
+  background: var(--sun);
+  color: var(--ink);
   font-size: 11px;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -76,7 +76,7 @@ body {
 .banner-track {
   display: flex;
   width: max-content;
-  animation: banner-scroll 40s linear infinite;
+  animation: banner-scroll 36s linear infinite;
 }
 
 .banner-run {
@@ -84,14 +84,7 @@ body {
 }
 
 .banner-item {
-  padding: 0 28px;
-}
-
-.banner-item::after {
-  content: '·';
-  position: relative;
-  left: 28px;
-  opacity: 0.6;
+  padding: 0 min(32vw, 420px) 0 0;
 }
 
 @keyframes banner-scroll {

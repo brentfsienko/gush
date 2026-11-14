@@ -143,30 +143,47 @@ export async function listCodes(env: Env): Promise<{ codes: CodeRow[] } | { erro
 }
 
 /** Make a code: `code` gets `slug` for `price` cents (instead of its usual price), `uses` times in all. */
-export async function makeCode(env: Env, input: { code?: unknown; slug?: unknown; price?: unknown; uses?: unknown; message?: unknown }) {
+// slug "all": a code for the whole order, `off` percent (unit "%") or `off` cents (unit "$") off the
+// items (not shipping).
+export async function makeCode(
+  env: Env,
+  input: { code?: unknown; slug?: unknown; price?: unknown; uses?: unknown; message?: unknown; off?: unknown; unit?: unknown },
+) {
   if (!env.STRIPE_SECRET_KEY) return { error: 'Stripe isn’t set up here.' };
   const code = typeof input.code === 'string' ? input.code.trim().toUpperCase() : '';
+  const whole = input.slug === 'all';
   const p = PRODUCTS.find((x) => x.slug === input.slug);
   const price = Number(input.price);
+  const off = Number(input.off);
   const uses = Number(input.uses);
   const message = typeof input.message === 'string' ? input.message.trim().slice(0, 80) : '';
   if (!/^[A-Z0-9]{3,24}$/.test(code)) return { error: 'the code should be 3 to 24 letters or numbers.' };
-  if (!p) return { error: 'pick an item.' };
-  if (!Number.isInteger(price) || price < 0 || price >= p.price) return { error: `the price should be less than ${formatPrice(p.price)}.` };
-  if (!Number.isInteger(uses) || uses < 1 || uses > 100) return { error: 'uses should be 1 to 100.' };
-
-  const made = await ensureProducts(env, p.slug);
-  if (!made.ok) return { error: made.error };
+  if (!whole && !p) return { error: 'pick an item.' };
+  if (whole && input.unit === '%' && !(Number.isInteger(off) && off >= 1 && off <= 100)) return { error: 'the percent off should be 1 to 100.' };
+  if (whole && input.unit !== '%' && !(Number.isInteger(off) && off >= 100)) return { error: 'the amount off should be at least $1.' };
+  if (!whole && (!Number.isInteger(price) || price < 0 || price >= p!.price)) return { error: `the price should be less than ${formatPrice(p!.price)}.` };
+  if (!Number.isInteger(uses) || uses < 1 || uses > 500) return { error: 'uses should be 1 to 500.' };
 
   const c = new URLSearchParams();
   c.set('name', code);
-  c.set('amount_off', String(p.price - price));
-  c.set('currency', 'usd');
   c.set('duration', 'once');
   c.set('max_redemptions', String(uses));
-  sizesOf(p.slug).forEach((s, i) => c.set(`applies_to[products][${i}]`, productId(p.slug, s)));
-  c.set('metadata[gush_slug]', p.slug);
-  c.set('metadata[gush_price]', String(price));
+  if (whole) {
+    if (input.unit === '%') c.set('percent_off', String(off));
+    else {
+      c.set('amount_off', String(off));
+      c.set('currency', 'usd');
+    }
+    c.set('metadata[gush_scope]', 'order');
+  } else {
+    const made = await ensureProducts(env, p!.slug);
+    if (!made.ok) return { error: made.error };
+    c.set('amount_off', String(p!.price - price));
+    c.set('currency', 'usd');
+    sizesOf(p!.slug).forEach((s, i) => c.set(`applies_to[products][${i}]`, productId(p!.slug, s)));
+    c.set('metadata[gush_slug]', p!.slug);
+    c.set('metadata[gush_price]', String(price));
+  }
   const coupon = await stripe<Coupon>(env, '/coupons', c);
   if (!coupon.ok) return { error: coupon.error };
 

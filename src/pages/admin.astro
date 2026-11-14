@@ -30,11 +30,16 @@ import { PRODUCTS } from '../data/products';
         <label>code <input name="code" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="FRIENDS" /></label>
         <label>item
           <select name="item">
+            <option value="all">whole order</option>
             {PRODUCTS.map((p) => <option value={p.slug} data-price={p.price}>{p.title} (${p.price / 100})</option>)}
           </select>
         </label>
-        <label>price with the code $<input name="price" type="number" min="0" step="1" inputmode="numeric" /></label>
-        <label>uses <input name="uses" type="number" min="1" max="100" step="1" value="1" /></label>
+        <label data-for-item hidden>price with the code $<input name="price" type="number" min="0" step="1" inputmode="numeric" /></label>
+        <label data-for-order>off <input name="off" type="number" min="1" step="1" inputmode="numeric" placeholder="20" /></label>
+        <label data-for-order>
+          &nbsp;<select name="unit"><option value="%">% off</option><option value="$">$ off</option></select>
+        </label>
+        <label>uses <input name="uses" type="number" min="1" max="500" step="1" value="1" /></label>
         <label class="msg-field">message with hearts, when they enter it in the cart (optional)
           <input name="message" type="text" maxlength="80" autocomplete="off" placeholder="I LOVE YOU :***" />
         </label>
@@ -168,6 +173,10 @@ import { PRODUCTS } from '../data/products';
 
   .code-form input[type='number'] {
     width: 70px;
+  }
+
+  .code-form label[hidden] {
+    display: none;
   }
 
   .code-form .msg-field {
@@ -636,22 +645,50 @@ import { PRODUCTS } from '../data/products';
     if (codesBox.open && !codesLoaded) loadCodes().catch((err) => sayCode(err instanceof Error ? err.message : 'couldn’t load codes', true));
   });
 
+  // Whole order: percent or dollars off. One item: the price with the code.
+  const itemSel = codeForm.elements.namedItem('item') as HTMLSelectElement;
+  const unitSel = codeForm.elements.namedItem('unit') as HTMLSelectElement;
+  const syncKind = () => {
+    const whole = itemSel.value === 'all';
+    codeForm.querySelectorAll<HTMLElement>('[data-for-order]').forEach((el) => (el.hidden = !whole));
+    codeForm.querySelectorAll<HTMLElement>('[data-for-item]').forEach((el) => (el.hidden = whole));
+  };
+  itemSel.addEventListener('change', syncKind);
+  syncKind();
+
   codeForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const item = codeForm.elements.namedItem('item') as HTMLSelectElement;
+    const item = itemSel;
     const code = field('code').value.trim().toUpperCase();
+    const whole = item.value === 'all';
     const dollars = Number(field('price').value);
+    const offN = Number(field('off').value);
+    const unit = unitSel.value;
     const uses = Number(field('uses').value || 1);
     const full = Number(item.selectedOptions[0]?.dataset.price ?? 0);
     if (!/^[A-Z0-9]{3,24}$/.test(code)) return sayCode('the code should be 3 to 24 letters or numbers.', true);
-    if (field('price').value === '' || !(dollars >= 0) || dollars * 100 >= full) return sayCode(`the price should be less than ${money(full)}.`, true);
+    if (whole && unit === '%' && !(Number.isInteger(offN) && offN >= 1 && offN <= 100)) return sayCode('the percent off should be 1 to 100.', true);
+    if (whole && unit === '$' && !(offN >= 1)) return sayCode('the amount off should be at least $1.', true);
+    if (!whole && (field('price').value === '' || !(dollars >= 0) || dollars * 100 >= full)) return sayCode(`the price should be less than ${money(full)}.`, true);
     const btn = codeForm.querySelector<HTMLButtonElement>('button[type=submit]')!;
     btn.disabled = true;
     sayCode('making it in Stripe…');
     try {
-      await api('/admin/api/codes', { code, slug: item.value, price: Math.round(dollars * 100), uses, message: field('message').value.trim() });
-      sayCode(`${code} is ready: ${item.selectedOptions[0].textContent?.replace(/ \(.*\)$/, '')} for ${money(Math.round(dollars * 100))}, ${uses === 1 ? 'once' : `${uses} times`}. it goes in “Add promotion code” at checkout.`);
+      await api('/admin/api/codes', {
+        code,
+        slug: item.value,
+        price: Math.round(dollars * 100),
+        off: whole ? (unit === '%' ? offN : Math.round(offN * 100)) : undefined,
+        unit,
+        uses,
+        message: field('message').value.trim(),
+      });
+      const what = whole
+        ? `${unit === '%' ? `${offN}%` : money(Math.round(offN * 100))} off the whole order`
+        : `${item.selectedOptions[0].textContent?.replace(/ \(.*\)$/, '')} for ${money(Math.round(dollars * 100))}`;
+      sayCode(`${code} is ready: ${what}, ${uses === 1 ? 'once' : `${uses} times`}. it goes in the cart’s “have a code?” box or Stripe’s “Add promotion code”.`);
       codeForm.reset();
+      syncKind();
       await loadCodes();
     } catch (err) {
       sayCode(err instanceof Error ? err.message : 'that didn’t work', true);
@@ -664,7 +701,10 @@ import { PRODUCTS } from '../data/products';
   const q = new URLSearchParams(location.search);
   if (q.get('code')) {
     field('code').value = q.get('code')!;
-    if (q.get('item')) (codeForm.elements.namedItem('item') as HTMLSelectElement).value = q.get('item')!;
+    if (q.get('item')) itemSel.value = q.get('item')!;
+    if (q.get('off')) field('off').value = q.get('off')!;
+    if (q.get('unit')) unitSel.value = q.get('unit')!;
+    syncKind();
     if (q.get('price')) field('price').value = q.get('price')!;
     if (q.get('uses')) field('uses').value = q.get('uses')!;
     if (q.get('message')) field('message').value = q.get('message')!;
