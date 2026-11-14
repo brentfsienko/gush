@@ -25,6 +25,9 @@ export type Panel = {
   posPhone?: string;
   /** A dark title, for a light photo. */
   dark?: boolean;
+  /** Show the whole photo, never cropped (for a tall photo on a wide screen): it sits in the middle
+   *  with a soft, blurred copy of itself filling the sides. On phones it fills the panel as usual. */
+  whole?: boolean;
 };
 
 interface Props {
@@ -40,12 +43,13 @@ const { panels } = Astro.props;
       const Tag = p.href ? 'a' : 'div';
       return (
         <Tag
-          class:list={['panel', { light: p.dark }]}
+          class:list={['panel', { light: p.dark, whole: p.whole }]}
           href={p.href}
           tabindex={p.href ? '-1' : undefined}
           aria-hidden="true"
           style={`--z:${i + 1};--pos:${p.pos ?? '50% 50%'};--pos-phone:${p.posPhone ?? p.pos ?? '50% 50%'}`}
         >
+          {p.whole && <Image src={p.img} alt="" class="backdrop" widths={[480]} sizes="480px" loading={i === 0 ? 'eager' : 'lazy'} />}
           <Image
             src={p.img}
             alt=""
@@ -126,6 +130,20 @@ const { panels } = Astro.props;
     object-position: var(--pos);
   }
 
+  /* The whole photo, in the middle, over a blurred copy of itself (computers; see the phone rule). */
+  .panel.whole :global(.media) {
+    object-fit: contain;
+  }
+
+  .panel :global(.backdrop) {
+    position: absolute;
+    inset: -60px;
+    width: calc(100% + 120px);
+    height: calc(100% + 120px);
+    object-fit: cover;
+    filter: blur(36px) saturate(1.1) brightness(0.82);
+  }
+
   /* A soft dark fade at the bottom, so the white title reads on any photo. */
   .panel:not(.light)::after {
     content: '';
@@ -196,6 +214,15 @@ const { panels } = Astro.props;
 
     .panel :global(.media) {
       object-position: var(--pos-phone);
+    }
+
+    /* On a phone the panel is tall too, so the photo just fills it. */
+    .panel.whole :global(.media) {
+      object-fit: cover;
+    }
+
+    .panel :global(.backdrop) {
+      display: none;
     }
 
     .words {

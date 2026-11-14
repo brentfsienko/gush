@@ -9,9 +9,9 @@ import plaid from '../assets/products/green-plaid-button-up/4.webp';
 import scan from '../assets/scans/scan-2.jpg';
 
 // The photos, in order. pos / posPhone: which part of the photo stays in view on computers / phones
-// ("50% 100%" = the bottom). dark: a dark title, for a light photo.
+// ("50% 100%" = the bottom). dark: a dark title, for a light photo. whole: never cropped on computers.
 const panels: Panel[] = [
-  { img: bag, alt: 'a GÜSH tag on the drawstring bag, over yellow clogs in the fallen leaves', title: 'GÜSH', href: '/shop', pos: '50% 100%', posPhone: '50% 100%' },
+  { img: bag, alt: 'a GÜSH tag on the drawstring bag, over yellow clogs in the fallen leaves', title: 'GÜSH', href: '/shop', posPhone: '50% 50%', whole: true },
   { img: thermalTag, alt: 'the sewn GÜSH tag in the neck of the blue thermal', title: 'thermals', href: '/item/blue-thermal', pos: '50% 62%', posPhone: '57% 50%' },
   { img: plaid, alt: 'the GÜSH tag in the green plaid button up', title: 'shirts', href: '/item/green-plaid-button-up', pos: '50% 32%', posPhone: '55% 50%' },
   { img: scan, alt: 'the GÜSH lettering, machine sewn on white fabric', title: 'made in\nseattle', pos: '50% 30%', posPhone: '22% 50%', dark: true },
