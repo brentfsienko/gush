@@ -174,9 +174,10 @@ const panAt = panels.findIndex((p) => p.pan);
           R.push(r < 0 ? null : r - 160);
         }
         let bottom = 0; // lowest row with ink
-        for (let y = 0; y < 320; y++) if (L[y] != null) bottom = y;
+        let top = 320; // highest row with ink
+        for (let y = 0; y < 320; y++) if (L[y] != null) ((bottom = y), top === 320 && (top = y));
         const m = x.measureText(ch);
-        return { L, R, adv: m.width, inkBelow: bottom - 240, asc: m.fontBoundingBoxAscent, desc: m.fontBoundingBoxDescent };
+        return { L, R, adv: m.width, inkBelow: bottom - 240, inkAbove: 240 - top, asc: m.fontBoundingBoxAscent, desc: m.fontBoundingBoxDescent };
       };
       // Where each title's ink actually sits (letters have room around them in their box), so it
       // can be nudged into the photo's bottom-left corner, overlapping both edges by a hair.
@@ -249,9 +250,34 @@ const panAt = panels.findIndex((p) => p.pan);
         const next = (fs * panelEl.clientWidth) / (inkRight - inkLeft - 2 * fs * EDGE_OVERLAP);
         if (Number.isFinite(next) && next > 0 && Math.abs(inkRight - inkLeft - target) > 0.5) w.style.fontSize = `${next.toFixed(2)}px`;
       };
+      // ...and the whole height too: stretched up until its tallest bit (the Ü's dots) meets the top
+      // border, overlapping it by the same hair.
+      const SX = 1.08;
+      const heighten = (w: HTMLElement, shapes: ReturnType<typeof shape>[][]) => {
+        if (!w.closest('.squat')) return;
+        const panelEl = stack.querySelector<HTMLElement>('[data-pan]') ?? stack.querySelector<HTMLElement>('.panel');
+        const chars = [...(w.querySelector('.line')?.querySelectorAll<HTMLElement>('.ch') ?? [])];
+        if (!panelEl || !chars.length) return;
+        const sy0 = 0.78;
+        w.style.transform = `scale(${SX}, ${sy0})`;
+        let top = Infinity;
+        let bottom = -Infinity;
+        chars.forEach((el, i) => {
+          const r = el.getBoundingClientRect();
+          const sh = shapes[0][i];
+          const k = r.height / (sh.asc + sh.desc);
+          top = Math.min(top, r.top + (sh.asc - sh.inkAbove) * k);
+          bottom = Math.max(bottom, r.top + (sh.asc + sh.inkBelow + 1) * k);
+        });
+        const px = parseFloat(getComputedStyle(w).fontSize) * EDGE_OVERLAP;
+        const target = panelEl.clientHeight + 2 * px;
+        const sy = (sy0 * target) / (bottom - top);
+        if (Number.isFinite(sy) && sy > 0) w.style.transform = `scale(${SX}, ${sy.toFixed(4)})`;
+      };
       const place = () =>
         all.forEach(([w, s]) => {
           widen(w, s);
+          heighten(w, s);
           corner(w, s);
         });
       requestAnimationFrame(() => {
