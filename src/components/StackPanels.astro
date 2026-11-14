@@ -174,10 +174,9 @@ const panAt = panels.findIndex((p) => p.pan);
           R.push(r < 0 ? null : r - 160);
         }
         let bottom = 0; // lowest row with ink
-        let top = 320; // highest row with ink
-        for (let y = 0; y < 320; y++) if (L[y] != null) ((bottom = y), top === 320 && (top = y));
+        for (let y = 0; y < 320; y++) if (L[y] != null) bottom = y;
         const m = x.measureText(ch);
-        return { L, R, adv: m.width, inkBelow: bottom - 240, inkAbove: 240 - top, asc: m.fontBoundingBoxAscent, desc: m.fontBoundingBoxDescent };
+        return { L, R, adv: m.width, inkBelow: bottom - 240, asc: m.fontBoundingBoxAscent, desc: m.fontBoundingBoxDescent };
       };
       // Where each title's ink actually sits (letters have room around them in their box), so it
       // can be nudged into the photo's bottom-left corner, overlapping both edges by a hair.
@@ -229,57 +228,7 @@ const panAt = panels.findIndex((p) => p.pan);
         }
         w.classList.add('fitted');
       }
-      // The squat title (GÜSH) runs the whole width of its photo, from the left border to the right
-      // one, overlapping each by the same hair: sized from its letters' real shapes.
-      const widen = (w: HTMLElement, shapes: ReturnType<typeof shape>[][]) => {
-        if (!w.closest('.squat')) return;
-        const panelEl = stack.querySelector<HTMLElement>('[data-pan]') ?? stack.querySelector<HTMLElement>('.panel');
-        const chars = [...(w.querySelector('.line')?.querySelectorAll<HTMLElement>('.ch') ?? [])];
-        if (!panelEl || !chars.length) return;
-        w.style.fontSize = '';
-        w.style.translate = '';
-        const first = chars[0].getBoundingClientRect();
-        const last = chars.at(-1)!.getBoundingClientRect();
-        const s0 = shapes[0][0];
-        const sN = shapes[0].at(-1)!;
-        const inkLeft = first.left + Math.min(...(s0.L.filter((v) => v != null) as number[])) * (first.width / s0.adv);
-        const inkRight = last.left + Math.max(...(sN.R.filter((v) => v != null) as number[])) * (last.width / sN.adv);
-        const fs = parseFloat(getComputedStyle(w).fontSize);
-        const target = panelEl.clientWidth + 2 * fs * EDGE_OVERLAP;
-        // the overlap grows with the size too, so solve for it
-        const next = (fs * panelEl.clientWidth) / (inkRight - inkLeft - 2 * fs * EDGE_OVERLAP);
-        if (Number.isFinite(next) && next > 0 && Math.abs(inkRight - inkLeft - target) > 0.5) w.style.fontSize = `${next.toFixed(2)}px`;
-      };
-      // ...and the whole height too: stretched up until its tallest bit (the Ü's dots) meets the top
-      // border, overlapping it by the same hair.
-      const SX = 1.08;
-      const heighten = (w: HTMLElement, shapes: ReturnType<typeof shape>[][]) => {
-        if (!w.closest('.squat')) return;
-        const panelEl = stack.querySelector<HTMLElement>('[data-pan]') ?? stack.querySelector<HTMLElement>('.panel');
-        const chars = [...(w.querySelector('.line')?.querySelectorAll<HTMLElement>('.ch') ?? [])];
-        if (!panelEl || !chars.length) return;
-        const sy0 = 0.78;
-        w.style.transform = `scale(${SX}, ${sy0})`;
-        let top = Infinity;
-        let bottom = -Infinity;
-        chars.forEach((el, i) => {
-          const r = el.getBoundingClientRect();
-          const sh = shapes[0][i];
-          const k = r.height / (sh.asc + sh.desc);
-          top = Math.min(top, r.top + (sh.asc - sh.inkAbove) * k);
-          bottom = Math.max(bottom, r.top + (sh.asc + sh.inkBelow + 1) * k);
-        });
-        const px = parseFloat(getComputedStyle(w).fontSize) * EDGE_OVERLAP;
-        const target = panelEl.clientHeight + 2 * px;
-        const sy = (sy0 * target) / (bottom - top);
-        if (Number.isFinite(sy) && sy > 0) w.style.transform = `scale(${SX}, ${sy.toFixed(4)})`;
-      };
-      const place = () =>
-        all.forEach(([w, s]) => {
-          widen(w, s);
-          heighten(w, s);
-          corner(w, s);
-        });
+      const place = () => all.forEach(([w, s]) => corner(w, s));
       requestAnimationFrame(() => {
         place();
         stack.classList.add('titles-ready'); // show them now: right font, spaced, in place
@@ -351,7 +300,6 @@ const panAt = panels.findIndex((p) => p.pan);
     --side: 24px; /* the white border down the sides */
     position: relative;
     isolation: isolate;
-    overflow-x: clip; /* a title's box may reach past the edge (its letters don't); never scroll sideways */
   }
 
   .panel {
