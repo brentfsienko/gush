@@ -59,12 +59,12 @@ body {
   grid-template-rows: auto auto 1fr;
 }
 
-/* The free-shipping banner across the very top: a thin burnt-orange strip with white type with the words scrolling by
+/* The free-shipping banner across the very top: a thin purple strip with white type with the words scrolling by
    (FREE_SHIPPING_BANNER in src/data/store.ts). Two identical runs side by side, moved left by one
    run's width and repeated, so it loops without a jump. Still for people who turn off animations. */
 .banner {
   overflow: hidden;
-  background: #d9733a; /* a soft burnt orange */
+  background: #7a5ea8; /* a soft purple */
   color: #fff;
   font-size: 10px;
   letter-spacing: 0.08em;
