@@ -8,10 +8,6 @@ import SiteFooter from '../components/SiteFooter.astro';
 import { drawn } from '../data/assets';
 import { TAGLINE, IMAGE_VERSION, WEB_ANALYTICS_TOKEN, FREE_SHIPPING_BANNER } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
-// Every link and button is in Rubik Black, like the big titles on the home page photos.
-import '@fontsource/rubik/latin-900.css';
-import rubikFont from '@fontsource/rubik/files/rubik-latin-900-normal.woff2?url';
-import Label from '../components/Label.astro';
 
 interface Props {
   title?: string;
@@ -33,11 +29,9 @@ interface Props {
   noindex?: boolean;
   /** The free-shipping banner at the top (on by default, except on private pages). */
   banner?: boolean;
-  /** The links float over the page's first photo (home and about), instead of a bar above it. */
-  overlay?: boolean;
 }
 
-const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false, footer = true, noindex = false, shareTitle, banner = !noindex, overlay = false } = Astro.props;
+const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false, footer = true, noindex = false, shareTitle, banner = !noindex } = Astro.props;
 const showBanner = banner && !!FREE_SHIPPING_BANNER;
 const fullTitle = shareTitle ?? (title ? `${title} · GÜSH` : 'GÜSH');
 // Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
@@ -49,8 +43,7 @@ const ogImage = ogImageUrl.href;
 const pageUrl = new URL(Astro.url.pathname.replace(/(index)?\.html$/, ''), Astro.site ?? Astro.url).href;
 // Hand-drawn digits for numbers the browser fills in (cart count, quantities). Index = digit.
 const digitImgs = Array.from({ length: 10 }, (_, d) => drawn(`digit-${d}`));
-const digitUrls: string[] | null = null; // the cart count is typed now (Rubik), not the sewn digits
-const _sewnDigits = digitImgs.every(Boolean)
+const digitUrls = digitImgs.every(Boolean)
   ? await Promise.all(digitImgs.map(async (src) => (await getImage({ src: src!, height: 120, format: 'webp', quality: 'max' })).src))
   : null;
 ---
@@ -84,7 +77,6 @@ const _sewnDigits = digitImgs.every(Boolean)
     <title>{fullTitle}</title>
     <!-- Preloaded so text and the drawn cart count never pop in late. -->
     <link rel="preload" as="font" type="font/woff2" href={plexFont} crossorigin />
-    <link rel="preload" as="font" type="font/woff2" href={rubikFont} crossorigin />
     {
       WEB_ANALYTICS_TOKEN && (
         <script
@@ -97,7 +89,7 @@ const _sewnDigits = digitImgs.every(Boolean)
     }
   </head>
   <body>
-    <div class:list={['app', { 'has-banner': showBanner, overlay }]} data-app>
+    <div class:list={['app', { 'has-banner': showBanner }]}>
       {
         showBanner && (
           <div class="banner" role="note" aria-label={FREE_SHIPPING_BANNER}>
@@ -114,16 +106,19 @@ const _sewnDigits = digitImgs.every(Boolean)
         )
       }
       <header class="topbar">
+        <a href="/" class="brand" aria-label="GÜSH">
+          <Drawn name="logo" h={34} webH={58} alt="GÜSH" loading="eager" />
+        </a>
         <nav class="tabs" aria-label="main">
           <a href="/shop" class="tab" aria-current={tab === 'shop' ? 'page' : undefined} aria-label="shop">
-            <Label text="shop" size={16} webSize={20} underline />
+            <Drawn name="tab-shop" h={18} webH={28} loading="eager" underline />
           </a>
           <a href="/about" class="tab" aria-current={tab === 'about' ? 'page' : undefined} aria-label="about">
-            <Label text="about" size={16} webSize={20} underline />
+            <Drawn name="tab-about" h={18} webH={28} loading="eager" underline />
           </a>
         </nav>
         <a href="/cart" class="tab cart-tab" aria-current={tab === 'cart' ? 'page' : undefined} aria-label="cart">
-          <Label text="cart" size={16} webSize={20} underline />
+          <Drawn name="tab-cart" h={18} webH={28} loading="eager" underline />
           <span class="cart-count" data-cart-count></span>
           <script is:inline define:vars={{ digitUrls, clearCart }}>
             // Runs right here, before the first paint, so the count never flashes a wrong number.
@@ -163,31 +158,6 @@ const _sewnDigits = digitImgs.every(Boolean)
     <script>
       import { updateBadge } from '../scripts/cart';
       updateBadge();
-
-      // The floating links are white over the darker photos, and dark over anything light under them
-      // (the sewing scan, the white footer), so they always show.
-      const app = document.querySelector<HTMLElement>('[data-app].overlay');
-      const scroller = document.querySelector('main');
-      const bar = document.querySelector<HTMLElement>('.topbar');
-      if (app && scroller && bar) {
-        let queued = false;
-        const check = () => {
-          queued = false;
-          const r = bar.getBoundingClientRect();
-          const y = r.top + r.height / 2;
-          const under = document.elementsFromPoint(r.left + r.width / 2, y).find((el) => !bar.contains(el));
-          const panel = under?.closest('.panel');
-          app.classList.toggle('past-photos', !panel || panel.classList.contains('light'));
-        };
-        scroller.addEventListener(
-          'scroll',
-          () => {
-            if (!queued) (queued = true), requestAnimationFrame(check);
-          },
-          { passive: true },
-        );
-        check();
-      }
       // Back/forward cache restores old pages; refresh the count when that happens.
       addEventListener('pageshow', updateBadge);
     </script>

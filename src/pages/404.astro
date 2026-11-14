@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
-import Label from '../components/Label.astro';
 ---
 
 <Base title="not found">
@@ -9,7 +8,7 @@ import Label from '../components/Label.astro';
     <div class="type lost">
       <h2 class="heading">nothing here</h2>
       <p>this page got torn out.</p>
-      <a href="/shop" aria-label="keep shopping"><Label text="keep shopping" size={22} webSize={26} underline /></a>
+      <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={44} webH={55} underline /></a>
     </div>
   </div>
 </Base>

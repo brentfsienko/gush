@@ -2,7 +2,6 @@
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
-import Label from '../components/Label.astro';
 import { PRODUCTS, formatPrice } from '../data/products';
 import { SHIPPING_OPTIONS, MAX_QTY, FREE_SHIPPING_OVER } from '../data/store';
 import { productPhotos } from '../data/assets';
@@ -69,7 +68,7 @@ const config = { catalog, maxQty: MAX_QTY, freeOver: FREE_SHIPPING_OVER, shippin
       <p class="msg" aria-live="polite" data-msg></p>
       <div class="center">
         <button class="drawn-btn boxed-btn" data-checkout aria-label="checkout">
-          <Label text="checkout" size={22} webSize={26} underline />
+          <Drawn name="btn-checkout" h={48} webH={58} underline />
         </button>
       </div>
     </div>
@@ -77,7 +76,7 @@ const config = { catalog, maxQty: MAX_QTY, freeOver: FREE_SHIPPING_OVER, shippin
     <div data-empty hidden>
       <div class="empty">
         <h2 class="heading">your cart is empty</h2>
-        <a href="/shop" aria-label="keep shopping"><Label text="keep shopping" size={22} webSize={26} underline /></a>
+        <a href="/shop" aria-label="keep shopping"><Drawn name="btn-keep-shopping" h={44} webH={55} underline /></a>
       </div>
     </div>
   </div>
@@ -89,12 +88,12 @@ const config = { catalog, maxQty: MAX_QTY, freeOver: FREE_SHIPPING_OVER, shippin
         <a class="line-title" data-title></a>
         <p class="line-sub"><span data-size></span> · <span data-price></span></p>
         <div class="qty">
-          <button class="drawn-btn" data-minus aria-label="one less"><Label text="−" size={20} webSize={22} /></button>
+          <button class="drawn-btn" data-minus aria-label="one less"><Drawn name="btn-minus" h={10} webH={11} loading="eager" /></button>
           <span class="qty-n" data-qty></span>
-          <button class="drawn-btn" data-plus aria-label="one more"><Label text="+" size={20} webSize={22} /></button>
+          <button class="drawn-btn" data-plus aria-label="one more"><Drawn name="btn-plus" h={20} webH={22} loading="eager" /></button>
         </div>
       </div>
-      <button class="drawn-btn remove" data-remove aria-label="remove"><Label text="remove" size={14} webSize={15} underline /></button>
+      <button class="drawn-btn remove" data-remove aria-label="remove"><Drawn name="btn-remove" h={19} webH={23} loading="eager" underline /></button>
     </div>
   </template>
 

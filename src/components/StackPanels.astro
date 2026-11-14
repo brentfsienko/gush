@@ -298,6 +298,8 @@ const panAt = panels.findIndex((p) => p.pan);
     --area-h: calc(100svh - 100px); /* until the script measures it */
     --panel-h: calc(var(--area-h) * 0.92);
     --pad: 22px;
+    --edge: 28px; /* the white strip between photos */
+    --side: 48px; /* the white border down the sides */
     position: relative;
     isolation: isolate;
   }
@@ -454,6 +456,8 @@ const panAt = panels.findIndex((p) => p.pan);
     .stackp {
       --panel-h: calc(var(--area-h) * 0.8);
       --pad: 14px;
+      --edge: 20px;
+      --side: 28px;
     }
 
     .panel :global(.media) {

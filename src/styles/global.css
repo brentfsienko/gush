@@ -12,10 +12,6 @@
   --fabric: var(--page); /* was the cotton texture (src/assets/fabric.webp); now plain white */
   --type: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --gutter: 16px;
-  /* The white borders around the home page photos (StackPanels): between/above them, and down the sides.
-     The floating links on those pages line up with them. */
-  --edge: 28px;
-  --side: 48px;
   /* How wide the header and page content get on big screens. */
   --wide: 1080px;
   --column: 600px;
@@ -61,49 +57,6 @@ body {
 
 .app.has-banner {
   grid-template-rows: auto auto 1fr;
-}
-
-/* Home and about: the links float over the first photo, just inside its top border, and stay put
-   while you scroll; the photos start right under the banner. */
-.app.overlay {
-  grid-template-rows: 1fr;
-}
-
-.app.overlay.has-banner {
-  grid-template-rows: auto 1fr;
-}
-
-.app.overlay > main,
-.app.overlay > .topbar {
-  grid-row: -2 / -1;
-  grid-column: 1;
-}
-
-.app.overlay > .topbar {
-  align-self: start;
-  z-index: 60;
-  padding: calc(var(--edge) + 14px) calc(var(--side) + 18px) 0;
-  pointer-events: none;
-  --label-color: #fff;
-}
-
-.app.overlay > .topbar > * {
-  pointer-events: auto;
-}
-
-.app.overlay.past-photos > .topbar {
-  --label-color: var(--ink);
-}
-
-@media (max-width: 699px) {
-  :root {
-    --edge: 20px;
-    --side: 28px;
-  }
-
-  .app.overlay > .topbar {
-    padding: calc(var(--edge) + 10px) calc(var(--side) + 10px) 0;
-  }
 }
 
 /* The free-shipping banner across the very top: a thin orange strip with white type with the words scrolling by
@@ -203,24 +156,18 @@ body {
   grid-row: 1;
   justify-self: end;
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 4px;
   /* Height of the CART drawing (set in Base.astro). */
   --cart-h: 18px;
 }
 
 .cart-count {
-  font-family: 'Rubik', var(--type);
-  font-weight: 900;
-  font-size: 16px;
-  line-height: 1.1;
-  color: var(--label-color, var(--ink));
-}
-
-@media (min-width: 700px) {
-  .cart-count {
-    font-size: 20px;
-  }
+  font-size: 15px;
+  line-height: 1;
+  color: var(--ink);
+  /* The digits are sewn at the same size as the letters and framed the same way. */
+  --digit-h: calc(var(--cart-h) * 1.05);
 }
 
 /* Numbers written with the hand-drawn digits (see scripts/digits.ts). */
@@ -252,44 +199,6 @@ main.fill {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-/* ---------- labels (Label.astro): every link and button, in Rubik Black ---------- */
-
-.label {
-  display: inline-block;
-  font-family: 'Rubik', var(--type);
-  font-weight: 900;
-  font-size: var(--fs);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-  color: var(--label-color, var(--ink)); /* never link blue */
-}
-
-@media (min-width: 700px) {
-  .label {
-    font-size: var(--fs-web);
-  }
-}
-
-/* Underlined on hover and when selected (the current page, a chosen filter or size). */
-.label.ul {
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  text-decoration-thickness: 0.09em;
-  text-underline-offset: 0.2em;
-  transition: text-decoration-color 0.15s;
-}
-
-@media (hover: hover) {
-  :is(.drawn-btn:not(:disabled), a):hover .label.ul {
-    text-decoration-color: currentColor;
-  }
-}
-
-:is([aria-current='page'], [aria-pressed='true']) .label.ul {
-  text-decoration-color: currentColor;
 }
 
 /* ---------- drawings ---------- */

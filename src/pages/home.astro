@@ -2,7 +2,6 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
-import Label from '../components/Label.astro';
 import { homePhotos } from '../data/assets';
 import scan from '../assets/scans/scan-2.jpg';
 
@@ -20,7 +19,7 @@ const photos = homePhotos();
   </div>
 
   <a href="/shop" class="center cta" aria-label="shop">
-    <Label text="shop" size={48} underline />
+    <Drawn name="tab-shop" h={64} underline />
   </a>
 
   <!-- The sewing scan: all the site's words, sewn on fabric, straight off the scanner. -->
