@@ -8,7 +8,7 @@
 // The page scrolls inside <main> (under the header), so a panel is as tall as that area, not the
 // window: the script at the bottom measures it. People who've turned off animations get the photos
 // one after another, without the stacking.
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 // The titles are the site's typewriter font (IBM Plex Mono) in bold; only this page loads the bold.
 import '@fontsource/ibm-plex-mono/latin-700.css';
@@ -25,9 +25,11 @@ export type Panel = {
   posPhone?: string;
   /** A dark title, for a light photo. */
   dark?: boolean;
-  /** Show the whole photo, never cropped (for a tall photo on a wide screen): it sits in the middle
-   *  with a soft, blurred copy of itself filling the sides. On phones it fills the panel as usual. */
+  /** Show the whole photo, never cropped, on computers: it sits in the middle with a soft, blurred
+   *  copy of itself filling the sides. On phones it fills the panel as usual. */
   whole?: boolean;
+  /** A different photo for phones (whose panels are tall), e.g. the uncropped tall original. */
+  imgPhone?: ImageMetadata;
 };
 
 interface Props {
@@ -35,6 +37,16 @@ interface Props {
 }
 
 const { panels } = Astro.props;
+
+// Sharp copies at a few widths; a phone photo, if given, swaps in on narrow screens (only one of the
+// two is downloaded).
+const WIDTHS = [640, 960, 1400, 1800, 2400];
+const srcset = async (img: ImageMetadata) => {
+  const ws = WIDTHS.filter((w) => w <= img.width);
+  const out = await Promise.all(ws.map((w) => getImage({ src: img, width: w, format: 'webp' })));
+  return { srcset: out.map((o, k) => `${o.src} ${ws[k]}w`).join(', '), src: out[Math.min(2, out.length - 1)].src };
+};
+const sets = await Promise.all(panels.map(async (p) => ({ main: await srcset(p.img), phone: p.imgPhone ? await srcset(p.imgPhone) : undefined })));
 ---
 
 <section class="stackp" data-stackp>
@@ -50,15 +62,21 @@ const { panels } = Astro.props;
           style={`--z:${i + 1};--pos:${p.pos ?? '50% 50%'};--pos-phone:${p.posPhone ?? p.pos ?? '50% 50%'}`}
         >
           {p.whole && <Image src={p.img} alt="" class="backdrop" widths={[480]} sizes="480px" loading={i === 0 ? 'eager' : 'lazy'} />}
-          <Image
-            src={p.img}
-            alt=""
-            class="media"
-            widths={[640, 960, 1400, 1800, 2400].filter((w) => w <= p.img.width)}
-            sizes="100vw"
-            loading={i === 0 ? 'eager' : 'lazy'}
-            fetchpriority={i === 0 ? 'high' : 'auto'}
-          />
+          <picture>
+            {sets[i].phone && <source media="(max-width: 699px)" srcset={sets[i].phone!.srcset} sizes="100vw" />}
+            <img
+              class="media"
+              src={sets[i].main.src}
+              srcset={sets[i].main.srcset}
+              sizes="100vw"
+              alt=""
+              width={p.img.width}
+              height={p.img.height}
+              decoding="async"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+            />
+          </picture>
         </Tag>
       );
     })
