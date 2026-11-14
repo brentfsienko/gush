@@ -1,5 +1,5 @@
 ---
-// The bottom of every page, under a line of real stitching (the same as under the header): the
+// The bottom of every page, under a thin black line (the same as under the header): the
 // newsletter sign-up (worker/newsletter.ts), links to the info pages, and how to get in touch.
 import { CONTACT_EMAIL } from '../data/store';
 
@@ -64,7 +64,7 @@ const year = new Date().getFullYear();
     margin-top: 24px;
   }
 
-  /* A stitched line across the top of each part, same as under the header. */
+  /* A thin black line across the top of each part, same as under the header. */
   .news,
   .foot-band {
     position: relative;
@@ -77,12 +77,8 @@ const year = new Date().getFullYear();
     top: 0;
     left: 0;
     right: 0;
-    height: 7px;
-    background: url('../assets/header-stitch.png') left center / auto 7px repeat-x;
-  }
-
-  .foot-band::before {
-    background-image: url('../assets/stitch-bottom.png');
+    height: 1.5px;
+    background: var(--ink);
   }
 
   .news {
