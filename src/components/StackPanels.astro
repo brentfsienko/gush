@@ -148,7 +148,8 @@ const panAt = panels.findIndex((p) => p.pan);
     // Titles: space each pair of letters so they just barely touch. Even letter-spacing can't do it
     // (round and straight letters meet differently), so each letter's real shape is drawn on a
     // canvas, the closest point to its neighbor found row by row, and the gap set to overlap by a hair.
-    const OVERLAP = 0.008; // in em
+    const OVERLAP = 0.008; // in em, between letters
+    const EDGE_OVERLAP = 0.02; // in em, into the white borders at the left and bottom
     const fit = async () => {
       const words = [...stack.querySelectorAll<HTMLElement>('.words')];
       if (!words.length || !document.fonts) return;
@@ -200,7 +201,7 @@ const panAt = panels.findIndex((p) => p.pan);
           const sy = r.height / (sh.asc + sh.desc);
           inkBottom = Math.max(inkBottom, r.top + (sh.asc + sh.inkBelow + 1) * sy);
         });
-        const px = parseFloat(getComputedStyle(w).fontSize) * OVERLAP;
+        const px = parseFloat(getComputedStyle(w).fontSize) * EDGE_OVERLAP;
         w.style.translate = `${(t.left - px - inkLeft).toFixed(2)}px ${(t.bottom + px - inkBottom).toFixed(2)}px`;
       };
       const all: [HTMLElement, ReturnType<typeof shape>[][]][] = [];
@@ -295,6 +296,7 @@ const panAt = panels.findIndex((p) => p.pan);
     --area-h: calc(100svh - 100px); /* until the script measures it */
     --panel-h: calc(var(--area-h) * 0.92);
     --pad: 22px;
+    --edge: 8px; /* the white cotton border: between photos and down the sides */
     position: relative;
     isolation: isolate;
   }
@@ -307,11 +309,13 @@ const panAt = panels.findIndex((p) => p.pan);
     height: var(--panel-h);
     overflow: hidden;
     background: var(--ink);
+    border-left: var(--edge) solid var(--page);
+    border-right: var(--edge) solid var(--page);
   }
 
-  /* A thin strip of the page's cotton between one photo and the next. */
+  /* A strip of the page's cotton between one photo and the next (and down the sides, above). */
   .panel:not(:first-child) {
-    border-top: 4px solid var(--page);
+    border-top: var(--edge) solid var(--page);
   }
 
   .panel :global(.media) {
@@ -352,7 +356,7 @@ const panAt = panels.findIndex((p) => p.pan);
   /* The titles: one per photo, at the bottom of that photo's spot on the page, above all the photos. */
   .title {
     position: absolute;
-    left: 0;
+    left: var(--edge); /* the inside of the left border */
     right: 0;
     top: calc(var(--slot) * var(--panel-h));
     transform: translateY(-100%);
@@ -374,7 +378,7 @@ const panAt = panels.findIndex((p) => p.pan);
   .pan-slot {
     position: absolute;
     top: 0;
-    left: 0;
+    left: var(--edge);
     right: 0;
     height: calc(var(--area-h) + var(--extra, 0px));
     z-index: 50;
@@ -446,6 +450,7 @@ const panAt = panels.findIndex((p) => p.pan);
     .stackp {
       --panel-h: calc(var(--area-h) * 0.8);
       --pad: 14px;
+      --edge: 6px;
     }
 
     .panel :global(.media) {
