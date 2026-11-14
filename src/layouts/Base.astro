@@ -77,7 +77,6 @@ const digitUrls = digitImgs.every(Boolean)
     <title>{fullTitle}</title>
     <!-- Preloaded so text and the drawn cart count never pop in late. -->
     <link rel="preload" as="font" type="font/woff2" href={plexFont} crossorigin />
-    {digitUrls?.map((u) => <link rel="preload" as="image" href={u} />)}
     {
       WEB_ANALYTICS_TOKEN && (
         <script

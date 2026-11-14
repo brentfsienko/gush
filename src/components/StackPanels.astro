@@ -51,10 +51,12 @@ const { panels } = Astro.props;
 
 // Sharp copies at a few widths; a phone photo, if given, swaps in on narrow screens (only one of the
 // two is downloaded).
-const WIDTHS = [640, 960, 1400, 1800, 2400];
+// Capped at 1920 wide and a bit more compressed: full-width photos look the same, at a fraction of the
+// size (all the panels start loading together, since they stack at the top of the page).
+const WIDTHS = [640, 960, 1400, 1920];
 const srcset = async (img: ImageMetadata) => {
   const ws = WIDTHS.filter((w) => w <= img.width);
-  const out = await Promise.all(ws.map((w) => getImage({ src: img, width: w, format: 'webp' })));
+  const out = await Promise.all(ws.map((w) => getImage({ src: img, width: w, format: 'webp', quality: 72 })));
   return { srcset: out.map((o, k) => `${o.src} ${ws[k]}w`).join(', '), src: out[Math.min(2, out.length - 1)].src };
 };
 const sets = await Promise.all(panels.map(async (p) => ({ main: await srcset(p.img), phone: p.imgPhone ? await srcset(p.imgPhone) : undefined })));
@@ -89,7 +91,7 @@ const panAt = panels.findIndex((p) => p.pan);
               height={p.img.height}
               decoding="async"
               loading={i === 0 ? 'eager' : 'lazy'}
-              fetchpriority={i === 0 ? 'high' : 'auto'}
+              fetchpriority={i === 0 ? 'high' : 'low'}
             />
           </picture>
         </Tag>
