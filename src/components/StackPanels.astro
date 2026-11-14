@@ -6,7 +6,7 @@
 // sewing scan) gets a dark title instead.
 //
 // A photo marked `pan` stays pinned a little longer while you scroll through it, top to bottom,
-// before the next one comes up (its title stays on it meanwhile).
+// before the next one comes up (its title stays at the bottom meanwhile, then rides up like the rest).
 //
 // The page scrolls inside <main> (under the header), so a panel is as tall as that area, not the
 // window: the script at the bottom measures it. People who've turned off animations get the photos
@@ -67,9 +67,8 @@ const panAt = panels.findIndex((p) => p.pan);
         <Tag
           class:list={['panel', { light: p.dark }]}
           href={p.href}
-          tabindex={p.href && !p.pan ? '-1' : undefined}
-          aria-hidden={p.pan ? undefined : 'true'}
-          aria-label={p.pan ? `${(p.title ?? '').replace(/\n/g, ' ')}. ${p.alt}` : undefined}
+          tabindex={p.href ? '-1' : undefined}
+          aria-hidden="true"
           data-pan={p.pan ? '' : undefined}
           style={`--z:${i + 1};--pos:${p.pos ?? '50% 50%'};--pos-phone:${p.posPhone ?? p.pos ?? '50% 50%'}`}
         >
@@ -88,15 +87,6 @@ const panAt = panels.findIndex((p) => p.pan);
               fetchpriority={i === 0 ? 'high' : 'auto'}
             />
           </picture>
-          {p.pan && p.title && (
-            <span class:list={['title', 'inpanel', { dark: p.dark, squat: p.squat }]} aria-hidden="true">
-              <span class="words">
-                {p.title.split('\n').map((line) => (
-                  <span class="line">{[...line].map((ch) => <span class="ch">{ch}</span>)}</span>
-                ))}
-              </span>
-            </span>
-          )}
         </Tag>
         {p.pan && <div class="pan-space" aria-hidden="true" />}
         </Fragment>
@@ -105,15 +95,29 @@ const panAt = panels.findIndex((p) => p.pan);
   }
   {
     panels.map((p, i) => {
-      if (p.pan || !p.title) return null;
+      if (!p.title) return null;
       const Tag = p.href ? 'a' : 'div';
+      const words = (
+        <span class="words" aria-hidden="true">
+          {p.title.split('\n').map((line) => (
+            <span class="line">{[...line].map((ch) => <span class="ch">{ch}</span>)}</span>
+          ))}
+        </span>
+      );
+      // The `pan` photo's title stays at the bottom while you scroll through that photo, then rides up
+      // with the next one like the others: it sticks to the bottom of a slot as tall as that photo's
+      // whole stretch of the page.
+      if (p.pan)
+        return (
+          <div class="pan-slot">
+            <Tag class:list={['title', 'pan-title', { dark: p.dark, squat: p.squat }]} href={p.href} aria-label={`${p.title.replace(/\n/g, ' ')}. ${p.alt}`}>
+              {words}
+            </Tag>
+          </div>
+        );
       return (
         <Tag class:list={['title', { dark: p.dark, 'after-pan': panAt >= 0 && i > panAt }]} href={p.href} style={`--slot:${i + 1}`} role={p.href ? undefined : 'img'} aria-label={`${p.title.replace(/\n/g, ' ')}. ${p.alt}`}>
-          <span class="words" aria-hidden="true">
-            {p.title.split('\n').map((line) => (
-              <span class="line">{[...line].map((ch) => <span class="ch">{ch}</span>)}</span>
-            ))}
-          </span>
+          {words}
         </Tag>
       );
     })
@@ -291,7 +295,7 @@ const panAt = panels.findIndex((p) => p.pan);
     right: 0;
     top: calc(var(--slot) * var(--panel-h));
     transform: translateY(-100%);
-    /* (see .after-pan and .inpanel below) */
+    /* (see .after-pan and .pan-title below) */
     z-index: 50;
     padding: 0 var(--pad) calc(var(--panel-h) * 0.05);
     color: #fff;
@@ -304,12 +308,27 @@ const panAt = panels.findIndex((p) => p.pan);
     top: calc(var(--slot) * var(--panel-h) + var(--extra, 0px) + var(--area-h) - var(--panel-h));
   }
 
-  /* The `pan` photo's title rides on the photo itself, so it stays while you scroll through it. */
-  .title.inpanel {
+  /* The `pan` photo's title: its slot covers that photo's whole stretch of the page, and the title
+     sticks to the bottom of the screen until the slot's end comes up, then scrolls up with it. */
+  .pan-slot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--area-h) + var(--extra, 0px));
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    pointer-events: none;
+  }
+
+  .title.pan-title {
+    position: sticky;
     top: auto;
     bottom: 0;
     transform: none;
-    z-index: 2;
+    padding-bottom: calc(var(--area-h) * 0.05);
   }
 
   .title.dark {
