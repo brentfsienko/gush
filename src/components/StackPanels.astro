@@ -337,6 +337,9 @@ const panAt = panels.findIndex((p) => p.pan);
      you scroll through it. */
   .panel[data-pan] {
     height: var(--area-h);
+    /* its own white strip along the bottom, there from the start; the next photo's top strip
+       slides up over it */
+    border-bottom: var(--edge) solid var(--page);
   }
 
   /* A soft dark fade at the bottom, so the white title reads on any photo. */
@@ -392,7 +395,7 @@ const panAt = panels.findIndex((p) => p.pan);
   .title.pan-title {
     position: sticky;
     top: auto;
-    bottom: 0;
+    bottom: var(--edge); /* on the photo's bottom strip */
     transform: none;
     padding-bottom: 0;
   }
