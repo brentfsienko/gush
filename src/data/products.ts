@@ -30,32 +30,6 @@ export type Product = {
 
 export const PRODUCTS: Product[] = [
   {
-    slug: 'green-plaid-button-up',
-    title: 'green plaid button up',
-    price: 12000,
-    category: 'shirts',
-    description:
-      'a unisex short sleeve button up in 100% cotton plaid, designed and sewn by hand in Seattle. boxy and relaxed, with a chest pocket and a point collar. wear it buttoned up or open over a tee.',
-    details: [
-      { label: 'material', value: '100% cotton' },
-      { label: 'fit', value: 'unisex, boxy, relaxed' },
-      { label: 'made in', value: 'Seattle' },
-      { label: 'care', value: 'machine wash cold, hang dry' },
-    ],
-    // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
-    stock: { s: 0, m: 1, l: 0, xl: 0 },
-    // TODO: real measurements
-    sizeChart: {
-      headers: ['size', 'chest', 'length', 'sleeve'],
-      rows: [
-        ['S', '-', '-', '-'],
-        ['M', '-', '-', '-'],
-        ['L', '-', '-', '-'],
-        ['XL', '-', '-', '-'],
-      ],
-    },
-  },
-  {
     slug: 'blue-thermal',
     title: 'blue thermal',
     price: 10000,
@@ -71,6 +45,32 @@ export const PRODUCTS: Product[] = [
     // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
     // L is 1 because that one has sold (the sale is counted off it), so it shows 0 left.
     stock: { s: 0, m: 2, l: 1, xl: 0 },
+    // TODO: real measurements
+    sizeChart: {
+      headers: ['size', 'chest', 'length', 'sleeve'],
+      rows: [
+        ['S', '-', '-', '-'],
+        ['M', '-', '-', '-'],
+        ['L', '-', '-', '-'],
+        ['XL', '-', '-', '-'],
+      ],
+    },
+  },
+  {
+    slug: 'green-plaid-button-up',
+    title: 'green plaid button up',
+    price: 12000,
+    category: 'shirts',
+    description:
+      'a unisex short sleeve button up in 100% cotton plaid, designed and sewn by hand in Seattle. boxy and relaxed, with a chest pocket and a point collar. wear it buttoned up or open over a tee.',
+    details: [
+      { label: 'material', value: '100% cotton' },
+      { label: 'fit', value: 'unisex, boxy, relaxed' },
+      { label: 'made in', value: 'Seattle' },
+      { label: 'care', value: 'machine wash cold, hang dry' },
+    ],
+    // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
+    stock: { s: 0, m: 1, l: 0, xl: 0 },
     // TODO: real measurements
     sizeChart: {
       headers: ['size', 'chest', 'length', 'sleeve'],
