@@ -232,9 +232,8 @@ img.drawn {
   background: transparent;
 }
 
-/* Sewn box: outlined in the same real straight stitch as the header line (the cart item's hover
-   box; buttons keep a plain border). Top and bottom run between the two sides' threads, so the corners meet
-   without crossing. --sew moves the thread out from the edge (negative = inside). Add .sew-hover to
+/* Outlined box: a thin black line around it, like the line under the header (the cart item's hover
+   box, the family page's code box). --sew moves the line out from the edge (negative = inside). Add .sew-hover to
    only show it on hover. */
 .sewn-box {
   --sew: 0px;
@@ -249,17 +248,12 @@ img.drawn {
 }
 
 .sewn-box::before {
-  inset: calc(-3.5px - var(--sew)) calc(-1 * var(--sew));
-  background:
-    url('../assets/header-stitch.png') 0 0 / auto 7px repeat-x,
-    url('../assets/stitch-bottom.png') 0 100% / auto 7px repeat-x;
+  inset: calc(-1 * var(--sew));
+  border: 1.5px solid var(--ink);
 }
 
 .sewn-box::after {
-  inset: calc(-1 * var(--sew)) calc(-3.5px - var(--sew));
-  background:
-    url('../assets/stitch-side.png') 0 0 / 7px auto repeat-y,
-    url('../assets/stitch-side.png') 100% 37px / 7px auto repeat-y;
+  display: none;
 }
 
 .sew-hover::before,

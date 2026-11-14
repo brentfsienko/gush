@@ -100,8 +100,8 @@ import { CONTACT_EMAIL } from '../data/store';
     font-size: 17px;
   }
 
-  /* The timeline: a dot per step, joined by a line. Finished stretches are sewn (the same real
-     stitch as under the header); what's still to come is a faint dashed line. */
+  /* The timeline: a dot per step, joined by a line. Finished stretches are a thin black line (like
+     the one under the header); what's still to come is a faint dashed line. */
   .ot-steps {
     list-style: none;
     margin: 0 0 32px;
@@ -129,10 +129,7 @@ import { CONTACT_EMAIL } from '../data/store';
   }
 
   .ot-step.done:not(:last-child)::before {
-    left: 3.5px;
-    width: 7px;
-    border: 0;
-    background: url('../assets/stitch-side.png') center top / 7px auto repeat-y;
+    border-left: 1.5px solid var(--ink);
   }
 
   .ot-dot {

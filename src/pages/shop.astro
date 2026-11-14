@@ -183,8 +183,8 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* The whole item (photo, name, price) is one block. On hover a line of real straight stitch
-       (the same as under the header) outlines it, as if it were sewn onto the page. */
+    /* The whole item (photo, name, price) is one block. On hover a thin black line (like the one
+       under the header) outlines it. */
     position: relative;
     padding: 0 0 12px;
   }
@@ -201,17 +201,12 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
   }
 
   .card::before {
-    inset: -6px -2.5px;
-    background:
-      url('../assets/header-stitch.png') 0 0 / auto 7px repeat-x,
-      url('../assets/stitch-bottom.png') 0 100% / auto 7px repeat-x;
+    inset: -2.5px;
+    border: 1.5px solid var(--ink);
   }
 
   .card::after {
-    inset: -2.5px -6px;
-    background:
-      url('../assets/stitch-side.png') 0 0 / 7px auto repeat-y,
-      url('../assets/stitch-side.png') 100% 37px / 7px auto repeat-y;
+    display: none;
   }
 
   @media (hover: hover) {
@@ -272,7 +267,7 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
     align-items: center;
     justify-content: center;
     text-align: center;
-    /* Its own card: on hover, outlined in the same stitch as an item card, --in from its edges. */
+    /* Its own card: on hover, outlined like an item card, --in from its edges. */
     --in: var(--gutter);
     position: relative;
   }
@@ -298,17 +293,12 @@ const filters = CATEGORIES.filter((c) => drawn(`filter-${c}`));
   }
 
   .soon-box::before {
-    inset: calc(var(--in) - 3.5px) var(--in);
-    background:
-      url('../assets/header-stitch.png') 0 0 / auto 7px repeat-x,
-      url('../assets/stitch-bottom.png') 0 100% / auto 7px repeat-x;
+    inset: var(--in);
+    border: 1.5px solid var(--ink);
   }
 
   .soon-box::after {
-    inset: var(--in) calc(var(--in) - 3.5px);
-    background:
-      url('../assets/stitch-side.png') 0 0 / 7px auto repeat-y,
-      url('../assets/stitch-side.png') 100% 37px / 7px auto repeat-y;
+    display: none;
   }
 
   @media (min-width: 700px) {
