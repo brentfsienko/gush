@@ -11,7 +11,7 @@
 import { PRODUCTS, formatPrice, type Product, type Size } from '../src/data/products';
 import { SITE_URL, CONTACT_EMAIL, IMAGE_VERSION } from '../src/data/store';
 import { available } from './stock';
-import { FROM, INK, GRAY, FONT, esc } from './notify';
+import { FROM, INK, GRAY, FONT, esc, heroImg } from './notify';
 import type { Env } from './index';
 
 const PREFIX = 'want:';
@@ -132,7 +132,7 @@ export function confirmEmail(p: Product, size: string) {
     ${gap(26)}
     <div style="text-align:center;"><a href="${SITE_URL}/shop" style="display:inline-block;border:1.5px solid ${INK};padding:10px 16px 8px;"><img src="${SITE_URL}/stripe/keep-shopping.png?v=${IMAGE_VERSION}" width="200" alt="keep shopping" style="display:block;border:0;width:200px;height:auto;"></a></div>
     ${gap(26)}
-    <div ${td(`color:${GRAY};font-size:12px;`)}>${esc(outro)}</div>`);
+    <div ${td(`color:${GRAY};font-size:12px;`)}>${esc(outro)}</div>`, 'tag');
   return { subject, text, html };
 }
 
@@ -217,13 +217,14 @@ export const td = (style = '') => `style="font-family:${FONT};color:${INK};font-
 export const gap = (h: number) => `<div style="height:${h}px;font-size:0;line-height:0;">&nbsp;</div>`;
 
 /** Same frame as the order emails: logo, a thin black line like the one under the site's header, then the content. */
-export const page = (inner: string) => `<!doctype html>
+export const page = (inner: string, hero?: 'bag' | 'tag') => `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"></head>
 <body style="margin:0;padding:0;background:#ffffff;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;"><tr><td align="center" style="padding:24px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
   <tr><td align="center" style="padding:0 0 18px;"><a href="${SITE_URL}"><img src="${SITE_URL}/stripe/logo.png?v=${IMAGE_VERSION}" width="160" alt="GÜSH" style="display:block;border:0;width:160px;height:auto;"></a></td></tr>
   <tr><td style="font-size:0;line-height:0;border-top:1.5px solid #1f1b16;">&nbsp;</td></tr>
+  ${hero ? `<tr><td style="padding:20px 0 0;">${heroImg(hero)}</td></tr>` : ''}
   <tr><td style="padding:20px 0 0;">${inner}</td></tr>
   <tr><td align="center" style="padding:32px 0 0;font-family:${FONT};color:${GRAY};font-size:12px;"><a href="${SITE_URL}" style="color:${GRAY};">${esc(SITE_URL.replace(/^https?:\/\//, ''))}</a></td></tr>
 </table>

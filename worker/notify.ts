@@ -12,6 +12,11 @@ import type { Env } from './index';
 
 export const FROM = { name: 'GÜSH', email: 'orders@gush.supply' };
 
+/** A photo from the home page, the full width of an email near the top, linking to the shop
+ *  (built by src/pages/stripe/[file].ts). */
+export const heroImg = (name: 'bag' | 'tag') =>
+  `<a href="${SITE_URL}/shop"><img src="${SITE_URL}/stripe/hero-${name}.jpg?v=${IMAGE_VERSION}" width="480" alt="GÜSH" style="display:block;border:0;width:100%;max-width:480px;height:auto;"></a>`;
+
 type Address = { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null; country?: string | null };
 
 /** The parts of a Checkout Session (as sent in the webhook) the emails use. */
@@ -142,6 +147,7 @@ export function customerEmail(s: PaidSession, trackUrl?: string) {
     text,
     html: renderHtml(o, {
       title: hello,
+      hero: true,
       intro: RECEIPT.intro,
       noteHeading: 'your note',
       hideEmptyNote: true,
@@ -165,6 +171,8 @@ function renderHtml(
   o: Order,
   v: {
     title: string;
+    /** A home page photo near the top (the buyer's receipt). */
+    hero?: boolean;
     code?: string;
     titleNote?: string;
     intro?: string;
@@ -226,6 +234,7 @@ function renderHtml(
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
   <tr><td align="center" style="padding:0 0 18px;"><a href="${SITE_URL}"><img src="${SITE_URL}/stripe/logo.png?v=${IMAGE_VERSION}" width="160" alt="GÜSH" style="display:block;border:0;width:160px;height:auto;"></a></td></tr>
   ${rule}
+  ${v.hero ? `${gap(20)}<tr><td>${heroImg('bag')}</td></tr>` : ''}
   ${gap(20)}
   <tr><td ${td('font-size:22px;')}>${esc(v.title)}${v.titleNote ? ` <span style="color:${GRAY};font-size:14px;">${esc(v.titleNote)}</span>` : ''}</td></tr>
   ${v.intro ? `${gap(10)}<tr><td ${td()}>${esc(v.intro)}</td></tr>` : ''}

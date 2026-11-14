@@ -1,7 +1,7 @@
 // Images for Stripe's checkout page, built at fixed URLs Stripe can load (worker/checkout.ts links to
 // them): /stripe/logo.png (the GÜSH logo drawing) and /stripe/<slug>.jpg (each product's main photo).
 // The emails use them too, plus /stripe/keep-shopping.png (the sewn KEEP SHOPPING, worker/waitlist.ts)
-// and /stripe/stitch.png (the stitched line from under the site's header, under the logo in every email).
+// and /stripe/hero-<name>.jpg (photos from the home page, near the top of the emails to buyers).
 import type { APIRoute, GetStaticPaths } from 'astro';
 import sharp from 'sharp';
 import { readdir, readFile } from 'node:fs/promises';
@@ -14,6 +14,8 @@ export const getStaticPaths = (async () => {
     { params: { file: 'logo.png' }, props: { path: 'src/assets/drawn/logo.png' } },
     { params: { file: 'keep-shopping.png' }, props: { path: 'src/assets/drawn/btn-keep-shopping.png' } },
     { params: { file: 'stitch.png' }, props: { path: 'src/assets/header-stitch.png' } },
+    { params: { file: 'hero-bag.jpg' }, props: { path: 'src/assets/stack/bag-wide.webp' } },
+    { params: { file: 'hero-tag.jpg' }, props: { path: 'src/assets/stack/tag.webp' } },
   ];
   for (const p of PRODUCTS) {
     const files = await readdir(`${PRODUCT_DIR}/${p.slug}`).catch(() => [] as string[]);
@@ -33,6 +35,14 @@ export const GET: APIRoute = async ({ params, props }) => {
       .png()
       .toBuffer();
     return new Response(new Uint8Array(png), { headers: { 'content-type': 'image/png' } });
+  }
+  // Home page photos for the emails: 960 x 640 (shown at 480 x 320), cropped to fill.
+  if (params.file?.startsWith('hero-')) {
+    const jpg = await sharp(await readFile(props.path as string))
+      .resize({ width: 960, height: 640, fit: 'cover', position: 'attention' })
+      .jpeg({ quality: 84 })
+      .toBuffer();
+    return new Response(new Uint8Array(jpg), { headers: { 'content-type': 'image/jpeg' } });
   }
   const img = sharp(await readFile(props.path as string)).trim();
   if (params.file?.endsWith('.png')) {

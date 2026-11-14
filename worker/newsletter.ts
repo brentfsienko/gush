@@ -62,7 +62,7 @@ export function welcomeEmail(email: string, token: string) {
     ${gap(24)}
     <div style="text-align:center;"><a href="${SITE_URL}/shop" style="display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:15px;color:#1f1b16;text-decoration:none;border:1.5px solid #1f1b16;padding:10px 18px;">shop</a></div>
     ${gap(28)}
-    <div ${td(`color:${GRAY};font-size:12px;`)}>don't want these? <a href="${esc(url)}" style="color:${GRAY};">unsubscribe</a>.</div>`);
+    <div ${td(`color:${GRAY};font-size:12px;`)}>don't want these? <a href="${esc(url)}" style="color:${GRAY};">unsubscribe</a>.</div>`, 'bag');
   return { subject, text, html, headers: { 'List-Unsubscribe': `<${url}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } };
 }
 
