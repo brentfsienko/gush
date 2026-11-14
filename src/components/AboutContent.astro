@@ -1,34 +1,21 @@
 ---
-// The about page's content: big photos that stack as you scroll (StackPanels, in the style of
-// lou.equipment), then the sewing scans. Shown at /about and at the bare address, gush.supply
-// (src/pages/index.astro), which stays as is in the address bar.
-import { Image } from 'astro:assets';
+// The about page's content: big photos that stack as you scroll, each with a big white title
+// (StackPanels). Shown at /about and at the bare address, gush.supply (src/pages/index.astro), which
+// stays as is in the address bar.
 import StackPanels, { type Panel } from './StackPanels.astro';
-import scan from '../assets/scans/scan-3.jpg';
-import scan2 from '../assets/scans/scan-2.jpg';
-import thermals from '../assets/stack/thermals.webp';
-import shirts from '../assets/products/green-plaid-button-up/4.webp';
-import leaves from '../assets/stack/shop.webp';
-import tag from '../assets/stack/tag.webp';
+import bag from '../assets/stack/shop.webp';
+import thermalTag from '../assets/stack/tag.webp';
+import plaid from '../assets/products/green-plaid-button-up/4.webp';
+import scan from '../assets/scans/scan-2.jpg';
 
-// The photos, in order. pos / posPhone: which part of the photo stays in view on computers / phones;
-// full: the photo runs the full width of the page.
+// The photos, in order. pos / posPhone: which part of the photo stays in view on computers / phones
+// ("50% 100%" = the bottom). dark: a dark title, for a light photo.
 const panels: Panel[] = [
-  { img: leaves, alt: 'a GÜSH tag on the drawstring bag, by yellow clogs and fallen leaves', title: 'logo', label: 'GÜSH', href: '/shop', pos: '50% 42%', posPhone: '50% 50%', full: true },
-  { img: thermals, alt: 'the blue thermal, folded on its GÜSH drawstring bag', title: 'filter-thermals', label: 'thermals', href: '/item/blue-thermal', pos: '50% 36%', posPhone: '50% 40%' },
-  { img: shirts, alt: 'the GÜSH tag in the green plaid button up', title: 'filter-shirts', label: 'shirts', href: '/item/green-plaid-button-up', pos: '50% 32%', posPhone: '55% 50%' },
-  { img: tag, alt: 'the sewn GÜSH tag in the neck of the blue thermal', title: 'tab-shop', label: 'shop', href: '/shop', pos: '50% 45%', posPhone: '57% 50%' },
+  { img: bag, alt: 'a GÜSH tag on the drawstring bag, over yellow clogs in the fallen leaves', title: 'GÜSH', href: '/shop', pos: '50% 100%', posPhone: '50% 100%' },
+  { img: thermalTag, alt: 'the sewn GÜSH tag in the neck of the blue thermal', title: 'thermals', href: '/item/blue-thermal', pos: '50% 62%', posPhone: '57% 50%' },
+  { img: plaid, alt: 'the GÜSH tag in the green plaid button up', title: 'shirts', href: '/item/green-plaid-button-up', pos: '50% 32%', posPhone: '55% 50%' },
+  { img: scan, alt: 'the GÜSH lettering, machine sewn on white fabric', title: 'made in\nseattle', pos: '50% 30%', posPhone: '22% 50%', dark: true },
 ];
 ---
 
 <StackPanels panels={panels} />
-
-<!-- The sewing scans: all the site's words, sewn on fabric, straight off the scanner. -->
-<Image src={scan} alt="the GÜSH lettering, machine sewn on white fabric" widths={[600, 1000, 1600, 2400, 3200]} sizes="100vw" class="photo scan" loading="lazy" />
-<Image src={scan2} alt="more GÜSH lettering, machine sewn on white fabric" widths={[600, 1000, 1600, 2400, 3200]} sizes="100vw" class="photo scan" loading="lazy" />
-
-<style>
-  .scan {
-    margin-top: 40px;
-  }
-</style>
