@@ -45,7 +45,7 @@ Every clickable word (not the logo) gets a sewn underline: one long sewn box as 
 
 Edit `src/data/products.ts`: title, price (in cents: 10000 = $100), category, description, details, stock per size, size chart.
 Product photos go in `src/assets/products/<slug>/` named `1.jpg`, `2.jpg`, ... (first one is the main photo).
-The home and about pages open with big photos that stack as you scroll, each with a sewn title (`src/components/StackPanels.astro`, in the style of lou.equipment). Which photos, titles and links: the list at the top of `src/components/AboutContent.astro`; the photos live in `src/assets/stack/`.
+The home and about pages open with big photos that stack as you scroll, each a patch stitched onto the cotton with its name sewn underneath (`src/components/StackPanels.astro`). Which photos, titles and links: the list at the top of `src/components/AboutContent.astro`; the photos live in `src/assets/stack/`.
 
 Stock: when a size sells out, set it to `0` and redeploy. (Automatic stock counting can come later.)
 
