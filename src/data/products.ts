@@ -62,10 +62,10 @@ export const PRODUCTS: Product[] = [
     price: 12000,
     category: 'shirts',
     description:
-      'a unisex short sleeve button up in 100% cotton plaid, designed and sewn by hand in Seattle. boxy and relaxed, with a chest pocket and a point collar. wear it buttoned up or open over a tee.',
+      'a unisex short sleeve button up in 100% cotton plaid, designed and sewn by hand in Seattle. boxy and relaxed, cropped at the waist, with a chest pocket and a point collar. wear it buttoned up or open over a tee.',
     details: [
       { label: 'material', value: '100% cotton' },
-      { label: 'fit', value: 'unisex, boxy, relaxed' },
+      { label: 'fit', value: 'unisex, boxy, relaxed, cropped at the waist' },
       { label: 'made in', value: 'Seattle' },
       { label: 'care', value: 'machine wash cold, hang dry' },
     ],

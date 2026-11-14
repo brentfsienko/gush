@@ -64,7 +64,7 @@ body {
    run's width and repeated, so it loops without a jump. Still for people who turn off animations. */
 .banner {
   overflow: hidden;
-  background: #e8915a; /* a light orange */
+  background: #f0a46c; /* a light orange */
   color: #fff;
   font-size: 10px;
   letter-spacing: 0.08em;
