@@ -5,7 +5,7 @@ import { getImage } from 'astro:assets';
 import Drawn from '../components/Drawn.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { drawn } from '../data/assets';
-import { TAGLINE, IMAGE_VERSION, WEB_ANALYTICS_TOKEN } from '../data/store';
+import { TAGLINE, IMAGE_VERSION, WEB_ANALYTICS_TOKEN, FREE_SHIPPING_BANNER } from '../data/store';
 import plexFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 
 interface Props {
@@ -26,9 +26,12 @@ interface Props {
   footer?: boolean;
   /** Keep the page out of search engines (orders, tracking pages). */
   noindex?: boolean;
+  /** The free-shipping banner at the top (on by default, except on private pages). */
+  banner?: boolean;
 }
 
-const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false, footer = true, noindex = false, shareTitle } = Astro.props;
+const { title, tab, fill = false, description = TAGLINE, clearCart = false, image = '/og.png', newsletter = false, footer = true, noindex = false, shareTitle, banner = !noindex } = Astro.props;
+const showBanner = banner && !!FREE_SHIPPING_BANNER;
 const fullTitle = shareTitle ?? (title ? `${title} · GÜSH` : 'GÜSH');
 // Shared titles are in Title Case like the tagline ("Blue Thermal"); the site itself stays lowercase.
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -86,7 +89,22 @@ const digitUrls = digitImgs.every(Boolean)
     }
   </head>
   <body>
-    <div class="app">
+    <div class:list={['app', { 'has-banner': showBanner }]}>
+      {
+        showBanner && (
+          <div class="banner" role="note" aria-label={FREE_SHIPPING_BANNER}>
+            <div class="banner-track" aria-hidden="true">
+              {Array.from({ length: 2 }, () => (
+                <span class="banner-run">
+                  {Array.from({ length: 6 }, () => (
+                    <span class="banner-item">{FREE_SHIPPING_BANNER}</span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          </div>
+        )
+      }
       <header class="topbar">
         <a href="/" class="brand" aria-label="GÜSH">
           <Drawn name="logo" h={34} webH={58} alt="GÜSH" loading="eager" />

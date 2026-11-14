@@ -264,7 +264,10 @@ const panAt = panels.findIndex((p) => p.pan);
     font-weight: 700;
     font-size: clamp(56px, 13vw, 210px);
     line-height: 0.88;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
+    /* Bold is the font's heaviest; a thin outline in the same color makes it thicker still. */
+    -webkit-text-stroke: 0.035em currentColor;
+    paint-order: stroke fill;
     white-space: nowrap;
   }
 

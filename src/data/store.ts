@@ -10,6 +10,13 @@ export const SHIPPING_OPTIONS = [
   { label: 'free Seattle delivery (Seattle addresses only)', cents: 0, where: 'in Seattle' },
 ];
 
+// Free shipping when the items come to at least this much (in cents; before any promo code). Checkout
+// then offers one free option, and you mail it or drop it off in Seattle. 0 turns it off. The banner at
+// the top of the site says so (FREE_SHIPPING_BANNER; '' hides the banner).
+export const FREE_SHIPPING_OVER = 15000;
+export const FREE_SHIPPING_LABEL = 'free shipping (orders over $150)';
+export const FREE_SHIPPING_BANNER = 'free shipping on orders over $150';
+
 // Countries you'll ship to (two-letter codes).
 export const SHIP_TO_COUNTRIES = ['US'];
 

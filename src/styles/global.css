@@ -55,6 +55,57 @@ body {
   overflow: hidden;
 }
 
+.app.has-banner {
+  grid-template-rows: auto auto 1fr;
+}
+
+/* The free-shipping banner across the very top: a thin black strip with the words scrolling by
+   (FREE_SHIPPING_BANNER in src/data/store.ts). Two identical runs side by side, moved left by one
+   run's width and repeated, so it loops without a jump. Still for people who turn off animations. */
+.banner {
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 7px 0;
+  white-space: nowrap;
+}
+
+.banner-track {
+  display: flex;
+  width: max-content;
+  animation: banner-scroll 40s linear infinite;
+}
+
+.banner-run {
+  display: flex;
+}
+
+.banner-item {
+  padding: 0 28px;
+}
+
+.banner-item::after {
+  content: '·';
+  position: relative;
+  left: 28px;
+  opacity: 0.6;
+}
+
+@keyframes banner-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-track {
+    animation: none;
+  }
+}
+
 /* One row everywhere: shop/about far left, logo centered, cart far right, all vertically centered. */
 .topbar {
   display: grid;

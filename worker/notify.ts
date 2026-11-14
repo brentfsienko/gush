@@ -7,7 +7,7 @@
 //  - to the buyer: a thank-you receipt (wording in src/data/store.ts, RECEIPT). Sent through Resend
 //    (free up to 3,000/month) with the RESEND_API_KEY secret. Real orders only, not sandbox tests.
 import { PRODUCTS, formatPrice } from '../src/data/products';
-import { SHIPPING_OPTIONS, SITE_URL, CONTACT_EMAIL, RECEIPT, IMAGE_VERSION } from '../src/data/store';
+import { SHIPPING_OPTIONS, FREE_SHIPPING_OVER, FREE_SHIPPING_LABEL, SITE_URL, CONTACT_EMAIL, RECEIPT, IMAGE_VERSION } from '../src/data/store';
 import type { Env } from './index';
 
 export const FROM = { name: 'GÜSH', email: 'orders@gush.supply' };
@@ -52,7 +52,10 @@ export function readOrder(s: PaidSession) {
     test: !s.livemode,
     items,
     subtotal: s.amount_subtotal ?? items.reduce((t, i) => t + i.cents, 0),
-    shippingMethod: SHIPPING_OPTIONS.find((o) => o.cents === shippingCents)?.label ?? 'shipping',
+    shippingMethod:
+      !shippingCents && FREE_SHIPPING_OVER && (s.amount_subtotal ?? 0) >= FREE_SHIPPING_OVER
+        ? FREE_SHIPPING_LABEL
+        : (SHIPPING_OPTIONS.find((o) => o.cents === shippingCents)?.label ?? 'shipping'),
     shippingCents,
     discount: s.total_details?.amount_discount ?? 0,
     total: s.amount_total ?? 0,

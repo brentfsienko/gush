@@ -4,6 +4,8 @@
 import { PRODUCTS, SIZES, type Size } from '../src/data/products';
 import {
   SHIPPING_OPTIONS,
+  FREE_SHIPPING_OVER,
+  FREE_SHIPPING_LABEL,
   SHIP_TO_COUNTRIES,
   MAX_QTY,
   TAX_ENABLED,
@@ -137,7 +139,10 @@ function buildParams(
   params.set('success_url', `${origin}/success?session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${origin}/cart`);
   SHIP_TO_COUNTRIES.forEach((c, n) => params.set(`shipping_address_collection[allowed_countries][${n}]`, c));
-  SHIPPING_OPTIONS.forEach((o, n) => {
+  // Over the free-shipping amount, one free option instead of the usual choices.
+  const subtotal = lines.reduce((s, l) => s + l.p.price * l.qty, 0);
+  const options = FREE_SHIPPING_OVER && subtotal >= FREE_SHIPPING_OVER ? [{ label: FREE_SHIPPING_LABEL, cents: 0 }] : SHIPPING_OPTIONS;
+  options.forEach((o, n) => {
     const rate = `shipping_options[${n}][shipping_rate_data]`;
     params.set(`${rate}[type]`, 'fixed_amount');
     params.set(`${rate}[display_name]`, o.label);
