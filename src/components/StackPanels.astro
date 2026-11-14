@@ -343,8 +343,8 @@ const panAt = panels.findIndex((p) => p.pan);
   }
 
   /* Once the script has spaced each pair of letters itself (see fit()), no even spacing on top. */
-  .words.fitted {
-    letter-spacing: 0;
+  .title .words.fitted {
+    letter-spacing: 0; /* (outranks the GÜSH title's own spacing too) */
     font-kerning: none;
   }
 
