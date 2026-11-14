@@ -1,5 +1,5 @@
 ---
-// The bottom of every page, under a thin black line (the same as under the header): the
+// The bottom of every page: the
 // newsletter sign-up (worker/newsletter.ts), links to the info pages, and how to get in touch.
 import { CONTACT_EMAIL } from '../data/store';
 
@@ -64,22 +64,12 @@ const year = new Date().getFullYear();
     margin-top: 24px;
   }
 
-  /* A thin black line across the top of each part, same as under the header. */
   .news,
   .foot-band {
     position: relative;
   }
 
-  .news::before,
-  .foot-band::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1.5px;
-    background: var(--ink);
-  }
+  /* (No lines across: just white space between the parts.) */
 
   .news {
     padding: 34px var(--gutter) 40px;

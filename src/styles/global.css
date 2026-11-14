@@ -113,17 +113,7 @@ body {
   view-transition-name: topbar;
 }
 
-/* Between the header and the page: a plain thin black line. */
-.topbar::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0; /* inside the header, so it's always on the fabric, never over the page scrolling by */
-  height: 1.5px;
-  pointer-events: none;
-  background: var(--ink);
-}
+/* (No line between the header and the page.) */
 
 .brand {
   grid-column: 2;
