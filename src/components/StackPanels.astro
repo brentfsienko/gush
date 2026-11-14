@@ -228,7 +228,32 @@ const panAt = panels.findIndex((p) => p.pan);
         }
         w.classList.add('fitted');
       }
-      const place = () => all.forEach(([w, s]) => corner(w, s));
+      // The squat title (GÜSH) runs the whole width of its photo, from the left border to the right
+      // one, overlapping each by the same hair: sized from its letters' real shapes.
+      const widen = (w: HTMLElement, shapes: ReturnType<typeof shape>[][]) => {
+        if (!w.closest('.squat')) return;
+        const panelEl = stack.querySelector<HTMLElement>('[data-pan]') ?? stack.querySelector<HTMLElement>('.panel');
+        const chars = [...(w.querySelector('.line')?.querySelectorAll<HTMLElement>('.ch') ?? [])];
+        if (!panelEl || !chars.length) return;
+        w.style.fontSize = '';
+        w.style.translate = '';
+        const first = chars[0].getBoundingClientRect();
+        const last = chars.at(-1)!.getBoundingClientRect();
+        const s0 = shapes[0][0];
+        const sN = shapes[0].at(-1)!;
+        const inkLeft = first.left + Math.min(...(s0.L.filter((v) => v != null) as number[])) * (first.width / s0.adv);
+        const inkRight = last.left + Math.max(...(sN.R.filter((v) => v != null) as number[])) * (last.width / sN.adv);
+        const fs = parseFloat(getComputedStyle(w).fontSize);
+        const target = panelEl.clientWidth + 2 * fs * EDGE_OVERLAP;
+        // the overlap grows with the size too, so solve for it
+        const next = (fs * panelEl.clientWidth) / (inkRight - inkLeft - 2 * fs * EDGE_OVERLAP);
+        if (Number.isFinite(next) && next > 0 && Math.abs(inkRight - inkLeft - target) > 0.5) w.style.fontSize = `${next.toFixed(2)}px`;
+      };
+      const place = () =>
+        all.forEach(([w, s]) => {
+          widen(w, s);
+          corner(w, s);
+        });
       requestAnimationFrame(() => {
         place();
         stack.classList.add('titles-ready'); // show them now: right font, spaced, in place
@@ -300,6 +325,7 @@ const panAt = panels.findIndex((p) => p.pan);
     --side: 24px; /* the white border down the sides */
     position: relative;
     isolation: isolate;
+    overflow-x: clip; /* a title's box may reach past the edge (its letters don't); never scroll sideways */
   }
 
   .panel {
