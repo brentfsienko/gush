@@ -1,6 +1,6 @@
 ---
 // Big photos that stack as you scroll: each panel pins to the top of the page and the next one
-// slides up over it, joined by a line of real stitching like the one under the header. Each photo
+// slides up over it, with a soft shadow along its edge. Each photo
 // is a patch sewn onto the page's cotton (the same stitched outline as the cart's hover box, and the
 // product photos' shadow down-left), with its name in your sewn lettering on the cotton underneath,
 // alternating left and right, a little crooked like a hand-sewn label. The whole panel is a link;
@@ -70,7 +70,7 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
 </section>
 
 <script>
-  // A panel is about as tall as the scrolling area under the header, so the next one's seam peeks in
+  // A panel is about as tall as the scrolling area under the header, so the next one's edge peeks in
   // at the bottom. Measured once, and again only when the width changes, so a phone's address bar
   // sliding in and out doesn't make the panels jump.
   const stack = document.querySelector<HTMLElement>('[data-stackp]');
@@ -92,7 +92,7 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
     --area-h: calc(100svh - 100px); /* until the script measures it */
     --panel-h: calc(var(--area-h) * 0.94);
     --side: 32px; /* cotton around the patch */
-    --top: 26px;
+    --top: 38px;
     --strip: 104px; /* the cotton under the patch, where its name is sewn */
     position: relative;
     isolation: isolate;
@@ -109,20 +109,11 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
     background: var(--fabric);
   }
 
-  /* Each next panel is a fresh piece of cotton sewn on at the top, with the header's stitch line and
-     a soft shadow where it lies over the one before. */
+  /* Each next panel is a fresh piece of cotton laid over the one before: just a soft shadow along its
+     top edge (no stitch line, so once it pins under the header there's only the header's line, then
+     the patch's outline). */
   .panel:not(:first-child) {
-    box-shadow: 0 -8px 16px -10px rgba(31, 27, 22, 0.28);
-  }
-
-  .panel:not(:first-child)::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 7px;
-    background: url('../assets/header-stitch.png') left center / auto 7px repeat-x;
+    box-shadow: 0 -10px 18px -10px rgba(31, 27, 22, 0.32);
   }
 
   /* The photo: a patch, stitched on just outside its edge, with a shadow down-left like the product
@@ -200,7 +191,7 @@ const TILTS = ['-1.2deg', '0.9deg', '-0.6deg', '1.3deg', '-1deg'];
     .stackp {
       --panel-h: calc(var(--area-h) * 0.9);
       --side: 18px;
-      --top: 18px;
+      --top: 24px;
       --strip: 62px;
     }
 
