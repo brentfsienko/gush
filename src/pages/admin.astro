@@ -593,6 +593,19 @@ import { PRODUCTS } from '../data/products';
     codeList.replaceChildren(
       ...(codes.length
         ? codes.map((c) => {
+            const del = h('button', { class: 'btn small', type: 'button' }, 'delete');
+            del.addEventListener('click', async () => {
+              if (!confirm(`delete ${c.code}? it stops working right away and can’t be turned back on.`)) return;
+              del.disabled = true;
+              try {
+                await api('/admin/api/codes/delete', { id: c.id });
+                sayCode(`${c.code} is deleted.`);
+                await loadCodes();
+              } catch (err) {
+                sayCode(err instanceof Error ? err.message : 'that didn’t delete', true);
+                del.disabled = false;
+              }
+            });
             const toggle = h('button', { class: 'btn small', type: 'button' }, c.active ? 'turn off' : 'turn on');
             toggle.addEventListener('click', async () => {
               toggle.disabled = true;
@@ -629,6 +642,7 @@ import { PRODUCTS } from '../data/products';
               h('span', { class: 'dim' }, `${used}${done ? ' (all used)' : c.active ? '' : ' · off'}`),
               done ? null : note,
               done ? null : toggle,
+              del,
             );
           })
         : [h('p', { class: 'dim' }, 'no codes yet.')]),

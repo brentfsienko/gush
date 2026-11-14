@@ -130,7 +130,8 @@ export async function listCodes(env: Env): Promise<{ codes: CodeRow[] } | { erro
   const r = await stripe<{ data: PromotionCode[] }>(env, '/promotion_codes?limit=50&expand[]=data.coupon.applies_to');
   if (!r.ok) return { error: r.error };
   return {
-    codes: r.data.data.map((p) => ({
+    // Deleted codes (deleteCode) stay in Stripe, switched off for good, but aren't listed.
+    codes: r.data.data.filter((p) => !p.metadata?.gush_deleted).map((p) => ({
       id: p.id,
       code: p.code,
       active: p.active,
@@ -207,6 +208,22 @@ export async function setCodeMessage(env: Env, id: unknown, message: unknown) {
   f.set('metadata[gush_message]', typeof message === 'string' ? message.trim().slice(0, 80) : ''); // empty clears it
   const r = await stripe(env, `/promotion_codes/${id}`, f);
   return r.ok ? { ok: true as const } : { error: r.error };
+}
+
+/** Delete a code: Stripe never erases a promotion code, so it's switched off, its discount (the
+ *  coupon) is deleted so it can't be switched back on, and it's left off the orders page's list. */
+export async function deleteCode(env: Env, id: unknown) {
+  if (typeof id !== 'string' || !/^promo_[A-Za-z0-9]+$/.test(id)) return { error: 'bad request' };
+  const got = await stripe<PromotionCode>(env, `/promotion_codes/${id}`);
+  if (!got.ok) return { error: got.error };
+  const f = new URLSearchParams();
+  f.set('active', 'false');
+  f.set('metadata[gush_deleted]', String(Date.now()));
+  const off = await stripe(env, `/promotion_codes/${id}`, f);
+  if (!off.ok) return { error: off.error };
+  const couponId = typeof got.data.coupon === 'string' ? got.data.coupon : got.data.coupon?.id;
+  if (couponId) await stripe(env, `/coupons/${couponId}`, undefined, 'DELETE'); // already gone is fine
+  return { ok: true as const };
 }
 
 /** Turn a code off (or back on). Off codes stop working at checkout right away. */
