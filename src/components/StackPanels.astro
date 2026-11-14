@@ -215,6 +215,12 @@ const panAt = panels.findIndex((p) => p.pan);
     height: var(--extra, 0px);
   }
 
+  /* The `pan` photo fills the whole area under the header, so no empty room shows below it while
+     you scroll through it. */
+  .panel[data-pan] {
+    height: var(--area-h);
+  }
+
   /* A soft dark fade at the bottom, so the white title reads on any photo. */
   .panel:not(.light)::after {
     content: '';
@@ -241,7 +247,7 @@ const panAt = panels.findIndex((p) => p.pan);
 
   /* Titles of photos after the `pan` one sit lower by its extra room. */
   .title.after-pan {
-    top: calc(var(--slot) * var(--panel-h) + var(--extra, 0px));
+    top: calc(var(--slot) * var(--panel-h) + var(--extra, 0px) + var(--area-h) - var(--panel-h));
   }
 
   /* The `pan` photo's title rides on the photo itself, so it stays while you scroll through it. */
@@ -267,9 +273,6 @@ const panAt = panels.findIndex((p) => p.pan);
     font-size: clamp(56px, 13vw, 210px);
     line-height: 0.88;
     letter-spacing: -0.02em;
-    /* Bold is the font's heaviest; a thin outline in the same color makes it thicker still. */
-    -webkit-text-stroke: 0.035em currentColor;
-    paint-order: stroke fill;
     white-space: nowrap;
   }
 
@@ -277,10 +280,6 @@ const panAt = panels.findIndex((p) => p.pan);
     letter-spacing: -0.09em;
     transform: scale(1.08, 0.78);
     transform-origin: left bottom;
-  }
-
-  .title:not(.dark) .words {
-    text-shadow: 0 2px 22px rgba(0, 0, 0, 0.18);
   }
 
   .line {
