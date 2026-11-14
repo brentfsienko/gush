@@ -296,7 +296,8 @@ const panAt = panels.findIndex((p) => p.pan);
     --area-h: calc(100svh - 100px); /* until the script measures it */
     --panel-h: calc(var(--area-h) * 0.92);
     --pad: 22px;
-    --edge: 8px; /* the white cotton border: between photos and down the sides */
+    --edge: 8px; /* the white strip between photos */
+    --side: 16px; /* the white border down the sides */
     position: relative;
     isolation: isolate;
   }
@@ -309,8 +310,8 @@ const panAt = panels.findIndex((p) => p.pan);
     height: var(--panel-h);
     overflow: hidden;
     background: var(--ink);
-    border-left: var(--edge) solid var(--page);
-    border-right: var(--edge) solid var(--page);
+    border-left: var(--side) solid var(--page);
+    border-right: var(--side) solid var(--page);
   }
 
   /* A strip of the page's cotton between one photo and the next (and down the sides, above). */
@@ -356,7 +357,7 @@ const panAt = panels.findIndex((p) => p.pan);
   /* The titles: one per photo, at the bottom of that photo's spot on the page, above all the photos. */
   .title {
     position: absolute;
-    left: var(--edge); /* the inside of the left border */
+    left: var(--side); /* the inside of the left border */
     right: 0;
     top: calc(var(--slot) * var(--panel-h));
     transform: translateY(-100%);
@@ -378,7 +379,7 @@ const panAt = panels.findIndex((p) => p.pan);
   .pan-slot {
     position: absolute;
     top: 0;
-    left: var(--edge);
+    left: var(--side);
     right: 0;
     height: calc(var(--area-h) + var(--extra, 0px));
     z-index: 50;
@@ -451,6 +452,7 @@ const panAt = panels.findIndex((p) => p.pan);
       --panel-h: calc(var(--area-h) * 0.8);
       --pad: 14px;
       --edge: 6px;
+      --side: 10px;
     }
 
     .panel :global(.media) {

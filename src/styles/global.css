@@ -5,11 +5,11 @@
   --gray: #7a7a7a; /* prices */
   --red: #c8372d;
   --sun: #e8a317; /* mustard, same as brentsienko.com */
-  --page: #fefefc; /* the page everything is stuck onto: white cotton (the fabric texture's average color) */
+  --page: #ffffff; /* the page: plain white */
   /* The page itself: a seamless slub-cotton texture over the off-white (src/assets/fabric.webp, made by
      scripts/fabric.py; the build gives it a new name whenever it changes, so caches never show an old one).
      The tile is 2400px shown at 800px (3x), so it stays sharp on high-density screens. */
-  --fabric: var(--page) url('../assets/fabric.webp') 0 0 / 800px 800px repeat;
+  --fabric: var(--page); /* was the cotton texture (src/assets/fabric.webp); now plain white */
   --type: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --gutter: 16px;
   /* How wide the header and page content get on big screens. */
@@ -133,6 +133,7 @@ body {
   height: 100%;
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 
 /* Logo height is set in Base.astro. */
