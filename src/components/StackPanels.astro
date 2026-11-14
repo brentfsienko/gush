@@ -92,7 +92,7 @@ const panAt = panels.findIndex((p) => p.pan);
             <span class:list={['title', 'inpanel', { dark: p.dark, squat: p.squat }]} aria-hidden="true">
               <span class="words">
                 {p.title.split('\n').map((line) => (
-                  <span class="line">{line}</span>
+                  <span class="line">{[...line].map((ch) => <span class="ch">{ch}</span>)}</span>
                 ))}
               </span>
             </span>
@@ -111,7 +111,7 @@ const panAt = panels.findIndex((p) => p.pan);
         <Tag class:list={['title', { dark: p.dark, 'after-pan': panAt >= 0 && i > panAt }]} href={p.href} style={`--slot:${i + 1}`} role={p.href ? undefined : 'img'} aria-label={`${p.title.replace(/\n/g, ' ')}. ${p.alt}`}>
           <span class="words" aria-hidden="true">
             {p.title.split('\n').map((line) => (
-              <span class="line">{line}</span>
+              <span class="line">{[...line].map((ch) => <span class="ch">{ch}</span>)}</span>
             ))}
           </span>
         </Tag>
@@ -135,6 +135,58 @@ const panAt = panels.findIndex((p) => p.pan);
     };
     measure();
     addEventListener('resize', measure);
+
+    // Titles: space each pair of letters so they just barely touch. Even letter-spacing can't do it
+    // (round and straight letters meet differently), so each letter's real shape is drawn on a
+    // canvas, the closest point to its neighbor found row by row, and the gap set to overlap by a hair.
+    const OVERLAP = 0.008; // in em
+    const fit = async () => {
+      const words = [...stack.querySelectorAll<HTMLElement>('.words')];
+      if (!words.length || !document.fonts) return;
+      await document.fonts.ready;
+      const S = 200;
+      const shape = (font: string, ch: string) => {
+        const c = document.createElement('canvas');
+        c.width = 520;
+        c.height = 320;
+        const x = c.getContext('2d', { willReadFrequently: true })!;
+        x.font = font;
+        (x as CanvasRenderingContext2D & { fontKerning: string }).fontKerning = 'none';
+        x.fillText(ch, 160, 240);
+        const d = x.getImageData(0, 0, 520, 320).data;
+        const L: (number | null)[] = [];
+        const R: (number | null)[] = [];
+        for (let y = 0; y < 320; y++) {
+          let l = -1;
+          let r = -1;
+          for (let i = 0; i < 520; i++) if (d[(y * 520 + i) * 4 + 3] > 110) (l < 0 && (l = i), (r = i));
+          L.push(l < 0 ? null : l - 160);
+          R.push(r < 0 ? null : r - 160);
+        }
+        return { L, R, adv: x.measureText(ch).width };
+      };
+      for (const w of words) {
+        const cs = getComputedStyle(w);
+        const font = `${cs.fontWeight} ${S}px ${cs.fontFamily}`;
+        for (const line of w.querySelectorAll<HTMLElement>('.line')) {
+          const chars = [...line.querySelectorAll<HTMLElement>('.ch')];
+          const shapes = chars.map((el) => shape(font, el.textContent ?? ''));
+          chars.forEach((el, i) => {
+            if (i === chars.length - 1) return;
+            const a = shapes[i];
+            const b = shapes[i + 1];
+            let gap = Infinity;
+            for (let y = 0; y < 320; y++) {
+              if (a.R[y] == null || b.L[y] == null) continue;
+              gap = Math.min(gap, a.adv + (b.L[y] as number) - (a.R[y] as number) - 1);
+            }
+            if (Number.isFinite(gap)) el.style.marginRight = `${(-gap / S - OVERLAP).toFixed(4)}em`;
+          });
+        }
+        w.classList.add('fitted');
+      }
+    };
+    fit();
 
     // The photo marked `pan`: while you scroll through the extra room after it, it moves from its
     // top to its bottom (1px of photo per ~1.2px of scrolling), then the next photo comes up.
@@ -288,6 +340,12 @@ const panAt = panels.findIndex((p) => p.pan);
 
   .line {
     display: block;
+  }
+
+  /* Once the script has spaced each pair of letters itself (see fit()), no even spacing on top. */
+  .words.fitted {
+    letter-spacing: 0;
+    font-kerning: none;
   }
 
   .line + .line {
