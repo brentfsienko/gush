@@ -314,8 +314,8 @@ const panAt = panels.findIndex((p) => p.pan);
     border-right: var(--side) solid var(--page);
   }
 
-  /* A strip of the page's cotton between one photo and the next (and down the sides, above). */
-  .panel:not(:first-child) {
+  /* A white strip above each photo: between one photo and the next, and under the header's line. */
+  .panel {
     border-top: var(--edge) solid var(--page);
   }
 
