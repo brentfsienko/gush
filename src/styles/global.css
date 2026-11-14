@@ -68,18 +68,16 @@ body {
   view-transition-name: topbar;
 }
 
-/* Between the header and the page: a line of real machine stitching, cut from the scans of the sewn
-   lettering (src/assets/header-stitch.png: stretches of the straight stitch that runs between the letters,
-   joined into a strip that repeats seamlessly, with the same soft shadow as the lettering). */
+/* Between the header and the page: a plain thin black line. */
 .topbar::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0; /* inside the header, so it's always on the fabric, never over the page scrolling by */
-  height: 7px;
+  height: 1.5px;
   pointer-events: none;
-  background: url('../assets/header-stitch.png') left center / auto 7px repeat-x;
+  background: var(--ink);
 }
 
 .brand {
