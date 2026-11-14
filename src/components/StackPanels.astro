@@ -1,7 +1,7 @@
 ---
 // Big photos that stack as you scroll: each one fills the page's width and pins to the top, and the
 // next slides up over it, with a thin strip of the page's cotton between them. Each has a big white
-// title in the site's typewriter font, at the bottom of that photo's spot on the page, above all the
+// title in the site's typewriter font in bold, at the bottom of that photo's spot on the page, above all the
 // photos, so the titles scroll by while the photos stay put. A photo that's mostly white (the
 // sewing scan) gets a dark title instead.
 //
@@ -10,6 +10,8 @@
 // one after another, without the stacking.
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+// The titles are the site's typewriter font (IBM Plex Mono) in bold; only this page loads the bold.
+import '@fontsource/ibm-plex-mono/latin-700.css';
 
 export type Panel = {
   img: ImageMetadata;
@@ -158,10 +160,10 @@ const { panels } = Astro.props;
   .words {
     display: block;
     font-family: var(--type);
-    font-weight: 400;
+    font-weight: 700;
     font-size: clamp(56px, 13vw, 210px);
-    line-height: 0.86;
-    letter-spacing: -0.05em;
+    line-height: 0.88;
+    letter-spacing: -0.03em;
     white-space: nowrap;
   }
 
