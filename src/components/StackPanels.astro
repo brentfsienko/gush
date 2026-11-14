@@ -17,6 +17,9 @@ import type { ImageMetadata } from 'astro';
 // Rubik Mono One. Only this page loads them.
 import '@fontsource/rubik/latin-900.css';
 import '@fontsource/rubik-mono-one/latin-400.css';
+// Fetched right away (not when the titles first show), so they're ready sooner.
+import rubikFont from '@fontsource/rubik/files/rubik-latin-900-normal.woff2?url';
+import rubikMonoFont from '@fontsource/rubik-mono-one/files/rubik-mono-one-latin-400-normal.woff2?url';
 
 export type Panel = {
   img: ImageMetadata;
@@ -58,6 +61,8 @@ const sets = await Promise.all(panels.map(async (p) => ({ main: await srcset(p.i
 const panAt = panels.findIndex((p) => p.pan);
 ---
 
+<link rel="preload" as="font" type="font/woff2" href={rubikFont} crossorigin />
+<link rel="preload" as="font" type="font/woff2" href={rubikMonoFont} crossorigin />
 <section class="stackp" data-stackp>
   {
     panels.map((p, i) => {
@@ -167,14 +172,47 @@ const panAt = panels.findIndex((p) => p.pan);
           L.push(l < 0 ? null : l - 160);
           R.push(r < 0 ? null : r - 160);
         }
-        return { L, R, adv: x.measureText(ch).width };
+        let bottom = 0; // lowest row with ink
+        for (let y = 0; y < 320; y++) if (L[y] != null) bottom = y;
+        const m = x.measureText(ch);
+        return { L, R, adv: m.width, inkBelow: bottom - 240, asc: m.fontBoundingBoxAscent, desc: m.fontBoundingBoxDescent };
       };
+      // Where each title's ink actually sits (letters have room around them in their box), so it
+      // can be nudged into the photo's bottom-left corner, overlapping both edges by a hair.
+      const corner = (w: HTMLElement, shapes: ReturnType<typeof shape>[][]) => {
+        const title = w.closest<HTMLElement>('.title');
+        const lines = [...w.querySelectorAll<HTMLElement>('.line')];
+        const first = lines[0]?.querySelector<HTMLElement>('.ch');
+        const lastChars = [...(lines.at(-1)?.querySelectorAll<HTMLElement>('.ch') ?? [])];
+        if (!title || !first || !lastChars.length) return;
+        w.style.translate = '';
+        const t = title.getBoundingClientRect();
+        const f = first.getBoundingClientRect();
+        const s0 = shapes[0][0];
+        const sx = f.width / s0.adv; // px on screen per canvas px (includes any squashing)
+        const minL = Math.min(...(s0.L.filter((v) => v != null) as number[]));
+        const inkLeft = f.left + minL * sx;
+        const lastShapes = shapes.at(-1)!;
+        let inkBottom = -Infinity;
+        lastChars.forEach((el, i) => {
+          const r = el.getBoundingClientRect();
+          const sh = lastShapes[i];
+          const sy = r.height / (sh.asc + sh.desc);
+          inkBottom = Math.max(inkBottom, r.top + (sh.asc + sh.inkBelow + 1) * sy);
+        });
+        const px = parseFloat(getComputedStyle(w).fontSize) * OVERLAP;
+        w.style.translate = `${(t.left - px - inkLeft).toFixed(2)}px ${(t.bottom + px - inkBottom).toFixed(2)}px`;
+      };
+      const all: [HTMLElement, ReturnType<typeof shape>[][]][] = [];
       for (const w of words) {
         const cs = getComputedStyle(w);
         const font = `${cs.fontWeight} ${S}px ${cs.fontFamily}`;
+        const perLine: ReturnType<typeof shape>[][] = [];
+        all.push([w, perLine]);
         for (const line of w.querySelectorAll<HTMLElement>('.line')) {
           const chars = [...line.querySelectorAll<HTMLElement>('.ch')];
           const shapes = chars.map((el) => shape(font, el.textContent ?? ''));
+          perLine.push(shapes);
           chars.forEach((el, i) => {
             if (i === chars.length - 1) return;
             const a = shapes[i];
@@ -189,8 +227,21 @@ const panAt = panels.findIndex((p) => p.pan);
         }
         w.classList.add('fitted');
       }
+      const place = () => all.forEach(([w, s]) => corner(w, s));
+      requestAnimationFrame(() => {
+        place();
+        stack.classList.add('titles-ready'); // show them now: right font, spaced, in place
+      });
+      let lastW2 = innerWidth;
+      addEventListener('resize', () => {
+        if (innerWidth === lastW2) return;
+        lastW2 = innerWidth;
+        requestAnimationFrame(place);
+      });
     };
     fit();
+    // Never leave the titles hidden for long, even if a font can't load.
+    setTimeout(() => stack.classList.add('titles-ready'), 3000);
 
     // The photo marked `pan`: while you scroll through the extra room after it, it moves from its
     // top to its bottom (1px of photo per ~1.2px of scrolling), then the next photo comes up.
@@ -215,7 +266,11 @@ const panAt = panels.findIndex((p) => p.pan);
       const space = panel.nextElementSibling as HTMLElement;
       const move = () => {
         const start = stack.offsetTop + space.offsetTop - panel.offsetHeight;
-        const t = extra ? Math.min(1, Math.max(0, (main.scrollTop - start) / extra)) : 0.5;
+        if (!extra) {
+          img.style.objectPosition = ''; // nothing to scroll through (a phone): the usual framing
+          return;
+        }
+        const t = Math.min(1, Math.max(0, (main.scrollTop - start) / extra));
         img.style.objectPosition = `50% ${(t * 100).toFixed(2)}%`;
       };
       let queued = false;
@@ -288,6 +343,12 @@ const panAt = panels.findIndex((p) => p.pan);
     pointer-events: none;
   }
 
+  /* The titles stay invisible until their font has loaded and they're spaced and placed (the script
+     adds .titles-ready), so they never flash in a fallback font first. */
+  .stackp:not(.titles-ready) .words {
+    visibility: hidden;
+  }
+
   /* The titles: one per photo, at the bottom of that photo's spot on the page, above all the photos. */
   .title {
     position: absolute;
@@ -297,7 +358,7 @@ const panAt = panels.findIndex((p) => p.pan);
     transform: translateY(-100%);
     /* (see .after-pan and .pan-title below) */
     z-index: 50;
-    padding: 0 var(--pad) calc(var(--panel-h) * 0.05);
+    padding: 0; /* flush with the photo's bottom-left corner (the script nudges the ink into it) */
     color: #fff;
     text-decoration: none;
     pointer-events: none;
@@ -328,7 +389,7 @@ const panAt = panels.findIndex((p) => p.pan);
     top: auto;
     bottom: 0;
     transform: none;
-    padding-bottom: calc(var(--area-h) * 0.05);
+    padding-bottom: 0;
   }
 
   .title.dark {
@@ -340,7 +401,8 @@ const panAt = panels.findIndex((p) => p.pan);
   }
 
   .words {
-    display: block;
+    display: inline-block; /* only as wide as the word (a full-width box would poke out when squashed) */
+    vertical-align: bottom;
     font-family: 'Rubik', var(--type);
     font-weight: 900;
     font-size: clamp(56px, 13vw, 210px);
