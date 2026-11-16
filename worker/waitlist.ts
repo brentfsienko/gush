@@ -230,3 +230,21 @@ export const page = (inner: string, hero?: 'bag' | 'tag') => `<!doctype html>
 </table>
 </td></tr></table>
 </body></html>`;
+
+/** For the orders page (gush.supply/admin): everyone on a waitlist, grouped by item and size, with
+ *  how many of that size are in stock now. Newest groups with people waiting come first. */
+export async function waitlistSummary(env: Env) {
+  if (!env.STOCK) return { groups: [] };
+  const groups = new Map<string, { slug: string; title: string; size: string; inStock: number; people: { email: string; at: number; sent?: number }[] }>();
+  for (const w of await list(env)) {
+    const id = `${w.slug}:${w.size}`;
+    if (!groups.has(id)) {
+      const p = PRODUCTS.find((x) => x.slug === w.slug);
+      groups.set(id, { slug: w.slug, title: p?.title ?? w.slug, size: w.size, inStock: (await available(env, w.slug, w.size as Size)) ?? 0, people: [] });
+    }
+    groups.get(id)!.people.push({ email: w.email, at: w.meta.at, sent: w.meta.sent });
+  }
+  const out = [...groups.values()].map((g) => ({ ...g, people: g.people.sort((a, b) => a.at - b.at), waiting: g.people.filter((p) => !p.sent).length }));
+  out.sort((a, b) => b.waiting - a.waiting || a.title.localeCompare(b.title) || a.size.localeCompare(b.size));
+  return { groups: out };
+}

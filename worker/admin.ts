@@ -9,7 +9,7 @@
 // Everything under /admin goes through here (run_worker_first in wrangler.toml). Signed out, the
 // page redirects to the sign-in page and the API answers 401.
 import { FROM, esc, INK, GRAY, FONT } from './notify';
-import { page, td, gap } from './waitlist';
+import { page, td, gap, waitlistSummary } from './waitlist';
 import { listOrders, setStatus, setArchived, importFromStripe, isStatus } from './orders';
 import { listCodes, makeCode, setCodeActive, setCodeMessage, deleteCode } from './codes';
 import { ORDER_UPDATE_EMAILS, ORDER_UPDATE_EMAILS_SINCE } from '../src/data/store';
@@ -115,6 +115,9 @@ export async function admin(request: Request, env: Env) {
     const r = await listCodes(env);
     return json(r, 'error' in r ? 502 : 200);
   }
+
+  // Waitlists (worker/waitlist.ts): who's waiting for which sold-out size.
+  if (path === '/admin/api/waitlist' && method === 'GET') return json(await waitlistSummary(env));
 
   if (method === 'POST' && !sameOrigin(request, url)) return json({ error: 'forbidden' }, 403);
   let body: Record<string, unknown> = {};

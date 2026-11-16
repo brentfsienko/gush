@@ -48,6 +48,13 @@ import { PRODUCTS } from '../data/products';
       <p class="code-msg" data-code-msg aria-live="polite"></p>
     </details>
 
+    <!-- Who's waiting for which sold-out size (worker/waitlist.ts). Adding stock for a size in
+         src/data/products.ts emails everyone waiting on it within the hour. -->
+    <details class="codes" data-waitlist>
+      <summary>waitlists <span class="dim" data-wait-count></span></summary>
+      <div class="codes-list" data-wait-list><p class="dim">loading…</p></div>
+    </details>
+
     <div class="orders" data-orders><p class="dim">loading…</p></div>
   </div>
 </Base>
@@ -127,6 +134,16 @@ import { PRODUCTS } from '../data/products';
 
   :global(.code-row.off) {
     color: var(--gray);
+  }
+
+  :global(.wait-person) {
+    padding: 4px 0 4px 14px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.wait-group) {
+    margin: 0 0 8px;
   }
 
   :global(.code-love) {
@@ -710,6 +727,52 @@ import { PRODUCTS } from '../data/products';
       btn.disabled = false;
     }
   });
+
+  // ---- waitlists ----
+  type WaitGroup = { slug: string; title: string; size: string; inStock: number; waiting: number; people: { email: string; at: number; sent?: number }[] };
+  const waitBox = document.querySelector<HTMLDetailsElement>('[data-waitlist]')!;
+  const waitList = document.querySelector<HTMLElement>('[data-wait-list]')!;
+  const waitCount = document.querySelector<HTMLElement>('[data-wait-count]')!;
+
+  function renderWaitlist(groups: WaitGroup[]) {
+    const total = groups.reduce((n, g) => n + g.waiting, 0);
+    waitCount.textContent = total ? `(${total} waiting)` : '';
+    waitList.replaceChildren(
+      ...(groups.length
+        ? groups.map((g) =>
+            h(
+              'div',
+              { class: 'wait-group' },
+              h(
+                'div',
+                { class: `code-row${g.waiting ? '' : ' off'}` },
+                h('span', { class: 'code-name' }, `${g.title} (${g.size.toUpperCase()})`),
+                h('span', {}, `${g.waiting} waiting`),
+                h('span', { class: 'dim' }, g.inStock ? `${g.inStock} in stock, emails go out within the hour` : 'sold out'),
+              ),
+              ...g.people.map((p) =>
+                h(
+                  'div',
+                  { class: `wait-person${p.sent ? ' dim' : ''}` },
+                  h('a', { href: `mailto:${p.email}` }, p.email),
+                  ` · signed up ${day(p.at)}${p.sent ? ` · emailed ${day(p.sent)}` : ''}`,
+                ),
+              ),
+            ),
+          )
+        : [h('p', { class: 'dim' }, 'nobody on a waitlist yet.')]),
+    );
+  }
+
+  async function loadWaitlist() {
+    const r = await api('/admin/api/waitlist');
+    renderWaitlist(r.groups);
+  }
+  waitBox.addEventListener('toggle', () => {
+    if (waitBox.open) loadWaitlist().catch((err) => waitList.replaceChildren(h('p', { class: 'error' }, err instanceof Error ? err.message : 'couldn’t load waitlists')));
+  });
+  // The count on the closed box, so you can see at a glance if anyone's waiting.
+  loadWaitlist().catch(() => {});
 
   // /admin?code=CODE&item=blue-thermal&price=30&uses=1&message=... opens the codes with the form filled in.
   const q = new URLSearchParams(location.search);
