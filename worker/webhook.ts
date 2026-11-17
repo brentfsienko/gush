@@ -5,6 +5,7 @@
 import { recordSale } from './stock';
 import { notifyOrder, type PaidSession } from './notify';
 import { saveOrder, trackUrl } from './orders';
+import { giftPaid } from './gift';
 import { ORDER_UPDATE_EMAILS } from '../src/data/store';
 import type { Env } from './index';
 
@@ -51,6 +52,12 @@ export async function stripeWebhook(request: Request, env: Env) {
     (event.type === 'checkout.session.completed' && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required')) ||
     event.type === 'checkout.session.async_payment_succeeded';
   if (!paid) return new Response('ignored', { status: 200 });
+
+  // A custom gift's payment (worker/gift.ts): no stock to count, the order already exists.
+  if (session.metadata?.gush_gift) {
+    if (env.STOCK) await giftPaid(env, session);
+    return new Response('ok (gift)', { status: 200 });
+  }
 
   if (!env.STOCK) {
     console.warn('order paid but stock tracking (STOCK) is not set up', session.id);

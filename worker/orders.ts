@@ -50,6 +50,11 @@ export type Order = {
   family?: boolean; // a family Christmas gift (worker/family.ts), not a Stripe order
   pick?: { style: string; color: string; size: string; bag: string }; // a family gift's choices (for editing)
   code?: string; // promo code used, if any (e.g. NORUTS100)
+  // A custom gift (worker/gift.ts): the buyer is who it's from; it's for `to`. Paid once you set a
+  // price (quote) and they pay it through Stripe (paid = when).
+  gift?: { to: string; message?: string; deliver: 'mail' | 'hand' };
+  quote?: { cents: number; at: number };
+  paid?: number;
 };
 
 const ORDER = 'ord:';
@@ -262,7 +267,8 @@ export function statusEmail(o: Order, status: Status) {
   let subject = '';
   let lines: string[] = [];
   let extra = '';
-  const thing = o.family ? 'gift' : 'order';
+  const thing = o.family || o.gift ? 'gift' : 'order';
+  const handed = o.gift?.deliver === 'hand';
   if (status === 'sewing') {
     subject = `your GÜSH ${thing} is on the machine`;
     lines = [
@@ -276,6 +282,8 @@ export function statusEmail(o: Order, status: Status) {
     lines = [`${hi}your ${what} is headed your way.`];
     if (o.family && !o.tracking) {
       lines.push('see you at christmas ♥');
+    } else if (handed && !o.tracking) {
+      lines.push('we’ll get it to you soon so you can give it.');
     } else if (o.tracking) {
       lines.push(`tracking: ${o.tracking}`);
       extra = `<div ${td()}><a href="${esc(trackingLink(o.tracking))}" style="color:${INK};">follow the package →</a></div>`;
@@ -286,7 +294,9 @@ export function statusEmail(o: Order, status: Status) {
     subject = `your GÜSH ${thing} arrived`;
     lines = o.family
       ? [`${hi}your ${what} is yours now. we hope you love it ♥`, 'if anything about the fit is off, just reply and we’ll fix it.']
-      : [`${hi}your ${what} should be with you now. we hope it fits just right.`, 'if it doesn’t, returns and exchanges are open for 14 days after delivery. just reply to this email.'];
+      : o.gift
+        ? [`${hi}your gift for ${o.gift.to} is ${handed ? 'with you' : 'delivered'} now. we hope they love it ♥`, 'if anything about the fit is off, just reply and we’ll fix it.']
+        : [`${hi}your ${what} should be with you now. we hope it fits just right.`, 'if it doesn’t, returns and exchanges are open for 14 days after delivery. just reply to this email.'];
   }
   const photos = o.items.map((i) => itemPicture(i, 160, true)).join('');
   const text = [subject, '', ...lines, '', `see your ${thing}: ${url}`, '', `questions? just reply, or email ${CONTACT_EMAIL}.`].join('\n');
@@ -327,7 +337,7 @@ export function timelineHtml(o: Order) {
     if (s.key === 'shipped' && i <= step) {
       detail = o.tracking
         ? `<a class="ot-detail" href="${esc(trackingLink(o.tracking))}" target="_blank" rel="noopener">tracking: ${esc(o.tracking.replace(/^https?:\/\//, ''))} →</a>`
-        : `<span class="ot-detail ot-dim">${o.family ? 'see you at christmas ♥' : 'we’ll drop it off soon'}</span>`;
+        : `<span class="ot-detail ot-dim">${o.family ? 'see you at christmas ♥' : o.gift?.deliver === 'hand' ? 'we’ll get it to you soon' : 'we’ll drop it off soon'}</span>`;
     } else if (s.key === 'shipped' && state === 'todo') {
       detail = `<span class="ot-detail ot-dim">${o.family ? 'at christmas' : 'usually ships within 1–2 weeks'}</span>`;
     }
@@ -339,11 +349,28 @@ export function timelineHtml(o: Order) {
       </span>
     </li>`;
   }).join('');
+  const thing = o.family || o.gift ? 'gift' : 'order';
   return `<p class="ot-label">order #${o.number}</p>
-    <h1 class="heading ot-title">${first ? `${esc(first)}’s ${o.family ? 'gift' : 'order'}` : `your ${o.family ? 'gift' : 'order'}`}</h1>
+    <h1 class="heading ot-title">${first ? `${esc(first)}’s ${thing}` : `your ${thing}`}</h1>
+    ${o.gift ? `<p class="ot-for">for ${esc(firstOf(o.gift.to))} ♥</p>` : ''}
     <ul class="ot-items">${items}</ul>
+    ${o.gift ? giftPayHtml(o) : ''}
     <ol class="ot-steps" aria-label="order status: ${esc(STATUSES[step].label)}">${steps}</ol>
     <p class="ot-help ot-dim">questions? email <a href="mailto:${esc(CONTACT_EMAIL)}">${esc(CONTACT_EMAIL)}</a> and mention order #${o.number}.</p>`;
+}
+
+const firstOf = (n: string) => n.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
+const dollars = (c: number) => `$${(c / 100).toFixed(2).replace(/\.00$/, '')}`;
+
+/** A custom gift's price box: waiting on a price, a pay button, or paid. */
+function giftPayHtml(o: Order) {
+  if (o.paid) return `<p class="ot-pay ot-paid">paid ${esc(dollars(o.total))} on ${esc(shortDate(o.paid))} ♥ thank you!</p>`;
+  if (!o.quote) return `<p class="ot-pay ot-dim">brent is working out the price. we’ll email you when it’s ready to pay.</p>`;
+  return `<form class="ot-pay" method="post" action="/order/${esc(o.token)}/pay">
+      <p class="ot-price">price: ${esc(dollars(o.quote.cents))}${o.gift?.deliver === 'mail' ? ' <span class="ot-dim">(shipping included)</span>' : ''}</p>
+      <button class="ot-pay-btn" type="submit">pay ${esc(dollars(o.quote.cents))} →</button>
+      <p class="ot-dim ot-pay-note">it goes on the machine once it’s paid.</p>
+    </form>`;
 }
 
 /** /order/<code>: the order page with its timeline filled in (or "not found"). */

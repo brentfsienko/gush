@@ -11,6 +11,7 @@
 import { FROM, esc, INK, GRAY, FONT } from './notify';
 import { page, td, gap, waitlistSummary } from './waitlist';
 import { listOrders, setStatus, setArchived, importFromStripe, isStatus } from './orders';
+import { setQuote } from './gift';
 import { listCodes, makeCode, setCodeActive, setCodeMessage, deleteCode } from './codes';
 import { ORDER_UPDATE_EMAILS, ORDER_UPDATE_EMAILS_SINCE } from '../src/data/store';
 import type { Env } from './index';
@@ -131,6 +132,13 @@ export async function admin(request: Request, env: Env) {
     });
     if ('error' in r) return json(r, 404);
     return json({ order: { ...r.order, trackUrl: `/order/${r.order.token}` }, emailed: r.emailed });
+  }
+
+  // A custom gift's price (worker/gift.ts): saves it and emails the giver a link to pay.
+  if (path === '/admin/api/quote' && method === 'POST') {
+    if (typeof body.id !== 'string') return json({ error: 'bad request' }, 400);
+    const r = await setQuote(env, body.id, body.dollars, body.email !== false);
+    return json(r, 'error' in r ? 400 : 200);
   }
 
   if (path === '/admin/api/archive' && method === 'POST') {

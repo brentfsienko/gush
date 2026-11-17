@@ -1,0 +1,527 @@
+---
+// Custom gifts for friends and family: order a custom piece for someone else, and pay once Brent sets
+// a price. Only opens through the secret link, /gift/<key> (worker/gift.ts checks the key and serves
+// this page; anything else is "not found"). The piece choices are the family list's
+// (src/data/family.ts, FamilyPickFields).
+import Base from '../layouts/Base.astro';
+import FamilyPickFields from '../components/FamilyPickFields.astro';
+import { FAMILY_STYLES } from '../data/family';
+---
+
+<Base title="gift" shareTitle="a GÜSH gift" description="a custom GÜSH gift, sewn by hand in Seattle" footer={false} noindex>
+  <article class="gf type">
+    <p class="gf-label">GÜSH · custom gift</p>
+    <h1 class="heading gf-title">give someone a GÜSH</h1>
+    <p class="intro" data-intro>
+      pick a piece for someone you love, and Brent will sew it by hand in Seattle, just for them. send the
+      request, and he’ll email you a price. once it’s paid, it goes on the machine.
+    </p>
+
+    <form class="gf-form" data-gf novalidate>
+      <!-- 1. from -->
+      <section class="step" data-step="1">
+        <h2 class="heading step-title"><span class="step-num">1</span> from</h2>
+        <label class="field">
+          <span>your name</span>
+          <input type="text" name="name" maxlength="80" autocomplete="name" required />
+        </label>
+        <label class="field">
+          <span>your email <span class="dim">(for the price and updates)</span></span>
+          <input type="email" name="email" maxlength="254" autocomplete="email" required />
+        </label>
+        <div class="nav"><button class="btn" type="button" data-next>next →</button></div>
+      </section>
+
+      <!-- 2. to -->
+      <section class="step" data-step="2" hidden>
+        <h2 class="heading step-title"><span class="step-num">2</span> to</h2>
+        <label class="field">
+          <span>who’s it for?</span>
+          <input type="text" name="to" maxlength="80" autocomplete="off" required />
+        </label>
+        <label class="field">
+          <span>a note for the card <span class="dim">(optional)</span></span>
+          <textarea name="message" rows="3" maxlength="400" placeholder="happy birthday! love you…"></textarea>
+        </label>
+        <div class="nav">
+          <button class="btn ghost" type="button" data-back>← back</button>
+          <button class="btn" type="button" data-next>next →</button>
+        </div>
+      </section>
+
+      <!-- 3. the piece -->
+      <section class="step" data-step="3" hidden>
+        <h2 class="heading step-title"><span class="step-num">3</span> the piece</h2>
+        <p class="dim hint">pick for the person getting it: their size, their colors. not sure? the note helps.</p>
+        <FamilyPickFields />
+        <div class="nav">
+          <button class="btn ghost" type="button" data-back>← back</button>
+          <button class="btn" type="button" data-next>next →</button>
+        </div>
+      </section>
+
+      <!-- 4. getting it to them -->
+      <section class="step" data-step="4" hidden>
+        <h2 class="heading step-title"><span class="step-num">4</span> getting it to them</h2>
+        <fieldset class="group">
+          <legend class="sr">delivery</legend>
+          <label class="option">
+            <input type="radio" name="deliver" value="mail" />
+            <span><span data-mail-label>mail it to them</span><span class="dim sub">we’ll send it straight to their door</span></span>
+          </label>
+          <label class="option">
+            <input type="radio" name="deliver" value="hand" />
+            <span>give it to me<span class="dim sub">you’ll get it to give in person</span></span>
+          </label>
+        </fieldset>
+
+        <div class="address" data-address hidden>
+          <label class="field">
+            <span>street address</span>
+            <input type="text" name="line1" maxlength="120" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>apt, unit <span class="dim">(optional)</span></span>
+            <input type="text" name="line2" maxlength="120" autocomplete="off" />
+          </label>
+          <div class="row">
+            <label class="field grow">
+              <span>city</span>
+              <input type="text" name="city" maxlength="80" autocomplete="off" />
+            </label>
+            <label class="field state">
+              <span>state</span>
+              <input type="text" name="state" maxlength="40" autocomplete="off" />
+            </label>
+            <label class="field zip">
+              <span>zip</span>
+              <input type="text" name="zip" maxlength="20" inputmode="numeric" autocomplete="off" />
+            </label>
+          </div>
+        </div>
+
+        <dl class="summary" data-summary></dl>
+        <p class="dim how">no payment yet: Brent will email you a price, and you pay from that email.</p>
+
+        <div class="nav">
+          <button class="btn ghost" type="button" data-back>← back</button>
+          <button class="btn" type="submit" data-submit>send my gift request</button>
+        </div>
+      </section>
+    </form>
+
+    <section class="done" data-done hidden>
+      <h2 class="heading" data-done-title>your gift request is in ♥</h2>
+      <p data-done-text></p>
+      <p><a data-done-link href="#">see your gift →</a></p>
+      <p><a href="" data-again>send another gift</a></p>
+    </section>
+
+    <p class="msg" data-msg aria-live="polite"></p>
+  </article>
+</Base>
+
+<style>
+  .gf {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 36px var(--gutter) 64px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  .gf-label {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .gf-title {
+    margin: 0 0 14px;
+    font-size: 30px;
+  }
+
+  .intro {
+    margin: 0 0 12px;
+    line-height: 1.65;
+  }
+
+  .dim {
+    color: var(--gray);
+  }
+
+  .hint {
+    margin: -8px 0 18px;
+    font-size: 14px;
+  }
+
+  .gf-form {
+    margin-top: 28px;
+  }
+
+  .step-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    font-size: 21px;
+  }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    font-size: 15px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 18px;
+  }
+
+  .field > span:first-child {
+    font-size: 14px;
+  }
+
+  input[type='text'],
+  input[type='email'],
+  textarea {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 6px 0;
+    min-width: 0;
+  }
+
+  textarea {
+    border: 1.5px solid var(--ink);
+    padding: 8px 10px;
+    resize: vertical;
+  }
+
+  input[type='text']:focus,
+  input[type='email']:focus,
+  textarea:focus {
+    outline: none;
+    box-shadow: inset 0 -1.5px 0 var(--ink);
+  }
+
+  .group {
+    border: 0;
+    margin: 0 0 18px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  /* Delivery: two ink boxes, filled when picked. */
+  .option {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .option > span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    font-size: 16px;
+    border: 1.5px solid var(--ink);
+    background: var(--page);
+  }
+
+  .option .sub {
+    font-size: 13px;
+  }
+
+  .option input:checked + span {
+    background: var(--ink);
+    color: var(--page);
+  }
+
+  .option input:checked + span .sub {
+    color: var(--page);
+    opacity: 0.75;
+  }
+
+  .option input:focus-visible + span {
+    outline: 2px dashed var(--ink);
+    outline-offset: 3px;
+  }
+
+  .row {
+    display: flex;
+    gap: 14px;
+  }
+
+  .grow {
+    flex: 1;
+  }
+
+  .state {
+    width: 64px;
+  }
+
+  .zip {
+    width: 90px;
+  }
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .btn {
+    padding: 9px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .btn:hover:not(:disabled),
+  .btn:focus-visible {
+    background: var(--ink);
+    color: var(--page);
+    outline: none;
+  }
+
+  .btn.ghost {
+    border-style: dashed;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    margin: 22px 0 10px;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+
+  .summary :global(dt) {
+    color: var(--gray);
+  }
+
+  .summary :global(dd) {
+    margin: 0;
+  }
+
+  .how {
+    margin: 0 0 16px;
+    font-size: 14px;
+  }
+
+  .msg {
+    min-height: 1.5em;
+    margin-top: 14px;
+    color: var(--red);
+  }
+
+  .done {
+    margin-top: 28px;
+  }
+
+  .done a {
+    color: inherit;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+</style>
+
+<script>
+  import { hearts } from '../scripts/hearts';
+  (window as unknown as { gushHearts: typeof hearts }).gushHearts = hearts;
+</script>
+
+<script define:vars={{ STYLES: FAMILY_STYLES }}>
+  const form = document.querySelector('[data-gf]');
+  if (form) {
+    const key = location.pathname.split('/')[2] || '';
+    const msg = document.querySelector('[data-msg]');
+    const intro = document.querySelector('[data-intro]');
+    const steps = [...form.querySelectorAll('[data-step]')];
+    const address = form.querySelector('[data-address]');
+    const say = (t) => (msg.textContent = t);
+    const val = (n) => {
+      const el = form.elements.namedItem(n);
+      if (!el) return '';
+      if (el instanceof RadioNodeList) return el.value;
+      return el.value.trim();
+    };
+    const top = () => {
+      window.scrollTo({ top: 0 });
+      document.querySelector('main')?.scrollTo({ top: 0 });
+    };
+
+    const show = (n) => {
+      steps.forEach((s) => (s.hidden = s.dataset.step !== String(n)));
+      intro.hidden = n !== 1;
+      say('');
+      if (n === 4) {
+        form.querySelector('[data-mail-label]').textContent = `mail it to ${val('to').split(/\s+/)[0] || 'them'}`;
+        renderSummary();
+      }
+      top();
+    };
+
+    const check = (n) => {
+      if (n === 1) {
+        if (!val('name')) return 'tell us your name.';
+        if (!/^\S+@\S+\.\S+$/.test(val('email'))) return 'that email doesn’t look right.';
+      }
+      if (n === 2 && !val('to')) return 'who’s it for?';
+      if (n === 3) {
+        const style = val('style');
+        if (!style) return 'pick a piece.';
+        if (!val('color') && style !== 'mystery') return 'pick a color.';
+        if (style === 'bag' ? !val('bag') : !val('size')) return style === 'bag' ? 'tell us what kind of bag.' : 'pick a size.';
+      }
+      if (n === 4) {
+        const d = val('deliver');
+        if (!d) return 'how should it get to them?';
+        if (d === 'mail' && !(val('line1') && val('city') && val('state') && val('zip'))) return 'fill in their address (street, city, state, zip).';
+      }
+      return '';
+    };
+
+    form.querySelectorAll('[data-next]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const n = Number(b.closest('[data-step]').dataset.step);
+        const problem = check(n);
+        if (problem) return say(problem);
+        show(n + 1);
+      }),
+    );
+    form.querySelectorAll('[data-back]').forEach((b) =>
+      b.addEventListener('click', () => show(Number(b.closest('[data-step]').dataset.step) - 1)),
+    );
+
+    const pieceLabel = () => {
+      const style = val('style');
+      const label = STYLES.find((s) => s.key === style)?.label ?? '';
+      const color = val('color');
+      if (style === 'mystery') return color && color !== 'surprise' ? `mystery gift (${color})` : 'mystery gift';
+      if (style === 'bag') return `${color} bag · ${val('bag').toLowerCase()}`;
+      return `${color} ${label}`;
+    };
+
+    const summary = form.querySelector('[data-summary]');
+    function renderSummary() {
+      const d = val('deliver');
+      const addr = [val('line1'), val('line2'), [val('city'), val('state')].filter(Boolean).join(', ') + (val('zip') ? ` ${val('zip')}` : '')]
+        .filter((x) => x.trim())
+        .join(', ');
+      const rows = [
+        ['from', val('name')],
+        ['to', val('to')],
+        ['piece', pieceLabel()],
+        val('style') === 'bag' ? null : ['size', val('size').toUpperCase()],
+        val('fit') ? ['note', val('fit')] : null,
+        val('message') ? ['card', val('message')] : null,
+        d === 'mail' ? ['mail to', addr || '…'] : d === 'hand' ? ['delivery', `to you, ${val('name').split(/\s+/)[0]}, to give`] : null,
+      ].filter(Boolean);
+      summary.replaceChildren(
+        ...rows.flatMap(([k, v]) => {
+          const dt = document.createElement('dt');
+          dt.textContent = k;
+          const dd = document.createElement('dd');
+          dd.textContent = v;
+          return [dt, dd];
+        }),
+      );
+    }
+
+    form.addEventListener('change', (e) => {
+      if (e.target.name === 'deliver') address.hidden = val('deliver') !== 'mail';
+      if (!steps[3].hidden) renderSummary();
+    });
+    address.addEventListener('input', renderSummary);
+
+    const submit = form.querySelector('[data-submit]');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const problem = check(4);
+      if (problem) return say(problem);
+      submit.disabled = true;
+      say('');
+      try {
+        const res = await fetch('/api/gift', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            key,
+            name: val('name'),
+            email: val('email'),
+            to: val('to'),
+            message: val('message'),
+            style: val('style'),
+            color: val('color'),
+            size: val('size'),
+            bag: val('bag'),
+            fit: val('fit'),
+            deliver: val('deliver'),
+            line1: val('line1'),
+            line2: val('line2'),
+            city: val('city'),
+            state: val('state'),
+            zip: val('zip'),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'something went wrong. try again?');
+        if (!data.trackUrl || !data.label) throw new Error('hmm, your request didn’t save. give it another try?');
+        form.hidden = true;
+        intro.hidden = true;
+        const done = document.querySelector('[data-done]');
+        done.querySelector('[data-done-text]').textContent =
+          `${data.label} for ${val('to')}. we just emailed you a link to it. Brent will email you a price soon, and you can pay from there.`;
+        done.querySelector('[data-done-link]').href = data.trackUrl;
+        done.hidden = false;
+        top();
+        window.gushHearts?.(0.5, 0.3);
+      } catch (err) {
+        say(err instanceof Error && !(err instanceof TypeError) ? err.message : 'something went wrong. try again?');
+        submit.disabled = false;
+      }
+    });
+  }
+</script>

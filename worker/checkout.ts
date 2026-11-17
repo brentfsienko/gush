@@ -92,7 +92,23 @@ export async function checkout(request: Request, env: Env) {
   return json({ url: res.url });
 }
 
-async function createSession(params: URLSearchParams, env: Env) {
+/** Makes Stripe's page look like GÜSH (settings in src/data/store.ts). */
+export function brand(params: URLSearchParams, images: string) {
+  params.set('branding_settings[display_name]', CHECKOUT_LOOK.displayName);
+  params.set('branding_settings[font_family]', CHECKOUT_LOOK.font);
+  params.set('branding_settings[border_style]', CHECKOUT_LOOK.borderStyle);
+  params.set('branding_settings[background_color]', CHECKOUT_LOOK.background);
+  params.set('branding_settings[button_color]', CHECKOUT_LOOK.button);
+  params.set('branding_settings[logo][type]', 'url');
+  params.set('branding_settings[logo][url]', `${images}/stripe/logo.png?v=${IMAGE_VERSION}`);
+  params.set('branding_settings[icon][type]', 'url');
+  params.set('branding_settings[icon][url]', `${images}/icon-512.png`);
+}
+
+/** Where Stripe loads images from: the live site when testing on your own computer. */
+export const imageOrigin = (origin: string) => (/^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin) ? SITE_URL : origin);
+
+export async function createSession(params: URLSearchParams, env: Env) {
   const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
     headers: {
@@ -157,16 +173,7 @@ function buildParams(
     // Tax is added on top of the prices, from the shipping address.
     params.set('automatic_tax[enabled]', 'true');
   }
-  // Make Stripe's page look like GÜSH (settings in src/data/store.ts).
-  params.set('branding_settings[display_name]', CHECKOUT_LOOK.displayName);
-  params.set('branding_settings[font_family]', CHECKOUT_LOOK.font);
-  params.set('branding_settings[border_style]', CHECKOUT_LOOK.borderStyle);
-  params.set('branding_settings[background_color]', CHECKOUT_LOOK.background);
-  params.set('branding_settings[button_color]', CHECKOUT_LOOK.button);
-  params.set('branding_settings[logo][type]', 'url');
-  params.set('branding_settings[logo][url]', `${images}/stripe/logo.png?v=${IMAGE_VERSION}`);
-  params.set('branding_settings[icon][type]', 'url');
-  params.set('branding_settings[icon][url]', `${images}/icon-512.png`);
+  brand(params, images);
   if (CHECKOUT_TEXT.shipping) params.set('custom_text[shipping_address][message]', CHECKOUT_TEXT.shipping);
   if (CHECKOUT_TEXT.submit) params.set('custom_text[submit][message]', CHECKOUT_TEXT.submit);
   if (ORDER_NOTE_LABEL) {

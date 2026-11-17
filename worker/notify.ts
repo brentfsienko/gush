@@ -33,7 +33,7 @@ export type PaidSession = {
   collected_information?: { shipping_details?: { name?: string | null; address?: Address | null } | null } | null;
   shipping_details?: { name?: string | null; address?: Address | null } | null;
   custom_fields?: { key: string; text?: { value?: string | null } | null }[] | null;
-  metadata?: { items?: string } | null;
+  metadata?: { items?: string; gush_gift?: string } | null;
 };
 
 type Order = ReturnType<typeof readOrder>;

@@ -72,6 +72,49 @@ import { CONTACT_EMAIL } from '../data/store';
     color: var(--gray);
   }
 
+  /* Custom gifts (worker/gift.ts): who it's for, and the price box. */
+  .ot-for {
+    margin: -10px 0 18px;
+    font-size: 16px;
+  }
+
+  .ot-pay {
+    margin: -8px 0 30px;
+    padding: 16px 18px;
+    border: 1.5px solid var(--ink);
+  }
+
+  .ot-pay p {
+    margin: 0;
+  }
+
+  .ot-price {
+    font-size: 18px;
+  }
+
+  .ot-pay-btn {
+    margin: 12px 0 8px;
+    padding: 10px 20px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--page);
+    background: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .ot-pay-btn:hover,
+  .ot-pay-btn:focus-visible {
+    color: var(--ink);
+    background: var(--page);
+    outline: none;
+  }
+
+  .ot-pay-note {
+    font-size: 13px;
+  }
+
   .ot-items {
     list-style: none;
     margin: 0 0 30px;

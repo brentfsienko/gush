@@ -136,6 +136,16 @@ import { PRODUCTS } from '../data/products';
     color: var(--gray);
   }
 
+  :global(.tag-due) {
+    color: var(--red);
+    border-color: var(--red);
+  }
+
+  :global(.tracking-row.price-row input) {
+    flex: 0 0 110px;
+    min-width: 0;
+  }
+
   :global(.wait-person) {
     padding: 4px 0 4px 14px;
     font-size: 13px;
@@ -392,6 +402,7 @@ import { PRODUCTS } from '../data/products';
     buyerName?: string; buyerEmail?: string; shipName?: string; address: string[];
     shippingMethod: string; shippingCents: number; subtotal: number; discount: number; total: number; note?: string;
     status: Status; dates: Partial<Record<Status, number>>; tracking?: string; archived?: boolean; family?: boolean; code?: string;
+    gift?: { to: string; message?: string; deliver: 'mail' | 'hand' }; quote?: { cents: number; at: number }; paid?: number;
   };
 
   const STEPS: { key: Status; label: string }[] = [
@@ -456,25 +467,27 @@ import { PRODUCTS } from '../data/products';
         { class: 'order-num' },
         `#${o.number}`,
         o.family && h('span', { class: 'tag' }, 'family'),
+        o.gift && h('span', { class: `tag${o.paid ? '' : ' tag-due'}` }, o.paid ? 'gift · paid' : o.quote ? 'gift · waiting to pay' : 'gift · needs a price'),
         o.code && h('span', { class: 'tag' }, `code ${o.code}`),
         !o.live && h('span', { class: 'tag' }, 'test'),
         o.archived && h('span', { class: 'tag' }, 'archived'),
       ),
-      h('span', { class: 'dim' }, `${day(o.created)} · ${o.family ? 'gift' : money(o.total)}`),
+      h('span', { class: 'dim' }, `${day(o.created)} · ${o.family ? 'gift' : o.gift ? (o.paid ? `paid ${money(o.total)}` : o.quote ? `priced ${money(o.quote.cents)}` : 'no price yet') : money(o.total)}`),
     );
 
     const grid = h(
       'div',
       { class: 'order-grid' },
-      section('items', ...o.items.map((i) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title}${i.size ? ` (${i.size})` : ''}${o.family ? '' : ` · ${money(i.cents)}`}`)),
+      section('items', ...o.items.map((i) => `${i.qty > 1 ? `${i.qty} × ` : ''}${i.title}${i.size ? ` (${i.size})` : ''}${o.family || (o.gift && !o.paid) ? '' : ` · ${money(i.cents)}`}`)),
+      o.gift ? section('gift', `from ${o.buyerName ?? ''}`, `for ${o.gift.to}`, o.gift.message ? `card: “${o.gift.message}”` : undefined) : null,
       section('buyer', o.buyerName, o.buyerEmail),
       section('ship to', ...o.address),
       section(
-        o.family ? 'delivery' : 'shipping',
-        o.family ? o.shippingMethod : `${o.shippingMethod} (${o.shippingCents ? money(o.shippingCents) : 'free'})`,
+        o.family || o.gift ? 'delivery' : 'shipping',
+        o.family || o.gift ? o.shippingMethod : `${o.shippingMethod} (${o.shippingCents ? money(o.shippingCents) : 'free'})`,
         o.code ? `code ${o.code}${o.discount ? ` · −${money(o.discount)}` : o.family ? ' · 100% off' : ''}` : o.discount ? `promo code −${money(o.discount)}` : undefined,
       ),
-      section(o.family ? 'fit note' : 'note', o.note),
+      section(o.family || o.gift ? 'fit note' : 'note', o.note),
       section('status', ...STEPS.filter((s) => o.dates[s.key]).map((s) => `${s.label}: ${day(o.dates[s.key])}`), o.tracking ? `tracking: ${o.tracking}` : undefined),
     );
 
@@ -556,7 +569,37 @@ import { PRODUCTS } from '../data/products';
       archive,
     );
 
-    card.append(head, grid, steps, trackingRow, foot);
+    // A custom gift: set its price, which emails the giver a link to pay (worker/gift.ts).
+    let priceRow: HTMLElement | null = null;
+    if (o.gift && !o.paid) {
+      const price = h('input', { type: 'number', min: '1', step: '1', inputmode: 'decimal', placeholder: '120', 'aria-label': 'price in dollars' });
+      if (o.quote) price.value = String(o.quote.cents / 100);
+      const send = h('button', { class: 'btn', type: 'button' }, o.quote ? 'change price + email them' : 'set price + email them');
+      send.addEventListener('click', async () => {
+        const dollars = Number(price.value);
+        if (!dollars) return say('enter a price first.', true);
+        if (!confirm(`email ${o.buyerName ?? 'them'} a link to pay ${money(Math.round(dollars * 100))}${o.gift?.deliver === 'mail' ? ' (shipping included)' : ''}?`)) return;
+        send.disabled = true;
+        try {
+          const r = await api('/admin/api/quote', { id: o.id, dollars });
+          orders = orders.map((x) => (x.id === o.id ? { ...r.order, trackUrl: o.trackUrl } : x));
+          render();
+          say(`#${o.number} is ${money(r.order.quote.cents)}.${r.emailed ? ` ${o.buyerName ?? 'they'} got an email with the link to pay.` : ' the email didn’t go out: send them the tracking page link.'}`);
+        } catch (err) {
+          say(err instanceof Error ? err.message : 'that didn’t save', true);
+          send.disabled = false;
+        }
+      });
+      priceRow = h(
+        'div',
+        { class: 'tracking-row price-row' },
+        h('span', { class: 'dim' }, o.gift.deliver === 'mail' ? 'price $ (with shipping)' : 'price $'),
+        price,
+        send,
+      );
+    }
+
+    card.append(head, grid, ...(priceRow ? [priceRow] : []), steps, trackingRow, foot);
     return card;
   }
 

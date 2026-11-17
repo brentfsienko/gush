@@ -94,10 +94,10 @@ export async function familyPage(request: Request, env: Env, key: string | undef
     .transform(res);
 }
 
-type Pick = { title: string; size: string; swatch?: string; slug: string; choices: NonNullable<Order['pick']> };
+export type Pick = { title: string; size: string; swatch?: string; slug: string; choices: NonNullable<Order['pick']> };
 
 /** Checks the form and turns it into the gift. Returns an error message for anything off. */
-function readPick(b: Record<string, unknown>): Pick | string {
+export function readPick(b: Record<string, unknown>): Pick | string {
   const style = FAMILY_STYLES.find((s) => s.key === b.style);
   if (!style) return 'pick a gift first.';
   const mystery = style.key === 'mystery';
