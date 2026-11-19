@@ -80,6 +80,11 @@ export async function checkout(request: Request, env: Env) {
   }
 
   let res = await createSession(buildParams(lines, fixed, origin, images, wanted, promoId), env);
+  if (!res.ok && TAX_ENABLED && taxProblem(res.message)) {
+    // Stripe Tax isn't set up in the dashboard: sell anyway, without tax, and leave a note in the logs.
+    console.error('checkout: Stripe Tax isn’t set up, checking out without tax:', res.message);
+    res = await createSession(buildParams(lines, fixed, origin, images, wanted, promoId, false), env);
+  }
   if (!res.ok && fixed.size && /no such product/i.test(res.message)) {
     // The lasting products are gone from Stripe: forget them and check out the usual way.
     for (const slug of fixed) await forgetFixed(env, slug);
@@ -91,6 +96,9 @@ export async function checkout(request: Request, env: Env) {
   }
   return json({ url: res.url });
 }
+
+/** Stripe's answer when automatic tax is asked for but Stripe Tax isn't set up. */
+export const taxProblem = (message: string) => /tax/i.test(message);
 
 /** Makes Stripe's page look like GÜSH (settings in src/data/store.ts). */
 export function brand(params: URLSearchParams, images: string) {
@@ -128,6 +136,7 @@ function buildParams(
   images: string,
   wanted: Map<string, number>,
   promoId?: string,
+  tax = TAX_ENABLED,
 ) {
   const params = new URLSearchParams();
   lines.forEach(({ slug, size, qty, p }, i) => {
@@ -141,9 +150,9 @@ function buildParams(
       params.set(`line_items[${i}][price_data][product_data][metadata][slug]`, p.slug);
       params.set(`line_items[${i}][price_data][product_data][metadata][size]`, size);
       params.set(`line_items[${i}][price_data][product_data][images][0]`, `${images}/stripe/${p.slug}.jpg?v=${IMAGE_VERSION}`);
-      if (TAX_ENABLED) params.set(`line_items[${i}][price_data][product_data][tax_code]`, CLOTHING_TAX_CODE);
+      if (tax) params.set(`line_items[${i}][price_data][product_data][tax_code]`, CLOTHING_TAX_CODE);
     }
-    if (TAX_ENABLED) params.set(`line_items[${i}][price_data][tax_behavior]`, 'exclusive');
+    if (tax) params.set(`line_items[${i}][price_data][tax_behavior]`, 'exclusive');
   });
 
   params.set('mode', 'payment');
@@ -164,12 +173,12 @@ function buildParams(
     params.set(`${rate}[display_name]`, o.label);
     params.set(`${rate}[fixed_amount][amount]`, String(o.cents));
     params.set(`${rate}[fixed_amount][currency]`, 'usd');
-    if (TAX_ENABLED) {
+    if (tax) {
       params.set(`${rate}[tax_code]`, SHIPPING_TAX_CODE);
       params.set(`${rate}[tax_behavior]`, 'exclusive');
     }
   });
-  if (TAX_ENABLED) {
+  if (tax) {
     // Tax is added on top of the prices, from the shipping address.
     params.set('automatic_tax[enabled]', 'true');
   }

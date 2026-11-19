@@ -3,7 +3,7 @@ import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Drawn from '../components/Drawn.astro';
 import { PRODUCTS, formatPrice } from '../data/products';
-import { SHIPPING_OPTIONS, MAX_QTY, FREE_SHIPPING_OVER } from '../data/store';
+import { SHIPPING_OPTIONS, MAX_QTY, FREE_SHIPPING_OVER, TAX_ENABLED, TAX_NOTE } from '../data/store';
 import { productPhotos } from '../data/assets';
 
 // Everything the cart needs to draw a line, keyed by slug (the cart itself lives in the browser).
@@ -50,6 +50,12 @@ const config = { catalog, maxQty: MAX_QTY, freeOver: FREE_SHIPPING_OVER, shippin
           <dd data-code-row data-code-off hidden></dd>
           <dt>shipping</dt>
           <dd class="ship" data-ship>{config.shipping}</dd>
+          {TAX_ENABLED && TAX_NOTE && (
+            <>
+              <dt>tax</dt>
+              <dd class="ship">{TAX_NOTE}</dd>
+            </>
+          )}
         </dl>
         <p class="code-love" data-code-love hidden></p>
 

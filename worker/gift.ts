@@ -9,12 +9,12 @@
 //    where a "pay" button (POST /order/<code>/pay) opens Stripe checkout for that amount.
 //  - The Stripe webhook (worker/webhook.ts) hands paid gift checkouts to giftPaid: the order is marked
 //    paid, and you and the giver get an email.
-import { CONTACT_EMAIL, SITE_URL } from '../src/data/store';
+import { CONTACT_EMAIL, SITE_URL, TAX_ENABLED, CLOTHING_TAX_CODE } from '../src/data/store';
 import { addOrder, nextNumber, randomCode, trackUrl, itemLabel, itemPicture, getOrder, getOrderByToken, putOrder, type Order } from './orders';
 import { readPick } from './family';
 import { resend, page, td, gap, json, EMAIL } from './waitlist';
 import { FROM, esc, INK, GRAY, FONT, type PaidSession } from './notify';
-import { brand, imageOrigin, createSession } from './checkout';
+import { brand, imageOrigin, createSession, taxProblem } from './checkout';
 import type { Env } from './index';
 
 const KEY = 'gift:key';
@@ -211,27 +211,72 @@ export async function giftPay(request: Request, env: Env, token: string) {
   if (o.paid) return back();
   if (!env.STRIPE_SECRET_KEY) return new Response('payments aren’t set up yet.', { status: 503 });
   const origin = new URL(request.url).origin;
-  const p = new URLSearchParams();
-  p.set('mode', 'payment');
-  p.set('line_items[0][quantity]', '1');
-  p.set('line_items[0][price_data][currency]', 'usd');
-  p.set('line_items[0][price_data][unit_amount]', String(o.quote.cents));
-  p.set('line_items[0][price_data][product_data][name]', `custom GÜSH gift for ${o.gift.to}`);
-  p.set('line_items[0][price_data][product_data][description]', `${o.items.map(itemLabel).join(', ')} · sewn by hand in Seattle`);
-  if (o.buyerEmail) p.set('customer_email', o.buyerEmail);
-  p.set('metadata[gush_gift]', o.id);
-  p.set('payment_intent_data[metadata][gush_gift]', o.id);
-  p.set('payment_intent_data[description]', `GÜSH gift #${o.number} for ${o.gift.to}`);
-  p.set('success_url', `${origin}/order/${token}?paid=1`);
-  p.set('cancel_url', `${origin}/order/${token}`);
-  p.set('custom_text[submit][message]', 'thank you for supporting handmade ♥');
-  brand(p, imageOrigin(origin));
-  const res = await createSession(p, env);
+  let res = await createSession(await payParams(env, o, origin, token, TAX_ENABLED), env);
+  if (!res.ok && TAX_ENABLED && taxProblem(res.message)) {
+    console.error('gift checkout: Stripe Tax isn’t set up, paying without tax:', res.message);
+    res = await createSession(await payParams(env, o, origin, token, false), env);
+  }
   if (!res.ok) {
     console.error('gift checkout failed', o.id, res.status, res.message);
     return back('?payerror=1');
   }
   return Response.redirect(res.url, 303);
+}
+
+/** Stripe customer for a mailed gift: carries the recipient's address, so tax is worked out for where
+ *  it's going. Undefined if it can't be made (then tax goes by the payer's billing address). */
+async function recipientCustomer(env: Env, o: Order) {
+  const [, line1, line2] = o.address;
+  const m = o.address[o.address.length - 1]?.match(/^(.*),\s*(\S.*?)\s+(\S+)$/);
+  if (!line1 || !m) return undefined;
+  const q = new URLSearchParams();
+  if (o.buyerEmail) q.set('email', o.buyerEmail);
+  if (o.buyerName) q.set('name', o.buyerName);
+  q.set('shipping[name]', o.gift!.to);
+  q.set('shipping[address][line1]', line1);
+  if (o.address.length > 3 && line2) q.set('shipping[address][line2]', line2);
+  q.set('shipping[address][city]', m[1]);
+  q.set('shipping[address][state]', m[2]);
+  q.set('shipping[address][postal_code]', m[3]);
+  q.set('shipping[address][country]', 'US');
+  q.set('metadata[gush_gift]', o.id);
+  const res = await fetch('https://api.stripe.com/v1/customers', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'content-type': 'application/x-www-form-urlencoded' },
+    body: q,
+  });
+  const data = (await res.json().catch(() => ({}))) as { id?: string; error?: { message?: string } };
+  if (!res.ok || !data.id) console.error('gift customer failed', o.id, data.error?.message);
+  return data.id;
+}
+
+async function payParams(env: Env, o: Order, origin: string, token: string, tax: boolean) {
+  const p = new URLSearchParams();
+  p.set('mode', 'payment');
+  p.set('line_items[0][quantity]', '1');
+  p.set('line_items[0][price_data][currency]', 'usd');
+  p.set('line_items[0][price_data][unit_amount]', String(o.quote.cents));
+  p.set('line_items[0][price_data][product_data][name]', `custom GÜSH gift for ${o.gift!.to}`);
+  p.set('line_items[0][price_data][product_data][description]', `${o.items.map(itemLabel).join(', ')} · sewn by hand in Seattle`);
+  // Tax (when on) goes by where the gift ends up: the recipient's address for a mailed gift, or the
+  // payer's billing address when it's handed over.
+  const customer = tax && o.gift!.deliver === 'mail' ? await recipientCustomer(env, o) : undefined;
+  if (customer) p.set('customer', customer);
+  else if (o.buyerEmail) p.set('customer_email', o.buyerEmail);
+  if (tax) {
+    p.set('line_items[0][price_data][product_data][tax_code]', CLOTHING_TAX_CODE);
+    p.set('line_items[0][price_data][tax_behavior]', 'exclusive');
+    p.set('automatic_tax[enabled]', 'true');
+    if (!customer) p.set('billing_address_collection', 'required');
+  }
+  p.set('metadata[gush_gift]', o.id);
+  p.set('payment_intent_data[metadata][gush_gift]', o.id);
+  p.set('payment_intent_data[description]', `GÜSH gift #${o.number} for ${o.gift!.to}`);
+  p.set('success_url', `${origin}/order/${token}?paid=1`);
+  p.set('cancel_url', `${origin}/order/${token}`);
+  p.set('custom_text[submit][message]', 'thank you for supporting handmade ♥');
+  brand(p, imageOrigin(origin));
+  return p;
 }
 
 /** The webhook: a gift's checkout was paid. Marks it paid (once) and emails you and the giver. */
@@ -243,16 +288,18 @@ export async function giftPaid(env: Env, s: PaidSession) {
   }
   if (o.paid) return;
   const total = s.amount_total ?? o.quote?.cents ?? 0;
+  const tax = s.total_details?.amount_tax ?? 0;
   o.paid = Date.now();
+  o.tax = tax || undefined;
   o.live = !!s.livemode;
   o.paymentIntent = s.payment_intent ?? undefined;
-  o.items = o.items.map((i) => ({ ...i, cents: total }));
-  o.subtotal = total;
+  o.items = o.items.map((i) => ({ ...i, cents: total - tax }));
+  o.subtotal = total - tax;
   o.total = total;
   await putOrder(env, o);
   const hi = firstName(o.buyerName);
   await Promise.all([
-    toOwner(env, o, `gift paid: ${o.buyerName} paid ${money(total)} for ${o.gift.to}’s gift`, [...details(o), `paid: ${money(total)}`, `it's #${o.number}. time to sew!`]),
+    toOwner(env, o, `gift paid: ${o.buyerName} paid ${money(total)} for ${o.gift.to}’s gift`, [...details(o), `paid: ${money(total)}${tax ? ` (${money(tax)} of it sales tax)` : ''}`, `it's #${o.number}. time to sew!`]),
     o.buyerEmail
       ? resend(
           env,

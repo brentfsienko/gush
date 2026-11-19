@@ -26,7 +26,7 @@ export type PaidSession = {
   payment_intent?: string | null;
   amount_total?: number | null;
   amount_subtotal?: number | null;
-  total_details?: { amount_discount?: number | null } | null;
+  total_details?: { amount_discount?: number | null; amount_tax?: number | null } | null;
   shipping_cost?: { amount_total?: number | null } | null;
   customer_details?: { email?: string | null; name?: string | null } | null;
   // Where the shipping address lives depends on the Stripe API version.
@@ -63,6 +63,7 @@ export function readOrder(s: PaidSession) {
         : (SHIPPING_OPTIONS.find((o) => o.cents === shippingCents)?.label ?? 'shipping'),
     shippingCents,
     discount: s.total_details?.amount_discount ?? 0,
+    tax: s.total_details?.amount_tax ?? 0,
     total: s.amount_total ?? 0,
     address: [
       ship?.name,
@@ -98,6 +99,7 @@ export function ownerEmail(s: PaidSession, code?: string) {
     `note: ${o.note ?? '(none)'}`,
     '',
     `buyer: ${buyer}`,
+    ...(o.tax ? [`sales tax: ${formatPrice(o.tax)}`] : []),
     `paid: ${formatPrice(o.total)}${o.discount ? ` (after ${formatPrice(o.discount)} off${code ? ` with code ${code}` : ''})` : ''}`,
     ...(o.stripeUrl ? ['', `in Stripe: ${o.stripeUrl}`] : []),
   ].join('\n');
@@ -131,6 +133,7 @@ export function customerEmail(s: PaidSession, trackUrl?: string) {
     ...o.items.map((i) => `${i.qty} × ${i.label}  ${formatPrice(i.cents)}`),
     `shipping (${o.shippingMethod})  ${money(o.shippingCents)}`,
     ...(o.discount ? [`promo code  −${formatPrice(o.discount)}`] : []),
+    ...(o.tax ? [`sales tax  ${formatPrice(o.tax)}`] : []),
     `paid  ${formatPrice(o.total)}`,
     '',
     'shipping to:',
@@ -206,6 +209,7 @@ function renderHtml(
     row('subtotal', formatPrice(o.subtotal)),
     row(`shipping (${o.shippingMethod})`, money(o.shippingCents)),
     o.discount ? row(v.code ? `promo code ${v.code}` : 'promo code', `−${formatPrice(o.discount)}`) : '',
+    o.tax ? row('sales tax', formatPrice(o.tax)) : '',
     row('paid', formatPrice(o.total), true),
   ].join('');
 

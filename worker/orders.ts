@@ -8,7 +8,7 @@
 //  - Status emails to buyers only go out while ORDER_UPDATE_EMAILS (src/data/store.ts) is true.
 //
 // (The webhook's older order:<session id> keys are just "already counted" markers; separate.)
-import { SITE_URL, ORDER_UPDATE_EMAILS, CONTACT_EMAIL, IMAGE_VERSION } from '../src/data/store';
+import { SITE_URL, ORDER_UPDATE_EMAILS, CONTACT_EMAIL, IMAGE_VERSION, TAX_ENABLED } from '../src/data/store';
 import { FAMILY_COLORS } from '../src/data/family';
 import { readOrder, esc, GRAY, INK, FONT, type PaidSession } from './notify';
 import { resend, page, td, gap } from './waitlist';
@@ -41,6 +41,7 @@ export type Order = {
   shippingCents: number;
   subtotal: number;
   discount: number;
+  tax?: number; // sales tax collected (Stripe Tax)
   total: number;
   note?: string;
   status: Status;
@@ -119,6 +120,7 @@ export async function saveOrder(env: Env, s: PaidSession & { created?: number },
     shippingCents: r.shippingCents,
     subtotal: r.subtotal,
     discount: r.discount,
+    tax: r.tax || undefined,
     total: r.total,
     note: r.note,
     code,
@@ -364,12 +366,12 @@ const dollars = (c: number) => `$${(c / 100).toFixed(2).replace(/\.00$/, '')}`;
 
 /** A custom gift's price box: waiting on a price, a pay button, or paid. */
 function giftPayHtml(o: Order) {
-  if (o.paid) return `<p class="ot-pay ot-paid">paid ${esc(dollars(o.total))} on ${esc(shortDate(o.paid))} ♥ thank you!</p>`;
+  if (o.paid) return `<p class="ot-pay ot-paid">paid ${esc(dollars(o.total))}${o.tax ? ` (with ${esc(dollars(o.tax))} tax)` : ''} on ${esc(shortDate(o.paid))} ♥ thank you!</p>`;
   if (!o.quote) return `<p class="ot-pay ot-dim">brent is working out the price. we’ll email you when it’s ready to pay.</p>`;
   return `<form class="ot-pay" method="post" action="/order/${esc(o.token)}/pay">
       <p class="ot-price">price: ${esc(dollars(o.quote.cents))}${o.gift?.deliver === 'mail' ? ' <span class="ot-dim">(shipping included)</span>' : ''}</p>
       <button class="ot-pay-btn" type="submit">pay ${esc(dollars(o.quote.cents))} →</button>
-      <p class="ot-dim ot-pay-note">it goes on the machine once it’s paid.</p>
+      <p class="ot-dim ot-pay-note">${TAX_ENABLED ? 'plus sales tax where it applies. ' : ''}it goes on the machine once it’s paid.</p>
     </form>`;
 }
 
