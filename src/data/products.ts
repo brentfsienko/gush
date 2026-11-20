@@ -70,7 +70,7 @@ export const PRODUCTS: Product[] = [
       { label: 'care', value: 'machine wash cold, hang dry' },
     ],
     // Total units per size (sales are counted off this automatically). Checkout refuses sizes at 0.
-    stock: { s: 0, m: 1, l: 0, xl: 0 },
+    stock: { s: 0, m: 1, l: 1, xl: 0 },
     // TODO: real measurements
     sizeChart: {
       headers: ['size', 'chest', 'length', 'sleeve'],
