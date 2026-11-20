@@ -1,0 +1,609 @@
+---
+// The market register (gush.supply/admin/pos): for selling in person. Only served when you're signed
+// in (worker/admin.ts); the work happens in worker/pos.ts. Pick what they're buying, tap "charge",
+// and they scan the QR code to pay on their own phone (or "pay on this phone"). "cash" records a cash
+// sale. Where you're selling is kept on this device and sets the sales tax.
+import Base from '../../layouts/Base.astro';
+import { PRODUCTS, SIZES } from '../../data/products';
+import { IMAGE_VERSION } from '../../data/store';
+
+const catalog = PRODUCTS.map((p) => ({
+  slug: p.slug,
+  title: p.title,
+  price: p.price,
+  sizes: SIZES.filter((s) => p.stock[s] !== undefined),
+}));
+---
+
+<Base title="register" footer={false} noindex>
+  <div class="pos type">
+    <div class="pos-top">
+      <h1 class="heading">register</h1>
+      <a class="dim small" href="/admin">orders →</a>
+    </div>
+
+    <!-- Where you're selling: sets the sales tax. Kept on this device. -->
+    <details class="place" data-place-box>
+      <summary><span class="dim">selling at</span> <span data-place-label>set where you’re selling</span></summary>
+      <form class="place-form" data-place-form novalidate>
+        <label>market or pop-up <input name="name" maxlength="60" placeholder="Fremont Sunday Market" /></label>
+        <label>street address <input name="line1" maxlength="120" placeholder="3401 Evanston Ave N" /></label>
+        <div class="row">
+          <label class="grow">city <input name="city" maxlength="60" value="Seattle" /></label>
+          <label class="state">state <input name="state" maxlength="30" value="WA" /></label>
+          <label class="zip">zip <input name="zip" maxlength="12" inputmode="numeric" /></label>
+        </div>
+        <button class="btn" type="submit">save</button>
+      </form>
+    </details>
+
+    <div class="items" data-items>
+      {
+        catalog.map((p) => (
+          <div class="item" data-slug={p.slug}>
+            <img src={`/stripe/${p.slug}.jpg?v=${IMAGE_VERSION}`} alt="" width="72" height="72" />
+            <div class="item-body">
+              <div class="item-name">{p.title}</div>
+              <div class="dim small">${p.price / 100}</div>
+              <div class="sizes">
+                {p.sizes.map((s) => (
+                  <button class="size" type="button" data-size={s}>
+                    {s.toUpperCase()}
+                    <span class="left" data-left />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="sale" data-sale>
+      <div class="lines" data-lines><p class="dim">tap a size to add it.</p></div>
+      <div class="total-row"><span>subtotal</span><span data-subtotal>$0</span></div>
+      <p class="dim small">sales tax is added when they pay.</p>
+      <div class="pay-btns">
+        <button class="btn big" type="button" data-charge disabled>charge</button>
+        <button class="btn ghost" type="button" data-cash disabled>cash</button>
+      </div>
+    </div>
+
+    <p class="msg" data-msg aria-live="polite"></p>
+  </div>
+
+  <!-- Paying: the QR code (it opens gush.supply/pay, which goes to this checkout), then "paid". -->
+  <div class="sheet" data-sheet hidden>
+    <div class="sheet-inner">
+      <div data-waiting>
+        <p class="sheet-label">scan to pay</p>
+        <p class="sheet-total" data-sheet-total></p>
+        <canvas class="qr" data-qr width="280" height="280" aria-label="QR code to pay"></canvas>
+        <p class="dim small">or the sign at the booth</p>
+        <div class="sheet-btns">
+          <a class="btn" data-here href="#" target="_blank" rel="noopener">pay on this phone</a>
+          <button class="btn ghost" type="button" data-cancel>cancel</button>
+        </div>
+      </div>
+      <div data-cash-confirm hidden>
+        <p class="sheet-label">collect in cash</p>
+        <p class="sheet-total" data-cash-total></p>
+        <p class="dim small" data-cash-tax></p>
+        <div class="sheet-btns">
+          <button class="btn big" type="button" data-cash-ok>got it, record the sale</button>
+          <button class="btn ghost" type="button" data-cash-back>back</button>
+        </div>
+      </div>
+      <div data-done hidden>
+        <p class="paid">paid ✓</p>
+        <p class="sheet-total" data-done-total></p>
+        <button class="btn big" type="button" data-next>next sale</button>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .pos {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 20px var(--gutter) 60px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  .pos-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .dim {
+    color: var(--gray);
+  }
+
+  .small {
+    font-size: 13px;
+  }
+
+  .place {
+    margin: 10px 0 18px;
+    padding: 10px 14px;
+    border: 1.5px dashed var(--ink);
+  }
+
+  .place summary {
+    cursor: pointer;
+  }
+
+  .place-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .place-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .place-form input {
+    width: 100%;
+  }
+
+  .grow {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .state {
+    width: 56px;
+    flex-shrink: 0;
+  }
+
+  .zip {
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  input {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 5px 0;
+    min-width: 0;
+  }
+
+  .items {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .item img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .item-name {
+    font-size: 16px;
+  }
+
+  .sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .size {
+    min-width: 54px;
+    padding: 9px 10px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .size .left {
+    display: block;
+    font-size: 11px;
+    color: var(--gray);
+  }
+
+  .size:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .sale {
+    position: sticky;
+    bottom: 0;
+    margin-top: 22px;
+    padding: 14px 0 10px;
+    background: var(--page);
+    border-top: 1.5px solid var(--ink);
+  }
+
+  :global(.line) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+  }
+
+  :global(.line .name) {
+    flex: 1;
+  }
+
+  :global(.qty-btn) {
+    width: 32px;
+    height: 32px;
+    font: inherit;
+    color: var(--ink);
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 18px;
+  }
+
+  .pay-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 18px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    text-decoration: none;
+    text-align: center;
+    background: var(--page);
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .btn.big {
+    flex: 1;
+    padding: 14px 18px;
+    font-size: 18px;
+    color: var(--page);
+    background: var(--ink);
+  }
+
+  .btn.ghost {
+    border-style: dashed;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .msg {
+    min-height: 1.4em;
+    color: var(--red);
+  }
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--page);
+  }
+
+  .sheet-inner {
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .sheet-label {
+    margin: 0;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .sheet-total {
+    margin: 6px 0 14px;
+    font-size: 28px;
+  }
+
+  .qr {
+    width: 280px;
+    max-width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  .sheet-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .paid {
+    margin: 0;
+    font-size: 44px;
+  }
+</style>
+
+<script define:vars={{ CATALOG: catalog }}>
+  window.GUSH_POS_CATALOG = CATALOG;
+</script>
+
+<script>
+  import QRCode from 'qrcode';
+  import { hearts } from '../../scripts/hearts';
+
+  type Item = { slug: string; title: string; price: number; sizes: string[] };
+  type Place = { name: string; line1: string; city: string; state: string; zip: string };
+  const CATALOG = (window as unknown as { GUSH_POS_CATALOG: Item[] }).GUSH_POS_CATALOG;
+
+  const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const money = (c: number) => `$${(c / 100).toFixed(2).replace(/\.00$/, '')}`;
+  const msg = $('[data-msg]');
+  const say = (t: string) => (msg.textContent = t);
+
+  async function api(path: string, body?: unknown) {
+    const res = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.status === 401) {
+      location.href = '/admin/login';
+      throw new Error('signed out');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `something went wrong (${res.status})`);
+    return data;
+  }
+
+  // ---- where you're selling (kept on this device) ----
+  const placeForm = $<HTMLFormElement>('[data-place-form]');
+  const placeBox = $<HTMLDetailsElement>('[data-place-box]');
+  const field = (n: string) => placeForm.elements.namedItem(n) as HTMLInputElement;
+  let place: Place | null = null;
+  try {
+    place = JSON.parse(localStorage.getItem('gush-pos-place') || 'null');
+  } catch {}
+  const showPlace = () => {
+    $('[data-place-label]').textContent = place ? `${place.name} · ${place.line1}, ${place.city}` : 'set where you’re selling';
+    if (place) for (const k of Object.keys(place) as (keyof Place)[]) field(k).value = place[k];
+    placeBox.open = !place;
+  };
+  showPlace();
+  placeForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const next = { name: field('name').value.trim(), line1: field('line1').value.trim(), city: field('city').value.trim(), state: field('state').value.trim(), zip: field('zip').value.trim() };
+    if (Object.values(next).some((v) => !v)) return say('fill in the market name and full address (it sets the sales tax).');
+    place = next;
+    try {
+      localStorage.setItem('gush-pos-place', JSON.stringify(place));
+    } catch {}
+    say('');
+    showPlace();
+  });
+
+  // ---- stock and the sale ----
+  let stock: Record<string, Record<string, number>> = {};
+  const sale = new Map<string, number>(); // "slug:size" -> qty
+  const left = (slug: string, size: string) => (stock[slug]?.[size] ?? 0) - (sale.get(`${slug}:${size}`) ?? 0);
+
+  async function loadStock() {
+    try {
+      stock = await api('/admin/api/pos/stock');
+    } catch (err) {
+      say(err instanceof Error ? err.message : 'couldn’t load stock');
+    }
+    render();
+  }
+
+  function render() {
+    document.querySelectorAll<HTMLElement>('.item').forEach((el) => {
+      const slug = el.dataset.slug!;
+      el.querySelectorAll<HTMLButtonElement>('.size').forEach((b) => {
+        const n = left(slug, b.dataset.size!);
+        b.disabled = n <= 0;
+        b.querySelector('[data-left]')!.textContent = n > 0 ? `${n} left` : 'none';
+      });
+    });
+    const lines = $('[data-lines]');
+    let subtotal = 0;
+    const rows = [...sale].map(([k, qty]) => {
+      const [slug, size] = k.split(':');
+      const p = CATALOG.find((x) => x.slug === slug)!;
+      subtotal += p.price * qty;
+      const row = document.createElement('div');
+      row.className = 'line';
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = `${qty > 1 ? `${qty} × ` : ''}${p.title} (${size.toUpperCase()})`;
+      const minus = Object.assign(document.createElement('button'), { className: 'qty-btn', type: 'button', textContent: '−' });
+      minus.setAttribute('aria-label', 'one less');
+      minus.addEventListener('click', () => {
+        if (qty > 1) sale.set(k, qty - 1);
+        else sale.delete(k);
+        render();
+      });
+      const price = document.createElement('span');
+      price.textContent = money(p.price * qty);
+      row.append(minus, name, price);
+      return row;
+    });
+    if (rows.length) lines.replaceChildren(...rows);
+    else lines.innerHTML = '<p class="dim">tap a size to add it.</p>';
+    $('[data-subtotal]').textContent = money(subtotal);
+    $<HTMLButtonElement>('[data-charge]').textContent = subtotal ? `charge ${money(subtotal)} + tax` : 'charge';
+    $<HTMLButtonElement>('[data-charge]').disabled = !subtotal;
+    $<HTMLButtonElement>('[data-cash]').disabled = !subtotal;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.size').forEach((b) =>
+    b.addEventListener('click', () => {
+      const slug = b.closest<HTMLElement>('.item')!.dataset.slug!;
+      const k = `${slug}:${b.dataset.size}`;
+      if (left(slug, b.dataset.size!) <= 0) return;
+      sale.set(k, (sale.get(k) ?? 0) + 1);
+      say('');
+      render();
+    }),
+  );
+
+  const items = () => [...sale].map(([k, qty]) => ({ slug: k.split(':')[0], size: k.split(':')[1], qty }));
+
+  // ---- paying ----
+  const sheet = $('[data-sheet]');
+  const view = (which: 'waiting' | 'cash' | 'done') => {
+    $('[data-waiting]').hidden = which !== 'waiting';
+    $('[data-cash-confirm]').hidden = which !== 'cash';
+    $('[data-done]').hidden = which !== 'done';
+    sheet.hidden = false;
+  };
+  let current: string | null = null;
+  let timer = 0;
+
+  const needPlace = () => {
+    if (place) return false;
+    placeBox.open = true;
+    say('set where you’re selling first (it sets the sales tax).');
+    return true;
+  };
+
+  $('[data-charge]').addEventListener('click', async (e) => {
+    if (needPlace()) return;
+    const btn = e.currentTarget as HTMLButtonElement;
+    btn.disabled = true;
+    say('');
+    try {
+      const r = await api('/admin/api/pos/charge', { items: items(), place });
+      current = r.id;
+      await QRCode.toCanvas($<HTMLCanvasElement>('[data-qr]'), r.pay, { width: 280, margin: 2, color: { dark: '#1f1b16', light: '#ffffff' } });
+      $<HTMLAnchorElement>('[data-here]').href = r.url;
+      $('[data-sheet-total]').textContent = '…';
+      view('waiting');
+      poll();
+    } catch (err) {
+      say(err instanceof Error ? err.message : 'couldn’t start the payment');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  async function poll() {
+    clearTimeout(timer);
+    if (!current) return;
+    try {
+      const r = await fetch(`/admin/api/pos/status?id=${encodeURIComponent(current)}`).then((x) => x.json());
+      if (typeof r.total === 'number') $('[data-sheet-total]').textContent = `${money(r.total)}${r.tax ? ` (${money(r.tax)} tax)` : ''}`;
+      if (r.paid) return paid(r.total);
+      if (r.expired) {
+        current = null;
+        sheet.hidden = true;
+        return say('that payment expired. tap charge again.');
+      }
+    } catch {}
+    timer = window.setTimeout(poll, 2000);
+  }
+
+  function paid(total?: number) {
+    current = null;
+    $('[data-done-total]').textContent = typeof total === 'number' ? money(total) : '';
+    view('done');
+    hearts(0.5, 0.4);
+  }
+
+  $('[data-cancel]').addEventListener('click', async () => {
+    clearTimeout(timer);
+    const id = current;
+    current = null;
+    sheet.hidden = true;
+    if (!id) return;
+    try {
+      const r = await api('/admin/api/pos/cancel', { id });
+      if (r.paid) paid();
+    } catch (err) {
+      say(err instanceof Error ? err.message : 'couldn’t cancel');
+    }
+  });
+
+  $('[data-next]').addEventListener('click', () => {
+    sale.clear();
+    sheet.hidden = true;
+    loadStock();
+  });
+
+  // ---- cash ----
+  $('[data-cash]').addEventListener('click', async (e) => {
+    if (needPlace()) return;
+    const btn = e.currentTarget as HTMLButtonElement;
+    btn.disabled = true;
+    try {
+      const r = await api('/admin/api/pos/cash', { items: items(), place });
+      $('[data-cash-total]').textContent = money(r.total);
+      $('[data-cash-tax]').textContent = r.tax ? `${money(r.subtotal)} + ${money(r.tax)} sales tax` : 'no sales tax worked out (check the address)';
+      view('cash');
+    } catch (err) {
+      say(err instanceof Error ? err.message : 'couldn’t work out the total');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+  $('[data-cash-back]').addEventListener('click', () => (sheet.hidden = true));
+  $('[data-cash-ok]').addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    btn.disabled = true;
+    try {
+      const r = await api('/admin/api/pos/cash', { items: items(), place, confirm: true });
+      $('[data-done-total]').textContent = `${money(r.total)} cash · #${r.number}`;
+      view('done');
+      hearts(0.5, 0.4);
+    } catch (err) {
+      sheet.hidden = true;
+      say(err instanceof Error ? err.message : 'that didn’t record');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  loadStock();
+</script>

@@ -20,7 +20,7 @@ routes = [
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*", "/item/*", "/admin*", "/order/*", "/family*", "/gift*"]
+run_worker_first = ["/api/*", "/item/*", "/admin*", "/order/*", "/family*", "/gift*", "/pay"]
 
 # Stock tracking: a Cloudflare KV namespace keeping a "sold" count per size (see worker/stock.ts).
 [[kv_namespaces]]

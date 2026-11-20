@@ -1,5 +1,5 @@
 // The Worker in front of the site. Static pages and images are served straight from dist/
-// (see [assets] in wrangler.toml); only /api/*, /item/*, /admin*, /order/*, /family* and /gift* requests reach this code.
+// (see [assets] in wrangler.toml); only /api/*, /item/*, /admin*, /order/*, /family*, /gift* and /pay requests reach this code.
 import { checkout } from './checkout';
 import { checkCode } from './codes';
 import { stripeWebhook } from './webhook';
@@ -11,6 +11,7 @@ import { admin } from './admin';
 import { orderPage, editPage } from './orders';
 import { familyPage, familySubmit, familyCheck, familyEdit } from './family';
 import { giftPage, giftSubmit, giftPay } from './gift';
+import { payNow } from './pos';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -82,6 +83,8 @@ export default {
     if (pathname === '/family' || pathname.startsWith('/family/') || pathname.startsWith('/family.')) {
       return familyPage(request, env, pathname.match(/^\/family\/([A-Za-z0-9_-]+)$/)?.[1]);
     }
+    // The booth sign's QR code: whatever's being charged at the booth right now (worker/pos.ts).
+    if (pathname === '/pay') return payNow(request, env);
     // Custom gifts for friends and family: only /gift/<secret key> opens it (worker/gift.ts).
     if (pathname === '/gift' || pathname.startsWith('/gift/') || pathname.startsWith('/gift.')) {
       return giftPage(request, env, pathname.match(/^\/gift\/([A-Za-z0-9_-]+)$/)?.[1]);

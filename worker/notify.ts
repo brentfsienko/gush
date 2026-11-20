@@ -33,7 +33,7 @@ export type PaidSession = {
   collected_information?: { shipping_details?: { name?: string | null; address?: Address | null } | null } | null;
   shipping_details?: { name?: string | null; address?: Address | null } | null;
   custom_fields?: { key: string; text?: { value?: string | null } | null }[] | null;
-  metadata?: { items?: string; gush_gift?: string } | null;
+  metadata?: { items?: string; gush_gift?: string; gush_pos?: string } | null;
 };
 
 type Order = ReturnType<typeof readOrder>;
@@ -53,19 +53,22 @@ export function readOrder(s: PaidSession) {
   const ship = s.collected_information?.shipping_details ?? s.shipping_details;
   const a = ship?.address;
   const shippingCents = s.shipping_cost?.amount_total ?? 0;
+  const inPerson = s.metadata?.gush_pos || undefined;
   return {
     test: !s.livemode,
+    inPerson,
     items,
     subtotal: s.amount_subtotal ?? items.reduce((t, i) => t + i.cents, 0),
-    shippingMethod:
-      !shippingCents && FREE_SHIPPING_OVER && (s.amount_subtotal ?? 0) >= FREE_SHIPPING_OVER
+    shippingMethod: inPerson
+      ? `in person · ${inPerson}`
+      : !shippingCents && FREE_SHIPPING_OVER && (s.amount_subtotal ?? 0) >= FREE_SHIPPING_OVER
         ? FREE_SHIPPING_LABEL
         : (SHIPPING_OPTIONS.find((o) => o.cents === shippingCents)?.label ?? 'shipping'),
     shippingCents,
     discount: s.total_details?.amount_discount ?? 0,
     tax: s.total_details?.amount_tax ?? 0,
     total: s.amount_total ?? 0,
-    address: [
+    address: inPerson ? [] : [
       ship?.name,
       a?.line1,
       a?.line2,
@@ -92,9 +95,7 @@ export function ownerEmail(s: PaidSession, code?: string) {
     '',
     ...o.items.map((i) => `${i.qty} × ${i.label}`),
     '',
-    `shipping: ${o.shippingMethod} (${money(o.shippingCents)})`,
-    'ship to:',
-    ...o.address.map((l) => `  ${l}`),
+    ...(o.inPerson ? [`sold in person: ${o.inPerson}`] : [`shipping: ${o.shippingMethod} (${money(o.shippingCents)})`, 'ship to:', ...o.address.map((l) => `  ${l}`)]),
     '',
     `note: ${o.note ?? '(none)'}`,
     '',
@@ -104,7 +105,7 @@ export function ownerEmail(s: PaidSession, code?: string) {
     ...(o.stripeUrl ? ['', `in Stripe: ${o.stripeUrl}`] : []),
   ].join('\n');
   return {
-    subject: `${o.test ? '[test] ' : ''}new order${code ? ` (code ${code})` : ''}: ${summary}${o.shipName ? ` for ${o.shipName}` : ''}`,
+    subject: `${o.test ? '[test] ' : ''}${o.inPerson ? 'booth sale' : 'new order'}${code ? ` (code ${code})` : ''}: ${summary}${o.shipName && !o.inPerson ? ` for ${o.shipName}` : ''}`,
     text,
     html: renderHtml(o, {
       code,
@@ -125,19 +126,18 @@ export function customerEmail(s: PaidSession, trackUrl?: string) {
   const o = readOrder(s);
   const first = o.buyerName?.trim().split(/\s+/)[0]?.toLowerCase();
   const hello = first ? `thank you, ${first}!` : 'thank you!';
+  const intro = o.inPerson ? `thanks for stopping by the GÜSH booth at ${o.inPerson}! here’s your receipt. every piece is sewn by hand in Seattle.` : RECEIPT.intro;
   const text = [
     hello,
     '',
-    RECEIPT.intro,
+    intro,
     '',
     ...o.items.map((i) => `${i.qty} × ${i.label}  ${formatPrice(i.cents)}`),
-    `shipping (${o.shippingMethod})  ${money(o.shippingCents)}`,
+    ...(o.inPerson ? [] : [`shipping (${o.shippingMethod})  ${money(o.shippingCents)}`]),
     ...(o.discount ? [`promo code  −${formatPrice(o.discount)}`] : []),
     ...(o.tax ? [`sales tax  ${formatPrice(o.tax)}`] : []),
     `paid  ${formatPrice(o.total)}`,
-    '',
-    'shipping to:',
-    ...o.address.map((l) => `  ${l}`),
+    ...(o.inPerson ? [] : ['', 'shipping to:', ...o.address.map((l) => `  ${l}`)]),
     ...(o.note ? ['', `your note: ${o.note}`] : []),
     '',
     RECEIPT.outro,
@@ -151,11 +151,11 @@ export function customerEmail(s: PaidSession, trackUrl?: string) {
     html: renderHtml(o, {
       title: hello,
       hero: true,
-      intro: RECEIPT.intro,
+      intro,
       noteHeading: 'your note',
       hideEmptyNote: true,
       outro: RECEIPT.outro,
-      button: trackUrl ? { label: 'track your order →', href: trackUrl } : { label: 'visit GÜSH →', href: SITE_URL },
+      button: trackUrl && !o.inPerson ? { label: 'track your order →', href: trackUrl } : { label: 'visit GÜSH →', href: SITE_URL },
     }),
   };
 }
@@ -207,7 +207,7 @@ function renderHtml(
 
   const totals = [
     row('subtotal', formatPrice(o.subtotal)),
-    row(`shipping (${o.shippingMethod})`, money(o.shippingCents)),
+    o.inPerson ? '' : row(`shipping (${o.shippingMethod})`, money(o.shippingCents)),
     o.discount ? row(v.code ? `promo code ${v.code}` : 'promo code', `−${formatPrice(o.discount)}`) : '',
     o.tax ? row('sales tax', formatPrice(o.tax)) : '',
     row('paid', formatPrice(o.total), true),
@@ -248,7 +248,7 @@ function renderHtml(
   ${gap(22)}
   ${rule}
   ${gap(20)}
-  ${section(`${heading('ship to')}<div ${td()}>${o.address.map(esc).join('<br>') || '(no address)'}</div>`)}
+  ${o.inPerson ? section(`${heading('sold in person')}<div ${td()}>${esc(o.inPerson)}</div>`) : section(`${heading('ship to')}<div ${td()}>${o.address.map(esc).join('<br>') || '(no address)'}</div>`)}
   ${note}
   ${extra}
   ${v.outro ? section(`<div ${td()}>${esc(v.outro)}</div>`) : ''}

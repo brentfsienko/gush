@@ -56,6 +56,7 @@ export type Order = {
   gift?: { to: string; message?: string; deliver: 'mail' | 'hand' };
   quote?: { cents: number; at: number };
   paid?: number;
+  inPerson?: string; // sold at a market/pop-up (worker/pos.ts): where
 };
 
 const ORDER = 'ord:';
@@ -126,7 +127,13 @@ export async function saveOrder(env: Env, s: PaidSession & { created?: number },
     code,
     status: 'received',
     dates: { received: created },
+    inPerson: r.inPerson,
   };
+  // Sold at the booth: handed over on the spot.
+  if (r.inPerson) {
+    o.status = 'delivered';
+    o.dates = { received: created, sewing: created, shipped: created, delivered: created };
+  }
   await addOrder(env, o);
   return o;
 }

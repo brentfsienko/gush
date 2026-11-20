@@ -12,6 +12,8 @@ import { FROM, esc, INK, GRAY, FONT } from './notify';
 import { page, td, gap, waitlistSummary } from './waitlist';
 import { listOrders, setStatus, setArchived, importFromStripe, isStatus } from './orders';
 import { setQuote } from './gift';
+import { posCharge, posStatus, posCancel, posCash } from './pos';
+import { stockMap } from './stock';
 import { listCodes, makeCode, setCodeActive, setCodeMessage, deleteCode } from './codes';
 import { ORDER_UPDATE_EMAILS, ORDER_UPDATE_EMAILS_SINCE } from '../src/data/store';
 import type { Env } from './index';
@@ -100,6 +102,10 @@ export async function admin(request: Request, env: Env) {
   }
 
   if (path === '/admin') return servePage(request, env, '/admin');
+  // The market register (worker/pos.ts).
+  if (path === '/admin/pos') return servePage(request, env, '/admin/pos');
+  if (path === '/admin/api/pos/stock' && method === 'GET') return json(await stockMap(env));
+  if (path === '/admin/api/pos/status' && method === 'GET') return posStatus(env, url.searchParams.get('id'));
 
   if (path === '/admin/api/orders' && method === 'GET') {
     const orders = await listOrders(env);
@@ -133,6 +139,10 @@ export async function admin(request: Request, env: Env) {
     if ('error' in r) return json(r, 404);
     return json({ order: { ...r.order, trackUrl: `/order/${r.order.token}` }, emailed: r.emailed });
   }
+
+  if (path === '/admin/api/pos/charge' && method === 'POST') return posCharge(env, url.origin, body);
+  if (path === '/admin/api/pos/cancel' && method === 'POST') return posCancel(env, body.id);
+  if (path === '/admin/api/pos/cash' && method === 'POST') return posCash(env, body);
 
   // A custom gift's price (worker/gift.ts): saves it and emails the giver a link to pay.
   if (path === '/admin/api/quote' && method === 'POST') {

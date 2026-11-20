@@ -11,6 +11,7 @@ import { PRODUCTS } from '../data/products';
     <div class="admin-top">
       <h1 class="heading">orders</h1>
       <div class="admin-actions">
+        <a class="btn small" href="/admin/pos">register</a>
         <button class="btn small" type="button" data-import>import past orders from Stripe</button>
         <label class="check"><input type="checkbox" data-show-archived /> show archived</label>
         <form method="post" action="/admin/logout"><button class="btn small" type="submit">sign out</button></form>
@@ -402,7 +403,7 @@ import { PRODUCTS } from '../data/products';
     buyerName?: string; buyerEmail?: string; shipName?: string; address: string[];
     shippingMethod: string; shippingCents: number; subtotal: number; discount: number; tax?: number; total: number; note?: string;
     status: Status; dates: Partial<Record<Status, number>>; tracking?: string; archived?: boolean; family?: boolean; code?: string;
-    gift?: { to: string; message?: string; deliver: 'mail' | 'hand' }; quote?: { cents: number; at: number }; paid?: number;
+    gift?: { to: string; message?: string; deliver: 'mail' | 'hand' }; quote?: { cents: number; at: number }; paid?: number; inPerson?: string;
   };
 
   const STEPS: { key: Status; label: string }[] = [
@@ -467,6 +468,7 @@ import { PRODUCTS } from '../data/products';
         { class: 'order-num' },
         `#${o.number}`,
         o.family && h('span', { class: 'tag' }, 'family'),
+        o.inPerson && h('span', { class: 'tag' }, 'in person'),
         o.gift && h('span', { class: `tag${o.paid ? '' : ' tag-due'}` }, o.paid ? 'gift · paid' : o.quote ? 'gift · waiting to pay' : 'gift · needs a price'),
         o.code && h('span', { class: 'tag' }, `code ${o.code}`),
         !o.live && h('span', { class: 'tag' }, 'test'),
